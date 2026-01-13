@@ -1,0 +1,40 @@
+{
+  "name": "code-intelligence-mcp",
+  "version": "0.1.0",
+  "description": "MCP Server for code intelligence capabilities (Embedding, Graph-RAG, Call-chain tracing, Bug locator)",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "code-intelligence-mcp": "./bin/code-intelligence-mcp",
+    "ci-search": "./bin/ci-search"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "shellcheck scripts/*.sh hooks/*.sh",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/user/code-intelligence-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "code-intelligence",
+    "embedding",
+    "graph-rag",
+    "devbooks"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

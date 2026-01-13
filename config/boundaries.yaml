@@ -1,0 +1,114 @@
+# DevBooks Boundary Configuration
+# 边界检测配置文件
+# 版本: 1.0.0
+# Trace: AC-004
+
+# 代码边界类型定义
+# - user: 用户代码（可修改）
+# - library: 库代码（不建议修改）
+# - generated: 生成代码（不建议修改）
+# - vendor: 第三方代码（不建议修改）
+
+# 默认规则（按优先级排序，先匹配者生效）
+rules:
+  # 生成代码
+  - pattern: "dist/**"
+    type: generated
+    confidence: 0.95
+    reason: "构建输出目录"
+
+  - pattern: "build/**"
+    type: generated
+    confidence: 0.95
+    reason: "构建输出目录"
+
+  - pattern: "out/**"
+    type: generated
+    confidence: 0.90
+    reason: "常见构建输出目录"
+
+  - pattern: "**/*.d.ts"
+    type: generated
+    confidence: 0.85
+    reason: "TypeScript 类型声明文件"
+
+  - pattern: "**/*.min.js"
+    type: generated
+    confidence: 0.95
+    reason: "压缩后的 JavaScript"
+
+  - pattern: "**/*.min.css"
+    type: generated
+    confidence: 0.95
+    reason: "压缩后的 CSS"
+
+  # 库/依赖代码
+  - pattern: "node_modules/**"
+    type: library
+    confidence: 0.99
+    reason: "Node.js 依赖目录"
+
+  - pattern: "vendor/**"
+    type: vendor
+    confidence: 0.95
+    reason: "第三方代码目录"
+
+  - pattern: "third_party/**"
+    type: vendor
+    confidence: 0.95
+    reason: "第三方代码目录"
+
+  - pattern: ".venv/**"
+    type: library
+    confidence: 0.95
+    reason: "Python 虚拟环境"
+
+  - pattern: "venv/**"
+    type: library
+    confidence: 0.95
+    reason: "Python 虚拟环境"
+
+  - pattern: "__pycache__/**"
+    type: generated
+    confidence: 0.99
+    reason: "Python 字节码缓存"
+
+  - pattern: "*.pyc"
+    type: generated
+    confidence: 0.99
+    reason: "Python 编译文件"
+
+  # 测试数据/快照
+  - pattern: "**/__snapshots__/**"
+    type: generated
+    confidence: 0.85
+    reason: "Jest 快照目录"
+
+  - pattern: "**/fixtures/**"
+    type: user
+    confidence: 0.70
+    reason: "测试数据目录（可能需要修改）"
+
+  # IDE/工具配置
+  - pattern: ".git/**"
+    type: generated
+    confidence: 0.99
+    reason: "Git 内部目录"
+
+  - pattern: ".idea/**"
+    type: generated
+    confidence: 0.90
+    reason: "JetBrains IDE 配置"
+
+  - pattern: ".vscode/**"
+    type: user
+    confidence: 0.60
+    reason: "VS Code 配置（可能需要修改）"
+
+# 项目级覆盖规则（可在项目中自定义）
+overrides: []
+# 示例:
+# - pattern: "vendor/custom-lib/**"
+#   type: user
+#   confidence: 0.80
+#   reason: "团队维护的 fork 版本"

@@ -1,0 +1,72 @@
+# Code Intelligence MCP Configuration Template
+# Copy this file to your project's .devbooks/config.yaml or ~/.config/code-intelligence-mcp/config.yaml
+
+# ==================== Graph-RAG 配置 ====================
+graph_rag:
+  # 是否启用 Graph-RAG 上下文引擎
+  enabled: true
+
+  # 图遍历最大深度 (1-4)
+  max_depth: 2
+
+  # Token 预算 (4000-16000)
+  token_budget: 8000
+
+  # 向量搜索返回数量
+  top_k: 10
+
+  # 缓存 TTL (秒)
+  cache_ttl: 300
+
+# ==================== 重排序配置 ====================
+reranker:
+  # 是否启用 LLM 重排序（默认关闭）
+  enabled: false
+
+  # 重排序模型
+  model: haiku
+
+# ==================== Embedding 配置 ====================
+embedding:
+  # Provider 类型: auto | ollama | openai | keyword
+  # - auto: 自动检测（优先级：Ollama > OpenAI > 关键词）
+  # - ollama: 强制使用本地 Ollama
+  # - openai: 强制使用 OpenAI API
+  # - keyword: 强制使用关键词搜索
+  provider: auto
+
+  # 首次运行时自动构建索引
+  auto_build: true
+
+  # 失败时降级到关键词搜索
+  fallback_to_keyword: true
+
+  # Ollama 本地模型配置
+  ollama:
+    # 模型名称（推荐: nomic-embed-text 或 mxbai-embed-large）
+    model: nomic-embed-text
+
+    # Ollama API 端点
+    endpoint: http://localhost:11434
+
+    # 请求超时时间（秒）
+    timeout: 30
+
+  # OpenAI API 配置（当 provider=openai 或降级时使用）
+  openai:
+    # 模型名称
+    model: text-embedding-3-small
+
+    # API 基础 URL（可用于兼容 API）
+    # base_url: https://api.openai.com/v1
+
+# ==================== 索引配置 ====================
+index:
+  # 索引文件存储路径
+  storage_path: .devbooks/embeddings
+
+  # 索引文件检测路径（任一存在即认为索引可用）
+  index_file_paths:
+    - index.scip
+    - .git/ckb/
+    - .devbooks/embeddings/index.tsv

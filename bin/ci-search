@@ -1,0 +1,96 @@
+#!/bin/bash
+# ci-search - Command line interface for code intelligence search
+#
+# Usage:
+#   ci-search <query> [options]
+#   ci-search --help
+#   ci-search --version
+#
+# Options:
+#   -l, --limit <n>     Max results (default: 10)
+#   -m, --mode <mode>   Search mode: semantic|keyword (default: semantic)
+#   -h, --help          Show this help
+#   -v, --version       Show version
+
+set -euo pipefail
+
+VERSION="0.1.0"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_DIR="${SCRIPT_DIR}/../scripts"
+
+# Default values
+LIMIT=10
+MODE="semantic"
+
+show_help() {
+    cat << EOF
+ci-search - Code Intelligence Search CLI v${VERSION}
+
+Usage:
+  ci-search <query> [options]
+  ci-search --help
+  ci-search --version
+
+Options:
+  -l, --limit <n>     Max results (default: 10)
+  -m, --mode <mode>   Search mode: semantic|keyword (default: semantic)
+  -h, --help          Show this help
+  -v, --version       Show version
+
+Examples:
+  ci-search "error handling"
+  ci-search "authentication" --limit 20
+  ci-search "api endpoint" --mode keyword
+EOF
+}
+
+show_version() {
+    echo "ci-search v${VERSION}"
+}
+
+# Parse arguments
+QUERY=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -v|--version)
+            show_version
+            exit 0
+            ;;
+        -l|--limit)
+            LIMIT="$2"
+            shift 2
+            ;;
+        -m|--mode)
+            MODE="$2"
+            shift 2
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            show_help
+            exit 1
+            ;;
+        *)
+            QUERY="$1"
+            shift
+            ;;
+    esac
+done
+
+# Validate query
+if [[ -z "$QUERY" ]]; then
+    echo "Error: Query is required" >&2
+    show_help
+    exit 1
+fi
+
+# Run search script
+if [[ -x "${SCRIPTS_DIR}/embedding.sh" ]]; then
+    exec bash "${SCRIPTS_DIR}/embedding.sh" search "$QUERY" --limit "$LIMIT" --mode "$MODE"
+else
+    echo "Error: embedding.sh not found or not executable" >&2
+    exit 1
+fi

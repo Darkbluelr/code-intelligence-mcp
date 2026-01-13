@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+/**
+ * Code Intelligence MCP Server Entry Point
+ */
+import "../dist/server.js";
