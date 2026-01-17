@@ -66,8 +66,24 @@ WEIGHT_HISTORY=0.30
 WEIGHT_HOTSPOT=0.15
 WEIGHT_ERROR_PATTERN=0.15
 
+# 影响分析配置（MP6 - Bug 定位 + 影响分析融合）
+: "${BUG_LOCATOR_WITH_IMPACT:=false}"
+: "${BUG_LOCATOR_IMPACT_DEPTH:=3}"
+: "${BUG_LOCATOR_IMPACT_WEIGHT:=0.2}"
+: "${BUG_LOCATOR_IMPACT_TIMEOUT:=5}"
+: "${BUG_LOCATOR_IMPACT_TOP_N:=10}"
+
+# 影响分析器路径
+IMPACT_ANALYZER="${SCRIPT_DIR}/impact-analyzer.sh"
+
 # 热点分析器路径
 HOTSPOT_ANALYZER="${SCRIPT_DIR}/hotspot-analyzer.sh"
+
+# 缓存管理器路径 (MP5.1 集成)
+CACHE_MANAGER="${SCRIPT_DIR}/cache-manager.sh"
+
+# 缓存相关配置
+: "${BUG_LOCATOR_CACHE_ENABLED:=true}"
 
 # 尝试从配置加载热点权重
 _load_weight_config() {
@@ -100,6 +116,8 @@ DevBooks Bug Locator
   --history-depth <d>   Git 历史天数（默认: 30）
   --cwd <path>          工作目录（默认: 当前目录）
   --format <text|json>  输出格式（默认: json）
+  --with-impact         启用影响分析融合（AC-G08）
+  --impact-depth <n>    影响分析深度（默认: 3）
   --version             显示版本
   --help                显示此帮助
 
@@ -123,6 +141,25 @@ DevBooks Bug Locator
     ]
   }
 
+带影响分析的输出格式 (--with-impact):
+  {
+    "schema_version": "1.0",
+    "candidates": [
+      {
+        "symbol": "string",
+        "file": "string",
+        "line": 10,
+        "score": 85.5,
+        "original_score": 78.2,
+        "impact": {
+          "total_affected": 12,
+          "affected_files": ["src/handlers/auth.ts"],
+          "max_depth": 3
+        }
+      }
+    ]
+  }
+
 示例:
   # 基本用法
   bug-locator.sh --error "TypeError: Cannot read property 'id' of undefined"
@@ -132,6 +169,9 @@ DevBooks Bug Locator
 
   # 文本输出
   bug-locator.sh --error "Error in payment processing" --format text
+
+  # 启用影响分析
+  bug-locator.sh --error "authentication error" --with-impact --impact-depth 3
 
 EOF
 }
@@ -164,6 +204,14 @@ parse_args() {
         ;;
       --format)
         OUTPUT_FORMAT="$2"
+        shift 2
+        ;;
+      --with-impact)
+        BUG_LOCATOR_WITH_IMPACT=true
+        shift
+        ;;
+      --impact-depth)
+        BUG_LOCATOR_IMPACT_DEPTH="$2"
         shift 2
         ;;
       --version)
@@ -669,10 +717,115 @@ calculate_confidence() {
   echo "$result"
 }
 
+# ==================== 缓存集成 (MP5.1) ====================
+
+# 计算查询缓存 key
+_compute_bug_locator_cache_key() {
+  local error="$1"
+  local key_input="${error}:${TOP_N}:${HISTORY_DEPTH}:${CWD}"
+
+  if declare -f hash_string_md5 &>/dev/null; then
+    hash_string_md5 "$key_input"
+  elif command -v md5sum &>/dev/null; then
+    printf '%s' "$key_input" | md5sum | cut -d' ' -f1
+  elif command -v md5 &>/dev/null; then
+    if md5 -q /dev/null >/dev/null 2>&1; then
+      printf '%s' "$key_input" | md5 -q
+    else
+      printf '%s' "$key_input" | md5
+    fi
+  else
+    printf '%s' "$key_input" | cksum | cut -d' ' -f1
+  fi
+}
+
+# 选择一个存在的缓存锚点文件（用于 cache-manager 校验）
+_resolve_bug_locator_cache_anchor() {
+  local root="$1"
+  local candidates=(
+    "$root/.git/index"
+    "$root/.git/HEAD"
+    "$root/package.json"
+    "$root/README.md"
+    "$SCRIPT_DIR/bug-locator.sh"
+  )
+
+  for candidate in "${candidates[@]}"; do
+    if [[ -f "$candidate" ]]; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+# 获取缓存结果
+_get_cached_bug_result() {
+  local query_hash="$1"
+
+  # 检查缓存是否启用
+  if [[ "$BUG_LOCATOR_CACHE_ENABLED" != "true" ]]; then
+    return 1
+  fi
+
+  # 检查缓存管理器是否可用
+  if [[ ! -x "$CACHE_MANAGER" ]]; then
+    return 1
+  fi
+
+  # 使用真实文件作为缓存锚点，避免 cache-manager 直接 miss
+  local cache_anchor
+  cache_anchor=$(_resolve_bug_locator_cache_anchor "$CWD") || return 1
+
+  local cache_result
+  cache_result=$("$CACHE_MANAGER" --get "$cache_anchor" --query "$query_hash" 2>/dev/null)
+
+  if [[ -n "$cache_result" ]] && echo "$cache_result" | jq -e '.candidates' &>/dev/null; then
+    _maybe_log_info "缓存命中 (key: ${query_hash:0:8}...)"
+    echo "$cache_result"
+    return 0
+  fi
+
+  return 1
+}
+
+# 设置缓存结果
+_set_cached_bug_result() {
+  local query_hash="$1"
+  local result="$2"
+
+  # 检查缓存是否启用
+  if [[ "$BUG_LOCATOR_CACHE_ENABLED" != "true" ]]; then
+    return 0
+  fi
+
+  # 检查缓存管理器是否可用
+  if [[ ! -x "$CACHE_MANAGER" ]]; then
+    return 0
+  fi
+
+  local cache_anchor
+  cache_anchor=$(_resolve_bug_locator_cache_anchor "$CWD") || return 0
+
+  # 缓存结果
+  "$CACHE_MANAGER" --set "$cache_anchor" --query "$query_hash" --value "$result" 2>/dev/null || true
+}
+
 # ==================== 主逻辑 ====================
 
 locate_bug() {
   local error="$1"
+
+  # MP5.1: 检查缓存
+  local query_hash
+  query_hash=$(_compute_bug_locator_cache_key "$error")
+
+  local cached_result
+  if cached_result=$(_get_cached_bug_result "$query_hash"); then
+    echo "$cached_result"
+    return 0
+  fi
 
   # Step 1: 解析错误信息
   local parsed
@@ -733,13 +886,222 @@ locate_bug() {
   done
 
   # 构建输出
-  jq -n \
+  local result
+  result=$(jq -n \
     --arg version "1.0" \
     --argjson candidates "$final" \
     '{
       schema_version: $version,
       candidates: $candidates
-    }'
+    }')
+
+  # MP5.1: 缓存结果
+  _set_cached_bug_result "$query_hash" "$result"
+
+  echo "$result"
+}
+
+# ==================== 影响分析融合 (MP6.2, MP6.3) ====================
+
+# 计算影响分析缓存 key（MP6.3）
+# 格式: impact:${symbol_or_file}:${depth}
+_compute_impact_cache_key() {
+  local symbol_or_file="$1"
+  local depth="$2"
+  echo "impact:${symbol_or_file}:${depth}"
+}
+
+# 获取单个候选的影响分析
+# 参数: $1=symbol_id, $2=file_path
+# 返回: impact JSON 或空
+# MP6.3: 支持子图 LRU 缓存复用以降低影响分析成本
+_get_candidate_impact() {
+  local symbol_id="$1"
+  local file_path="$2"
+  local depth="${BUG_LOCATOR_IMPACT_DEPTH:-3}"
+  local timeout="${BUG_LOCATOR_IMPACT_TIMEOUT:-5}"
+
+  # 检查影响分析器是否可用
+  if [[ ! -x "$IMPACT_ANALYZER" ]]; then
+    _maybe_log_warn "影响分析器不可用，跳过影响分析"
+    echo '{}'
+    return 0
+  fi
+
+  # 确定分析目标（优先使用 symbol_id，否则使用 file_path）
+  local analysis_target
+  local analysis_type
+  if [[ -n "$symbol_id" && "$symbol_id" != "null" ]]; then
+    analysis_target="$symbol_id"
+    analysis_type="analyze"
+  elif [[ -n "$file_path" && "$file_path" != "null" ]]; then
+    analysis_target="$file_path"
+    analysis_type="file"
+  else
+    echo '{}'
+    return 0
+  fi
+
+  # MP6.3: 检查子图 LRU 缓存
+  local cache_key
+  cache_key=$(_compute_impact_cache_key "$analysis_target" "$depth")
+
+  if [[ -x "$CACHE_MANAGER" ]]; then
+    local cached_result
+    cached_result=$("$CACHE_MANAGER" cache-get "$cache_key" 2>/dev/null) || true
+
+    if [[ -n "$cached_result" ]] && echo "$cached_result" | jq -e '.' >/dev/null 2>&1; then
+      _maybe_log_info "影响分析缓存命中 (key=${cache_key:0:30}...)"
+      echo "$cached_result"
+      return 0
+    fi
+  fi
+
+  # 执行影响分析（带超时降级：优先 timeout > gtimeout > 直接执行）
+  local impact_result
+  local timeout_cmd=""
+
+  # 检测可用的超时命令（macOS 上可能需要 gtimeout 或无超时）
+  if command -v timeout &>/dev/null; then
+    timeout_cmd="timeout ${timeout}s"
+  elif command -v gtimeout &>/dev/null; then
+    timeout_cmd="gtimeout ${timeout}s"
+  else
+    # 无超时命令时直接执行（但在日志中警告）
+    _maybe_log_warn "timeout 命令不可用，影响分析将无超时限制"
+    timeout_cmd=""
+  fi
+
+  if [[ "$analysis_type" == "analyze" ]]; then
+    # 符号级影响分析
+    if [[ -n "$timeout_cmd" ]]; then
+      impact_result=$($timeout_cmd "$IMPACT_ANALYZER" analyze "$analysis_target" --depth "$depth" --format json 2>/dev/null) || true
+    else
+      impact_result=$("$IMPACT_ANALYZER" analyze "$analysis_target" --depth "$depth" --format json 2>/dev/null) || true
+    fi
+  else
+    # 文件级影响分析
+    if [[ -n "$timeout_cmd" ]]; then
+      impact_result=$($timeout_cmd "$IMPACT_ANALYZER" file "$analysis_target" --depth "$depth" --format json 2>/dev/null) || true
+    else
+      impact_result=$("$IMPACT_ANALYZER" file "$analysis_target" --depth "$depth" --format json 2>/dev/null) || true
+    fi
+  fi
+
+  # 验证输出
+  if [[ -z "$impact_result" ]] || ! echo "$impact_result" | jq -e '.' >/dev/null 2>&1; then
+    # 超时或无效输出
+    _maybe_log_warn "影响分析超时或无效输出 (target=$analysis_target)"
+    echo '{}'
+    return 0
+  fi
+
+  # MP6.3: 将结果写入子图 LRU 缓存
+  if [[ -x "$CACHE_MANAGER" ]]; then
+    # 异步写入缓存，不阻塞主流程
+    "$CACHE_MANAGER" cache-set "$cache_key" "$impact_result" 2>/dev/null &
+  fi
+
+  echo "$impact_result"
+}
+
+# 融合影响分析到候选结果
+# 参数: $1=candidates JSON
+# 返回: 带影响分析的 candidates JSON
+add_impact_analysis() {
+  local candidates_json="$1"
+  local impact_weight="${BUG_LOCATOR_IMPACT_WEIGHT:-0.2}"
+  local top_n="${BUG_LOCATOR_IMPACT_TOP_N:-10}"
+
+  local result='[]'
+  local count
+  count=$(echo "$candidates_json" | jq 'length')
+
+  _maybe_log_info "对 Top ${top_n} 候选执行影响分析..."
+
+  for ((i=0; i<count; i++)); do
+    local candidate
+    candidate=$(echo "$candidates_json" | jq ".[$i]")
+
+    local file_path symbol_id original_score
+    file_path=$(echo "$candidate" | jq -r '.file_path // .file // ""')
+    symbol_id=$(echo "$candidate" | jq -r '.symbol // ""')
+    original_score=$(echo "$candidate" | jq -r '.confidence // .score // 0')
+
+    # 只对 Top N 执行影响分析（REQ-BLF-005）
+    if [[ $i -lt $top_n ]]; then
+      local impact_result
+      impact_result=$(_get_candidate_impact "$symbol_id" "$file_path")
+
+      if [[ -n "$impact_result" && "$impact_result" != '{}' ]]; then
+        # 提取影响数据
+        local total_affected affected_files max_depth
+        total_affected=$(echo "$impact_result" | jq -r '.total_affected // 0')
+        max_depth=$(echo "$impact_result" | jq -r '.depth // 3')
+
+        # 提取受影响文件列表（去重并限制数量）
+        affected_files=$(echo "$impact_result" | jq '[.affected_nodes[].file_path // empty] | unique | .[0:20]')
+        [[ "$affected_files" == "null" || -z "$affected_files" ]] && affected_files='[]'
+
+        # 计算归一化影响分数 (normalized_impact = min(total_affected / 100, 1.0))
+        local normalized_impact impact_score
+        if declare -f float_calc &>/dev/null; then
+          normalized_impact=$(float_calc "$total_affected / 100")
+          local cmp
+          cmp=$(float_calc "$normalized_impact > 1" 0)
+          [[ "$cmp" = "1" ]] && normalized_impact="1.0"
+          impact_score=$(float_calc "$normalized_impact")
+        else
+          normalized_impact=$(echo "scale=4; $total_affected / 100" | bc 2>/dev/null || echo "0")
+          [[ $(echo "$normalized_impact > 1" | bc 2>/dev/null || echo 0) -eq 1 ]] && normalized_impact="1.0"
+          impact_score="$normalized_impact"
+        fi
+
+        # 重新计算综合分数 (REQ-BLF-003)
+        # final_score = original_score * (1 + impact_weight * normalized_impact)
+        local final_score
+        if declare -f float_calc &>/dev/null; then
+          final_score=$(float_calc "$original_score * (1 + $impact_weight * $normalized_impact)")
+        else
+          final_score=$(echo "scale=4; $original_score * (1 + $impact_weight * $normalized_impact)" | bc 2>/dev/null || echo "$original_score")
+        fi
+
+        # 添加影响字段到候选
+        candidate=$(echo "$candidate" | jq \
+          --argjson total_affected "$total_affected" \
+          --argjson affected_files "$affected_files" \
+          --argjson max_depth "$max_depth" \
+          --argjson impact_score "$impact_score" \
+          --argjson original_score "$original_score" \
+          --argjson final_score "$final_score" \
+          '. + {
+            original_score: $original_score,
+            score: $final_score,
+            impact: {
+              total_affected: $total_affected,
+              affected_files: $affected_files,
+              max_depth: $max_depth,
+              impact_score: $impact_score
+            }
+          }')
+      else
+        # 影响分析不可用时保留原始分数
+        candidate=$(echo "$candidate" | jq \
+          --argjson original_score "$original_score" \
+          '. + {original_score: $original_score, score: $original_score}')
+      fi
+    else
+      # 超出 Top N 的候选不执行影响分析，保留原始分数
+      candidate=$(echo "$candidate" | jq \
+        --argjson original_score "$original_score" \
+        '. + {original_score: $original_score, score: $original_score}')
+    fi
+
+    result=$(echo "$result" | jq --argjson c "$candidate" '. + [$c]')
+  done
+
+  # 按新分数重新排序
+  echo "$result" | jq 'sort_by(-.score)'
 }
 
 # 输出结果
@@ -785,6 +1147,19 @@ main() {
   # 定位 Bug
   local result
   result=$(locate_bug "$ERROR_INFO")
+
+  # MP6.2: 如果启用影响分析，融合影响数据
+  if [[ "$BUG_LOCATOR_WITH_IMPACT" = true ]]; then
+    local candidates
+    candidates=$(echo "$result" | jq '.candidates')
+
+    # 添加影响分析（包含 Top 10 限制、5s 超时降级、子图 LRU 缓存复用）
+    local enhanced_candidates
+    enhanced_candidates=$(add_impact_analysis "$candidates")
+
+    # 重建结果
+    result=$(echo "$result" | jq --argjson enhanced "$enhanced_candidates" '.candidates = $enhanced')
+  fi
 
   # 输出结果
   output_result "$result"

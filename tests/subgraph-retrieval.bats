@@ -12,7 +12,9 @@
 # Load shared helpers
 load 'helpers/common'
 
-GRAPH_RAG="./scripts/graph-rag.sh"
+# Store project root for absolute paths (tests may cd to temp dirs)
+PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+GRAPH_RAG="${PROJECT_ROOT}/scripts/graph-rag.sh"
 
 # ============================================================
 # Basic Functionality Tests

@@ -182,13 +182,11 @@ ls -la scripts/*.sh  # 期望有执行权限
 
 | 后端 | 状态 | 说明 |
 |------|------|------|
-| SCIP | ⚠️ 待生成 | 需运行索引命令 |
+| SCIP | ✅ 可用 | index.scip (46KB) TypeScript 索引 |
 | LSP | 不可用 | 无服务器运行 |
-| Git | ⚠️ 无历史 | 新仓库，尚无提交 |
+| Git | ✅ 可用 | 首次提交 31fe235 |
 
-**索引生成命令**：
+**索引刷新命令**：
 ```bash
 scip-typescript index --output index.scip
 ```
-
-**注**：当前为新仓库状态，建议首次提交后运行 `/devbooks:index` 生成完整索引。

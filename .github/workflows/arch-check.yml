@@ -1,0 +1,166 @@
+# GitHub Action: Architecture Check
+# 架构检查 CI 工作流 - 在 PR 时自动运行循环依赖、孤儿模块和架构规则检查
+#
+# Trace: AC-G09 (MOD-09)
+# Change: augment-parity-final-gaps
+#
+# 功能：
+# - PR 触发自动检查
+# - 循环依赖检测 (cycles)
+# - 孤儿模块检测 (orphan)
+# - 架构规则违规检测 (rules)
+# - JSON 格式输出结果
+# - 检查失败时 CI 失败
+
+name: Architecture Check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'config/arch-rules.yaml'
+
+# 取消同一 PR 的重复运行
+concurrency:
+  group: arch-check-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  architecture-check:
+    name: Architecture Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Cycle Detection
+        id: cycles
+        run: |
+          echo "Running cycle detection..."
+          RESULT=$(./scripts/dependency-guard.sh --cycles --scope "src/" --format json 2>&1) || true
+          echo "cycles_result<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESULT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Check if cycles detected
+          CYCLE_COUNT=$(echo "$RESULT" | jq -r '.summary.total_cycles // 0' 2>/dev/null || echo "0")
+          echo "cycle_count=$CYCLE_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$CYCLE_COUNT" -gt 0 ]; then
+            echo "::warning::Detected $CYCLE_COUNT circular dependencies"
+          fi
+
+      - name: Run Orphan Detection
+        id: orphans
+        run: |
+          echo "Running orphan module detection..."
+          RESULT=$(./scripts/dependency-guard.sh --orphan-check --scope "src/" --format json 2>&1) || true
+          echo "orphans_result<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESULT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Check orphan count
+          ORPHAN_COUNT=$(echo "$RESULT" | jq -r '.summary.orphan_count // 0' 2>/dev/null || echo "0")
+          ORPHAN_RATIO=$(echo "$RESULT" | jq -r '.summary.orphan_ratio // 0' 2>/dev/null || echo "0")
+          echo "orphan_count=$ORPHAN_COUNT" >> $GITHUB_OUTPUT
+          echo "orphan_ratio=$ORPHAN_RATIO" >> $GITHUB_OUTPUT
+
+          # Warn if orphan ratio exceeds threshold (20%)
+          if [ "$(echo "$ORPHAN_RATIO > 0.2" | bc -l 2>/dev/null || echo 0)" -eq 1 ]; then
+            echo "::warning::Orphan ratio $ORPHAN_RATIO exceeds 20% threshold"
+          fi
+
+      - name: Run Architecture Rules Check
+        id: rules
+        run: |
+          echo "Running architecture rules validation..."
+          RULES_FILE="config/arch-rules.yaml"
+
+          if [ -f "$RULES_FILE" ]; then
+            RESULT=$(./scripts/dependency-guard.sh --rules "$RULES_FILE" --scope "src/" --format json 2>&1) || true
+          else
+            RESULT='{"violations": [], "summary": {"total_violations": 0, "message": "No rules file found"}}'
+          fi
+
+          echo "rules_result<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESULT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Check violations
+          VIOLATION_COUNT=$(echo "$RESULT" | jq -r '.summary.total_violations // 0' 2>/dev/null || echo "0")
+          echo "violation_count=$VIOLATION_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$VIOLATION_COUNT" -gt 0 ]; then
+            echo "::error::Found $VIOLATION_COUNT architecture rule violations"
+          fi
+
+      - name: Generate Combined Report
+        id: report
+        run: |
+          # Combine all results into a single JSON report
+          cat << 'REPORT' > arch-check-report.json
+          {
+            "schema_version": "1.0.0",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "cycles": ${{ steps.cycles.outputs.cycles_result || '{}' }},
+            "orphans": ${{ steps.orphans.outputs.orphans_result || '{}' }},
+            "rules": ${{ steps.rules.outputs.rules_result || '{}' }},
+            "summary": {
+              "cycle_count": ${{ steps.cycles.outputs.cycle_count || 0 }},
+              "orphan_count": ${{ steps.orphans.outputs.orphan_count || 0 }},
+              "violation_count": ${{ steps.rules.outputs.violation_count || 0 }},
+              "passed": ${{ steps.cycles.outputs.cycle_count == '0' && steps.rules.outputs.violation_count == '0' }}
+            }
+          }
+          REPORT
+
+          echo "Report generated: arch-check-report.json"
+          cat arch-check-report.json
+
+      - name: Upload Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-check-report
+          path: arch-check-report.json
+          retention-days: 30
+
+      - name: Check Results and Fail if Needed
+        run: |
+          CYCLE_COUNT=${{ steps.cycles.outputs.cycle_count || 0 }}
+          VIOLATION_COUNT=${{ steps.rules.outputs.violation_count || 0 }}
+
+          echo "=== Architecture Check Summary ==="
+          echo "Cycles detected: $CYCLE_COUNT"
+          echo "Rule violations: $VIOLATION_COUNT"
+          echo "Orphan modules: ${{ steps.orphans.outputs.orphan_count || 0 }}"
+          echo ""
+
+          # Fail on cycles or rule violations (not orphans - they are warnings only)
+          if [ "$CYCLE_COUNT" -gt 0 ] || [ "$VIOLATION_COUNT" -gt 0 ]; then
+            echo "::error::Architecture check failed!"
+            echo ""
+            echo "=== Cycles ==="
+            echo '${{ steps.cycles.outputs.cycles_result }}' | jq -r '.cycles[]?.path | join(" -> ")' 2>/dev/null || true
+            echo ""
+            echo "=== Violations ==="
+            echo '${{ steps.rules.outputs.rules_result }}' | jq -r '.violations[]? | "\(.source):\(.line) - \(.message)"' 2>/dev/null || true
+            exit 1
+          fi
+
+          echo "Architecture check passed!"

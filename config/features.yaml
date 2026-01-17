@@ -1,0 +1,115 @@
+# 功能开关配置
+# 用于控制 Code Intelligence MCP 各功能模块的启用状态
+# Change ID: augment-parity
+
+features:
+  graph_store:
+    enabled: true
+    wal_mode: true
+
+  scip_parser:
+    enabled: true
+    fallback_regex: true
+
+  daemon:
+    enabled: true
+    auto_restart: true
+    max_restarts: 3
+    # 预热配置（REQ-DME-001/002）
+    warmup:
+      enabled: true
+      timeout_seconds: 30
+      queries:
+        - "main"
+        - "server"
+        - "handler"
+      hotspot_limit: 10
+    # 请求取消配置（REQ-DME-004/005/006）
+    cancel:
+      enabled: true
+      check_interval_ms: 50
+
+  llm_rerank:
+    enabled: false  # 默认关闭，需要 API Key 才能启用
+    provider: anthropic  # anthropic / openai / ollama
+    model: claude-3-haiku
+    timeout_ms: 2000
+
+  orphan_detection:
+    enabled: true
+
+  pattern_discovery:
+    enabled: true
+    min_frequency: 3
+
+  ckb:
+    enabled: true
+
+  # ========== achieve-augment-full-parity 新增 ==========
+
+  # 模块 1: AST Delta 增量索引
+  ast_delta:
+    enabled: true
+    cache_dir: .devbooks/ast-cache
+    cache_max_size_mb: 50
+    cache_ttl_days: 30
+    fallback_to_scip: true
+    batch_threshold: 10
+
+  impact_analyzer:
+    enabled: true
+    max_depth: 5
+    decay_factor: 0.8
+    threshold: 0.1
+    cache_intermediate: true
+
+  intent_learner:
+    enabled: true
+    history_file: .devbooks/intent-history.json
+    max_history_entries: 10000
+    auto_cleanup_days: 90
+    privacy_mode: local_only
+
+  vuln_tracker:
+    enabled: true
+    scanners:
+      - npm_audit
+    severity_threshold: moderate
+    auto_scan_on_install: false
+
+  cod_visualizer:
+    enabled: true
+    output_formats:
+      - mermaid
+      - d3json
+    include_hotspots: true
+    include_complexity: true
+
+  # MP5: Federation Virtual Edges (AC-F05)
+  # 跨仓库虚拟边连接功能
+  federation_virtual_edges:
+    enabled: true
+    # 最低置信度阈值，低于此值不生成虚拟边
+    confidence_threshold: 0.5
+    # 高置信度阈值，高于此值标记为"高置信"
+    high_confidence_threshold: 0.8
+    # 是否启用自动同步
+    auto_sync: false
+    # 同步间隔（小时）
+    sync_interval_hours: 24
+
+  # MP4: Smart Pruning (AC-F04)
+  # 子图智能裁剪功能
+  smart_pruning:
+    enabled: true
+    # 默认 Token 预算（tokens）
+    default_budget: 8000
+    # 优先级权重配置
+    priority_weights:
+      relevance: 0.4
+      hotspot: 0.3
+      distance: 0.3
+    # 最低相关度阈值（0-1）
+    min_relevance_threshold: 0.0
+    # 保守估算裕量（百分比）
+    conservative_margin_percent: 10

@@ -13,8 +13,26 @@
 #   - cleanup_temp_dir: Remove temporary test directory
 
 # ============================================================
+# Test Constants
+# ============================================================
+
+# Git test user credentials (avoid magic strings in tests)
+GIT_TEST_EMAIL="${GIT_TEST_EMAIL:-test@test.com}"
+GIT_TEST_NAME="${GIT_TEST_NAME:-Test User}"
+export GIT_TEST_EMAIL GIT_TEST_NAME
+
+# ============================================================
 # Assertion Helpers
 # ============================================================
+
+# Fail the test immediately with a message
+# Usage: fail "reason for failure"
+# Note: This is a basic fail function for bats tests
+fail() {
+    local msg="${1:-Test failed}"
+    echo "FAIL: $msg" >&2
+    return 1
+}
 
 # Assert that output contains a specific string
 # Usage: assert_contains "$output" "expected"
@@ -206,17 +224,37 @@ run_with_timeout() {
     fi
 }
 
+# Get current time in nanoseconds (cross-platform)
+# Usage: get_time_ns
+# Returns: timestamp in nanoseconds via stdout
+# Note: macOS date doesn't support %N, use gdate or perl fallback
+get_time_ns() {
+    if date +%s%N 2>/dev/null | grep -q 'N'; then
+        # date doesn't support %N (macOS)
+        if command -v gdate &>/dev/null; then
+            gdate +%s%N
+        elif command -v perl &>/dev/null; then
+            perl -MTime::HiRes -e 'printf "%d\n", Time::HiRes::time() * 1e9'
+        else
+            # Fallback to seconds precision (multiply by 1e9)
+            echo "$(date +%s)000000000"
+        fi
+    else
+        date +%s%N
+    fi
+}
+
 # Measure execution time in milliseconds
 # Usage: measure_time command args...
 # Returns: Sets MEASURED_TIME_MS variable
 measure_time() {
     local start_ns end_ns
-    start_ns=$(date +%s%N 2>/dev/null || echo "0")
+    start_ns=$(get_time_ns)
 
     "$@"
     local exit_code=$?
 
-    end_ns=$(date +%s%N 2>/dev/null || echo "0")
+    end_ns=$(get_time_ns)
 
     if [ "$start_ns" != "0" ] && [ "$end_ns" != "0" ]; then
         MEASURED_TIME_MS=$(( (end_ns - start_ns) / 1000000 ))
@@ -303,6 +341,53 @@ report_skip_warning() {
     fi
 }
 
+# Skip if feature output indicates not implemented
+# Usage: skip_if_feature_not_implemented "$output" "feature-name"
+# Checks for common "not implemented" patterns in output
+skip_if_feature_not_implemented() {
+    local output="$1"
+    local feature="${2:-feature}"
+    if [[ "$output" == *"Usage:"* ]] || [[ "$output" == *"--help"* ]] || \
+       [[ "$output" == *"unknown option"* ]] || [[ "$output" == *"unrecognized"* ]] || \
+       [[ "$output" == *"not implemented"* ]] || [[ "$output" == *"not yet"* ]]; then
+        skip "$feature not yet implemented"
+    fi
+}
+
+# ============================================================
+# Git Test Helpers
+# ============================================================
+
+# Setup a test git repository with initial commit
+# Usage: setup_test_git_repo "$TEST_TEMP_DIR/repo"
+# Sets: GIT_TEST_REPO_DIR variable
+setup_test_git_repo() {
+    local repo_dir="${1:-$TEST_TEMP_DIR/repo}"
+    mkdir -p "$repo_dir"
+    cd "$repo_dir" || return 1
+
+    git init --quiet 2>/dev/null || return 1
+    git config user.email "$GIT_TEST_EMAIL"
+    git config user.name "$GIT_TEST_NAME"
+
+    GIT_TEST_REPO_DIR="$repo_dir"
+    export GIT_TEST_REPO_DIR
+}
+
+# Setup test git repo with src directory
+# Usage: setup_test_git_repo_with_src "$TEST_TEMP_DIR/repo"
+setup_test_git_repo_with_src() {
+    local repo_dir="${1:-$TEST_TEMP_DIR/repo}"
+    setup_test_git_repo "$repo_dir" || return 1
+    mkdir -p "$repo_dir/src"
+}
+
+# Cleanup and return from test git repo
+# Usage: cleanup_test_git_repo
+cleanup_test_git_repo() {
+    cd - > /dev/null 2>&1 || true
+}
+
 # ============================================================
 # Path Helpers
 # ============================================================
@@ -322,4 +407,234 @@ get_long_path() {
         path="${path}/dir${i}"
     done
     echo "$path/file.txt"
+}
+
+# ============================================================
+# Float Comparison Helpers (Cross-platform)
+# ============================================================
+
+# Compare float >= threshold using awk (portable across all Unix systems)
+# Usage: float_gte "0.95" "0.9" && echo "yes"
+# Returns 0 if first >= second, 1 otherwise
+float_gte() {
+    awk -v v="$1" -v t="$2" 'BEGIN { exit !(v >= t) }'
+}
+
+# Compare float < threshold using awk (portable)
+# Usage: float_lt "0.7" "0.8" && echo "yes"
+float_lt() {
+    awk -v v="$1" -v t="$2" 'BEGIN { exit !(v < t) }'
+}
+
+# Assert confidence >= threshold with proper error message
+# Usage: assert_confidence_gte "$output" ".confidence" "0.9"
+assert_confidence_gte() {
+    local json="$1"
+    local field="$2"
+    local threshold="$3"
+
+    if ! command -v jq &> /dev/null; then
+        skip "jq not installed"
+    fi
+
+    local confidence
+    confidence=$(echo "$json" | jq -r "$field" 2>/dev/null)
+
+    if [ "$confidence" = "null" ] || [ -z "$confidence" ]; then
+        echo "Assertion failed: confidence field '$field' not found" >&2
+        return 1
+    fi
+
+    if ! float_gte "$confidence" "$threshold"; then
+        echo "Assertion failed: confidence $confidence < $threshold" >&2
+        return 1
+    fi
+}
+
+# Assert confidence < threshold
+# Usage: assert_confidence_lt "$output" ".confidence" "0.8"
+assert_confidence_lt() {
+    local json="$1"
+    local field="$2"
+    local threshold="$3"
+
+    if ! command -v jq &> /dev/null; then
+        skip "jq not installed"
+    fi
+
+    local confidence
+    confidence=$(echo "$json" | jq -r "$field" 2>/dev/null)
+
+    if [ "$confidence" = "null" ] || [ -z "$confidence" ]; then
+        echo "Assertion failed: confidence field '$field' not found" >&2
+        return 1
+    fi
+
+    if ! float_lt "$confidence" "$threshold"; then
+        echo "Assertion failed: confidence $confidence >= $threshold" >&2
+        return 1
+    fi
+}
+
+# ============================================================
+# Percentile Calculation Helpers
+# ============================================================
+
+# Calculate P95 from an array of values
+# Usage: calculate_p95 "${latencies[@]}"
+# Returns: P95 value via stdout
+calculate_p95() {
+    local values=("$@")
+    local count=${#values[@]}
+
+    if [ "$count" -lt 1 ]; then
+        echo "0"
+        return 1
+    fi
+
+    # Sort values numerically
+    local sorted
+    sorted=$(printf '%s\n' "${values[@]}" | sort -n)
+
+    # Calculate P95 index (95th percentile)
+    # For N samples, P95 is at index ceil(0.95 * N)
+    local p95_index
+    p95_index=$(awk -v n="$count" 'BEGIN { idx = int(0.95 * n); if (0.95 * n > idx) idx++; print idx }')
+
+    # Ensure index is within bounds [1, count]
+    if [ "$p95_index" -lt 1 ]; then
+        p95_index=1
+    fi
+    if [ "$p95_index" -gt "$count" ]; then
+        p95_index=$count
+    fi
+
+    # Get the value at P95 index using awk (more portable than sed -n 'Np')
+    echo "$sorted" | awk -v idx="$p95_index" 'NR == idx { print; exit }'
+}
+
+# Assert P95 is below threshold
+# Usage: assert_p95_below "${latencies[@]}" 100
+# Last argument is the threshold
+assert_p95_below() {
+    local threshold="${!#}"  # Get last argument
+    local values=("${@:1:$#-1}")  # Get all but last argument
+
+    local p95
+    p95=$(calculate_p95 "${values[@]}")
+
+    if [ -z "$p95" ] || [ "$p95" = "0" ]; then
+        echo "Could not calculate P95" >&2
+        return 1
+    fi
+
+    if [ "$p95" -ge "$threshold" ]; then
+        echo "P95 ($p95) >= threshold ($threshold)" >&2
+        return 1
+    fi
+}
+
+# ============================================================
+# JSON Extraction Helpers
+# ============================================================
+
+# Extract JSON from mixed output (stdout + stderr merged by BATS run)
+# Usage: extract_json "$output"
+# Returns: Pure JSON string via stdout
+# Handles: JSON objects {}, arrays [], multiline JSON, mixed stderr/stdout
+extract_json() {
+    local input="$1"
+
+    # Return empty if input is empty
+    if [ -z "$input" ]; then
+        return 1
+    fi
+
+    # Strategy 1: Try to find a complete JSON object on a single line
+    local single_line_json
+    single_line_json=$(echo "$input" | grep -E '^\s*\{.*\}\s*$' | head -1)
+    if [ -n "$single_line_json" ] && echo "$single_line_json" | jq . > /dev/null 2>&1; then
+        echo "$single_line_json"
+        return 0
+    fi
+
+    # Strategy 2: Try to find a complete JSON array on a single line
+    single_line_json=$(echo "$input" | grep -E '^\s*\[.*\]\s*$' | head -1)
+    if [ -n "$single_line_json" ] && echo "$single_line_json" | jq . > /dev/null 2>&1; then
+        echo "$single_line_json"
+        return 0
+    fi
+
+    # Strategy 3: Extract multiline JSON object (from first { to matching })
+    local multiline_json
+    multiline_json=$(echo "$input" | awk '
+        BEGIN { depth = 0; started = 0; json = "" }
+        /\{/ && !started { started = 1 }
+        started {
+            json = json $0 "\n"
+            for (i = 1; i <= length($0); i++) {
+                c = substr($0, i, 1)
+                if (c == "{") depth++
+                else if (c == "}") depth--
+            }
+            if (depth == 0 && started) {
+                print json
+                exit
+            }
+        }
+    ')
+    if [ -n "$multiline_json" ] && echo "$multiline_json" | jq . > /dev/null 2>&1; then
+        echo "$multiline_json"
+        return 0
+    fi
+
+    # Strategy 4: Look for lines with common JSON markers
+    local marker_json
+    marker_json=$(echo "$input" | grep -E '"schema_version"|"hotspots"|"type"|"results"' | head -1)
+    if [ -n "$marker_json" ] && echo "$marker_json" | jq . > /dev/null 2>&1; then
+        echo "$marker_json"
+        return 0
+    fi
+
+    # Strategy 5: Last resort - try the entire input as JSON
+    if echo "$input" | jq . > /dev/null 2>&1; then
+        echo "$input"
+        return 0
+    fi
+
+    # No valid JSON found
+    return 1
+}
+
+# Run command and capture only JSON output (redirect stderr to /dev/null)
+# Usage: run_json_only command args...
+# Sets: output (JSON only), status
+run_json_only() {
+    output=$("$@" 2>/dev/null)
+    status=$?
+}
+
+# Assert that output contains valid JSON
+# Usage: assert_json_output "$output"
+assert_json_output() {
+    local input="$1"
+
+    if ! command -v jq &> /dev/null; then
+        skip "jq not installed"
+    fi
+
+    # Try to extract and validate JSON
+    local json
+    json=$(extract_json "$input")
+
+    if [ -z "$json" ]; then
+        echo "No JSON found in output" >&2
+        echo "Output was: $input" >&2
+        return 1
+    fi
+
+    if ! echo "$json" | jq . > /dev/null 2>&1; then
+        echo "Invalid JSON: $json" >&2
+        return 1
+    fi
 }

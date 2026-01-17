@@ -1,0 +1,7 @@
+# LLM Rerank enabled configuration (Anthropic)
+features:
+  llm_rerank:
+    enabled: true
+    provider: anthropic
+    model: claude-3-haiku
+    timeout_ms: 2000

@@ -1,0 +1,6 @@
+# LLM Rerank with OpenAI provider
+features:
+  llm_rerank:
+    enabled: true
+    provider: openai
+    model: gpt-4o-mini

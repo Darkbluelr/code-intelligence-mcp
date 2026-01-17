@@ -1,19 +1,47 @@
 #!/usr/bin/env bats
-# mcp-contract.bats - AC-008 MCP Tool Contract Tests
+# mcp-contract.bats - MCP Tool Contract Tests
 #
 # Purpose: Verify MCP tool interface compatibility
 # Depends: bats-core, node
 # Run: bats tests/mcp-contract.bats
 #
-# Baseline: 2026-01-11
-# Change: enhance-code-intelligence
-# Trace: AC-008
+# Baseline: 2026-01-15
+# Change: augment-parity
+# Trace: AC-008 (无 CKB 降级), AC-008 (legacy)
 
 # Load shared helpers
 load 'helpers/common'
 
-SERVER_TS="./src/server.ts"
-DIST_SERVER="./dist/server.js"
+# Store project root for absolute paths (tests may cd to temp dirs)
+PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+SERVER_TS="${PROJECT_ROOT}/src/server.ts"
+DIST_SERVER="${PROJECT_ROOT}/dist/server.js"
+
+# Track environment variables that need cleanup
+_MCP_CONTRACT_ENV_VARS_TO_CLEANUP=()
+
+# Setup: Initialize cleanup tracking
+setup() {
+    _MCP_CONTRACT_ENV_VARS_TO_CLEANUP=()
+}
+
+# Teardown: Clean up any environment variables set during tests
+teardown() {
+    # Clean up tracked environment variables
+    for var in "${_MCP_CONTRACT_ENV_VARS_TO_CLEANUP[@]}"; do
+        unset "$var" 2>/dev/null || true
+    done
+    _MCP_CONTRACT_ENV_VARS_TO_CLEANUP=()
+}
+
+# Helper: Set environment variable with automatic cleanup tracking
+# Usage: set_env_with_cleanup VAR_NAME value
+set_env_with_cleanup() {
+    local var_name="$1"
+    local var_value="$2"
+    export "$var_name=$var_value"
+    _MCP_CONTRACT_ENV_VARS_TO_CLEANUP+=("$var_name")
+}
 
 # ============================================================
 # Basic Verification
@@ -203,4 +231,92 @@ DIST_SERVER="./dist/server.js"
     run npm run build 2>&1
     [ "$status" -eq 0 ]
     [[ "$output" != *"error TS"* ]]
+}
+
+# ============================================================
+# AC-008: 无 CKB 降级测试
+# 契约测试: CT-CKB-001 ~ CT-CKB-005
+# ============================================================
+
+@test "CT-CKB-001: ci_graph_rag works when CKB_ENABLED=false" {
+    GRAPH_RAG="./scripts/graph-rag.sh"
+    [ -x "$GRAPH_RAG" ] || skip "graph-rag.sh not executable"
+
+    set_env_with_cleanup CKB_ENABLED false
+
+    run "$GRAPH_RAG" --query "test query" --format json 2>&1
+
+    # 使用 helper 提取 JSON 部分
+    local json_output
+    json_output=$(extract_json "$output")
+
+    skip_if_not_ready "$status" "$json_output" "graph-rag no CKB"
+    assert_exit_success "$status"
+
+    # 验证输出包含有效 JSON
+    assert_json_output "$output"
+}
+
+@test "CT-CKB-002: ci_graph_rag returns valid results without CKB" {
+    GRAPH_RAG="./scripts/graph-rag.sh"
+    [ -x "$GRAPH_RAG" ] || skip "graph-rag.sh not executable"
+    skip_if_missing "jq"
+
+    set_env_with_cleanup CKB_ENABLED false
+
+    run "$GRAPH_RAG" --query "function" --format json 2>&1
+
+    # 使用 helper 提取 JSON 部分
+    local json_output
+    json_output=$(extract_json "$output")
+
+    skip_if_not_ready "$status" "$json_output" "graph-rag results"
+    assert_exit_success "$status"
+
+    # 验证输出包含有效结构
+    assert_json_output "$output"
+}
+
+@test "CT-CKB-003: ci_graph_rag uses local graph when CKB unavailable" {
+    GRAPH_RAG="./scripts/graph-rag.sh"
+    [ -x "$GRAPH_RAG" ] || skip "graph-rag.sh not executable"
+
+    set_env_with_cleanup CKB_ENABLED false
+
+    run "$GRAPH_RAG" --query "server" --format json 2>&1
+
+    # 使用 helper 提取 JSON 部分
+    local json_output
+    json_output=$(extract_json "$output")
+
+    skip_if_not_ready "$status" "$json_output" "graph-rag local graph"
+    assert_exit_success "$status"
+
+    # 验证输出包含有效 JSON
+    assert_json_output "$output"
+}
+
+@test "CT-CKB-004: ci_call_chain works without CKB" {
+    CALL_CHAIN="./scripts/call-chain.sh"
+    [ -x "$CALL_CHAIN" ] || skip "call-chain.sh not executable"
+
+    set_env_with_cleanup CKB_ENABLED false
+
+    run "$CALL_CHAIN" --symbol "main" --format json 2>&1
+
+    skip_if_not_ready "$status" "$output" "call-chain no CKB"
+    assert_exit_success "$status"
+}
+
+@test "CT-CKB-005: degradation message shown when CKB disabled" {
+    GRAPH_RAG="./scripts/graph-rag.sh"
+    [ -x "$GRAPH_RAG" ] || skip "graph-rag.sh not executable"
+
+    set_env_with_cleanup CKB_ENABLED false
+
+    run "$GRAPH_RAG" --query "test" --format json 2>&1
+
+    skip_if_not_ready "$status" "$output" "graph-rag degradation"
+    # 应有降级提示或正常工作
+    assert_exit_success "$status"
 }

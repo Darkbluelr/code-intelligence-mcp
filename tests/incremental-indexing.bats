@@ -12,8 +12,10 @@
 # Load shared helpers
 load 'helpers/common'
 
-AST_DIFF="./scripts/ast-diff.sh"
-SCIP_INDEX="./index.scip"
+# Store project root for absolute paths (tests may cd to temp dirs)
+PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+AST_DIFF="${PROJECT_ROOT}/scripts/ast-diff.sh"
+SCIP_INDEX="${PROJECT_ROOT}/index.scip"
 
 # ============================================================
 # Basic Functionality Tests

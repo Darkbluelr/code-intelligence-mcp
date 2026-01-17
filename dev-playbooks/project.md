@@ -1,34 +1,106 @@
 # 项目上下文
 
 ## 目的
-[描述您项目的目标和目的]
+
+为 AI 编程助手（如 Claude Code）提供代码智能能力的 MCP Server。通过语义搜索、调用链追踪、Bug 定位等功能，增强 AI 对代码库的理解和导航能力。
 
 ## 技术栈
-- [列出您的主要技术]
-- [例如：TypeScript, React, Node.js]
+
+- **运行时**：Node.js >= 18.0.0
+- **语言**：TypeScript 5.x（服务器薄壳）+ Bash（核心功能脚本）
+- **协议**：MCP (Model Context Protocol) via @modelcontextprotocol/sdk
+- **外部工具**：ripgrep (rg)、jq
+- **可选服务**：Ollama / OpenAI（Embedding）、CKB MCP Server（图分析）
 
 ## 项目约定
 
 ### 代码风格
-[描述您的代码风格偏好、格式化规则和命名约定]
+
+- **TypeScript**：严格模式（`strict: true`），ES 模块（`NodeNext`）
+- **Shell 脚本**：`set -euo pipefail`，ShellCheck 检查
+- **命名规范**：
+  - MCP 工具名：`ci_*` 前缀（snake_case）
+  - 脚本文件：`*.sh`（kebab-case）
+  - TypeScript：camelCase 变量，PascalCase 类型
 
 ### 架构模式
-[记录您的架构决策和模式]
+
+**薄壳架构（Thin Shell）**：
+- `server.ts` 仅处理 MCP 协议和工具调度
+- 核心功能由 `scripts/*.sh` 实现
+- 约束：`CON-TECH-002: MCP Server 使用 Node.js 薄壳调用 Shell 脚本`
+
+```
+[Claude Code] → [MCP Protocol] → [server.ts] → [scripts/*.sh] → [外部工具]
+```
 
 ### 测试策略
-[解释您的测试方法和要求]
 
-### Git工作流
-[描述您的分支策略和提交约定]
+- **框架**：Bats (Bash Automated Testing System)
+- **位置**：`tests/*.bats`
+- **当前状态**：功能测试基础框架已建立
+- **运行命令**：`npm test`（需安装 bats）
+
+### Git 工作流
+
+- **主分支**：`master`
+- **提交规范**：常规提交（feat/fix/docs/refactor）
+- **变更流程**：通过 DevBooks 变更包管理
 
 ## 领域上下文
-[添加AI助手需要了解的领域特定知识]
+
+### 核心概念
+
+| 概念 | 说明 |
+|------|------|
+| MCP | Anthropic 开发的 AI 与工具通信协议 |
+| Embedding | 代码语义向量化，用于相似度搜索 |
+| Graph-RAG | 图检索增强生成，结合调用图和向量搜索 |
+| Call Chain | 函数调用关系链（callers/callees） |
+| Hotspot | 高频变更 + 高复杂度文件，Bug 密集区 |
+| CKB | Code Knowledge Base，图基代码分析服务 |
+
+### 提供的工具
+
+| 工具 | 功能 | 实现 |
+|------|------|------|
+| `ci_search` | 语义代码搜索 | embedding.sh |
+| `ci_call_chain` | 调用链追踪 | call-chain.sh |
+| `ci_bug_locate` | Bug 位置定位 | bug-locator.sh |
+| `ci_complexity` | 复杂度分析 | complexity.sh |
+| `ci_graph_rag` | 图基上下文检索 | graph-rag.sh |
+| `ci_index_status` | 索引状态查询 | indexer.sh |
 
 ## 重要约束
-[列出任何技术、业务或监管约束]
+
+| 约束 ID | 描述 |
+|---------|------|
+| CON-TECH-002 | MCP Server 使用 Node.js 薄壳调用 Shell 脚本 |
+| CON-PUB-003 | 安装方式统一为 git clone + ./install.sh |
+
+### 依赖方向
+
+```
+server.ts → scripts/*.sh → common.sh
+                        → cache-utils.sh
+                        → 外部工具 (rg, jq, CKB MCP)
+```
+
+禁止：
+- scripts/*.sh → src/*.ts（脚本不得依赖 TypeScript）
+- common.sh → 功能脚本（共享模块不得依赖功能模块）
+- 循环依赖
 
 ## 外部依赖
-[记录关键的外部服务、API或系统]
+
+| 依赖 | 类型 | 必需 | 用途 |
+|------|------|------|------|
+| @modelcontextprotocol/sdk | npm | 是 | MCP 协议实现 |
+| ripgrep (rg) | CLI | 推荐 | 高性能文本搜索 |
+| jq | CLI | 推荐 | JSON 处理 |
+| Ollama | 服务 | 可选 | 本地 Embedding 生成 |
+| OpenAI API | 服务 | 可选 | 云端 Embedding 生成 |
+| CKB MCP Server | MCP | 可选 | 图基代码分析 |
 
 ---
 

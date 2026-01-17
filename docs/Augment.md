@@ -357,4 +357,86 @@ Augment 文档中提到的“错觉”，指的是用户误以为更大的窗口
 
 Augment 选择构建定制推理堆栈也是出于经济考量。为每一次击键运行 200k 上下文的 Prompt 在成本上是不可持续的。通过利用 UCG 精选出高度相关的 4k-8k token 上下文，他们不仅提高了相关性，还显著降低了单次请求的计算成本。上下文引擎实际上充当了一个**智能压缩算法**，将 1GB 的代码库压缩为 10KB 的 Prompt，同时保留了任务所需的全部关键语义信息。
 
-1
+---
+
+## 12. 实现状态：Code Intelligence MCP 对等能力清单
+
+本节记录 Code Intelligence MCP 项目对 Augment Code 核心能力的实现状态。
+
+### 12.1 已实现能力（augment-parity-final-gaps）
+
+| 能力域 | 模块 | 状态 | 实现文件 |
+|--------|------|------|----------|
+| 图存储与检索 | 边类型扩展（IMPLEMENTS/EXTENDS/RETURNS_TYPE/ADR_RELATED） | ✅ | `scripts/scip-to-graph.sh` |
+| 图存储与检索 | A-B 路径查询（BFS） | ✅ | `scripts/graph-store.sh find-path` |
+| 图存储与检索 | Schema 迁移命令 | ✅ | `scripts/graph-store.sh migrate` |
+| 上下文引擎 | ADR 解析与关联 | ✅ | `scripts/adr-parser.sh` |
+| 上下文引擎 | 对话历史信号累积 | ✅ | `scripts/intent-learner.sh` |
+| 上下文引擎 | 结构化上下文输出（5 层） | ✅ | `hooks/augment-context-global.sh` |
+| 上下文引擎 | DevBooks 适配 | ✅ | `scripts/common.sh` |
+| 延迟优化 | Daemon 预热机制 | ✅ | `scripts/daemon.sh warmup` |
+| 延迟优化 | 请求取消机制 | ✅ | `scripts/daemon.sh` |
+| 延迟优化 | 子图 LRU 缓存 | ✅ | `scripts/cache-manager.sh` |
+| 分析能力 | Bug 定位 + 影响分析融合 | ✅ | `scripts/bug-locator.sh --with-impact` |
+| 企业治理 | GitHub Action CI/CD | ✅ | `.github/workflows/arch-check.yml` |
+| 企业治理 | GitLab CI 模板 | ✅ | `.gitlab-ci.yml.template` |
+
+### 12.2 技术对标说明
+
+#### 图检索 vs 向量检索
+
+本项目采用 SQLite 图存储（`graph.db`）实现 Augment 的"图优于向量"策略：
+
+- **节点类型**：模块、类、函数、变量、API 端点
+- **边类型**：CALLS、IMPORTS、IMPLEMENTS、EXTENDS、RETURNS_TYPE、ADR_RELATED
+- **路径查询**：基于 BFS 的 A→B 最短路径（递归 CTE 实现）
+
+#### 上下文引擎
+
+通过 `augment-context-global.sh` 实现 5 层结构化输出：
+
+1. `project_profile`：项目画像（技术栈、架构模式）
+2. `current_state`：当前状态（热点文件、最近提交）
+3. `task_context`：任务上下文（意图分析、代码片段）
+4. `recommended_tools`：工具推荐
+5. `constraints`：架构约束
+
+#### 延迟优化
+
+- **预热机制**：`daemon.sh warmup` 预加载热点子图和常用符号
+- **请求取消**：使用 `flock` 文件锁实现原子性取消
+- **LRU 缓存**：SQLite WAL 模式实现跨进程共享的子图缓存
+
+#### 企业治理
+
+- **依赖卫士**：`dependency-guard.sh` 检测循环依赖和孤儿模块
+- **架构合规**：`boundary-detector.sh` 检查分层规则违规
+- **CI 集成**：GitHub Action 和 GitLab CI 模板
+
+### 12.3 配置参考
+
+关键配置项（`config/features.yaml`）：
+
+```yaml
+daemon:
+  warmup:
+    enabled: true
+    timeout_seconds: 30
+    hotspot_limit: 10
+  cancel:
+    enabled: true
+    check_interval_ms: 50
+
+intent_learner:
+  enabled: true
+  max_history_entries: 10000
+```
+
+### 12.4 数据文件
+
+| 文件 | 用途 |
+|------|------|
+| `.devbooks/graph.db` | 图数据库（SQLite WAL） |
+| `.devbooks/subgraph-cache.db` | 子图 LRU 缓存 |
+| `.devbooks/conversation-context.json` | 对话上下文（FIFO 10 轮） |
+| `.devbooks/adr-index.json` | ADR 索引 |

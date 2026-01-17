@@ -475,8 +475,28 @@ trace_data_flow() {
     [ -x "$p" ] && { rg_cmd="$p"; break; }
   done
 
+  # If ripgrep not found in standard paths, try using PATH
   if [ -z "$rg_cmd" ]; then
-    echo '{"error": "ripgrep not found", "data_flows": []}'
+    rg_cmd=$(command -v rg 2>/dev/null || true)
+  fi
+
+  if [ -z "$rg_cmd" ]; then
+    # Return a valid JSON structure with expected fields even when ripgrep is unavailable
+    jq -n \
+      --arg symbol "$symbol" \
+      '{
+        schema_version: "1.0",
+        target_symbol: $symbol,
+        source: {file: null, line: 0, function: null},
+        data_flows: [],
+        call_chain: [],
+        flow_summary: {
+          total_flows: 0,
+          unique_sources: 0,
+          parameter_count: 0
+        },
+        error: "ripgrep not available - install with: brew install ripgrep"
+      }'
     return 0
   fi
 
@@ -537,11 +557,13 @@ trace_data_flow() {
     '{
       schema_version: "1.0",
       target_symbol: $symbol,
-      source: {file: $source_file, line: $source_line},
+      source: {file: $source_file, line: $source_line, function: $symbol},
       data_flows: $flows,
+      call_chain: $flows,
       flow_summary: {
         total_flows: ($flows | length),
-        unique_sources: ([$flows[].source] | unique | length)
+        unique_sources: ([$flows[].source] | unique | length),
+        parameter_count: ([$flows[].arguments] | map(select(. != "")) | length)
       }
     }'
 }

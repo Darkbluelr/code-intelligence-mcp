@@ -12,7 +12,9 @@
 # Load shared helpers
 load 'helpers/common'
 
-CALL_CHAIN="./scripts/call-chain.sh"
+# Store project root for absolute paths (tests may cd to temp dirs)
+PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+CALL_CHAIN="${PROJECT_ROOT}/scripts/call-chain.sh"
 
 # ============================================================
 # Basic Functionality Tests

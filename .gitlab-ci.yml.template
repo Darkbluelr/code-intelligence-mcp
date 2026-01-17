@@ -1,0 +1,252 @@
+# GitLab CI Template: Architecture Check
+# 架构检查 CI 模板 - 在 MR 时自动运行循环依赖、孤儿模块和架构规则检查
+#
+# Trace: AC-G09 (MOD-10)
+# Change: augment-parity-final-gaps
+#
+# ============================================================
+# 使用方式（复制启用）：
+# ============================================================
+#
+# 方式 1：直接复制到项目根目录
+#   1. 复制此文件为 .gitlab-ci.yml
+#   2. 根据项目需求调整 ARCH_SCOPE 变量
+#   3. 提交并推送
+#
+# 方式 2：Include 引用（推荐）
+#   在项目的 .gitlab-ci.yml 中添加：
+#
+#   include:
+#     - project: 'your-group/code-intelligence-mcp'
+#       ref: main
+#       file: '/.gitlab-ci.yml.template'
+#
+#   variables:
+#     ARCH_SCOPE: "src/"  # 可选：覆盖默认范围
+#
+# 方式 3：本地引用
+#   如果模板在同一仓库中：
+#
+#   include:
+#     - local: '/.gitlab-ci.yml.template'
+#
+# ============================================================
+# 配置变量：
+# ============================================================
+#
+# ARCH_SCOPE         - 检查范围 (默认: src/)
+# ARCH_RULES_FILE    - 规则文件路径 (默认: config/arch-rules.yaml)
+# FAIL_ON_ORPHANS    - 孤儿模块是否导致失败 (默认: false)
+# ORPHAN_THRESHOLD   - 孤儿比例阈值 (默认: 0.2)
+#
+# ============================================================
+
+variables:
+  ARCH_SCOPE: "src/"
+  ARCH_RULES_FILE: "config/arch-rules.yaml"
+  FAIL_ON_ORPHANS: "false"
+  ORPHAN_THRESHOLD: "0.2"
+
+stages:
+  - validate
+
+# 架构检查主任务
+arch-check:
+  stage: validate
+  image: node:20-alpine
+
+  # 仅在 MR 时运行
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - src/**/*
+        - scripts/**/*
+        - config/arch-rules.yaml
+    - when: never
+
+  before_script:
+    - apk add --no-cache bash jq bc coreutils
+    - npm ci --prefer-offline
+
+  script:
+    - |
+      echo "=== Architecture Check Started ==="
+      echo "Scope: $ARCH_SCOPE"
+      echo "Rules: $ARCH_RULES_FILE"
+      echo ""
+
+      # Initialize counters
+      CYCLE_COUNT=0
+      ORPHAN_COUNT=0
+      VIOLATION_COUNT=0
+
+      # 1. Cycle Detection
+      echo ">>> Running cycle detection..."
+      CYCLES_RESULT=$(./scripts/dependency-guard.sh --cycles --scope "$ARCH_SCOPE" --format json 2>&1) || true
+      CYCLE_COUNT=$(echo "$CYCLES_RESULT" | jq -r '.summary.total_cycles // 0' 2>/dev/null || echo "0")
+      echo "Cycles found: $CYCLE_COUNT"
+
+      if [ "$CYCLE_COUNT" -gt 0 ]; then
+        echo "WARNING: Circular dependencies detected!"
+        echo "$CYCLES_RESULT" | jq -r '.cycles[]?.path | join(" -> ")' 2>/dev/null || true
+      fi
+      echo ""
+
+      # 2. Orphan Detection
+      echo ">>> Running orphan detection..."
+      ORPHANS_RESULT=$(./scripts/dependency-guard.sh --orphan-check --scope "$ARCH_SCOPE" --format json 2>&1) || true
+      ORPHAN_COUNT=$(echo "$ORPHANS_RESULT" | jq -r '.summary.orphan_count // 0' 2>/dev/null || echo "0")
+      ORPHAN_RATIO=$(echo "$ORPHANS_RESULT" | jq -r '.summary.orphan_ratio // 0' 2>/dev/null || echo "0")
+      echo "Orphans found: $ORPHAN_COUNT (ratio: $ORPHAN_RATIO)"
+
+      ORPHAN_EXCEEDED=0
+      if [ "$(echo "$ORPHAN_RATIO > $ORPHAN_THRESHOLD" | bc -l 2>/dev/null || echo 0)" -eq 1 ]; then
+        echo "WARNING: Orphan ratio exceeds threshold ($ORPHAN_THRESHOLD)"
+        ORPHAN_EXCEEDED=1
+      fi
+      echo ""
+
+      # 3. Architecture Rules Check
+      echo ">>> Running architecture rules check..."
+      if [ -f "$ARCH_RULES_FILE" ]; then
+        RULES_RESULT=$(./scripts/dependency-guard.sh --rules "$ARCH_RULES_FILE" --scope "$ARCH_SCOPE" --format json 2>&1) || true
+        VIOLATION_COUNT=$(echo "$RULES_RESULT" | jq -r '.summary.total_violations // 0' 2>/dev/null || echo "0")
+      else
+        echo "No rules file found at $ARCH_RULES_FILE, skipping rules check"
+        RULES_RESULT='{"violations": [], "summary": {"total_violations": 0}}'
+        VIOLATION_COUNT=0
+      fi
+      echo "Violations found: $VIOLATION_COUNT"
+
+      if [ "$VIOLATION_COUNT" -gt 0 ]; then
+        echo "ERROR: Architecture rule violations detected!"
+        echo "$RULES_RESULT" | jq -r '.violations[]? | "\(.source):\(.line) - \(.message)"' 2>/dev/null || true
+      fi
+      echo ""
+
+      # 4. Generate Combined Report
+      echo ">>> Generating report..."
+      TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+      cat << EOF > arch-check-report.json
+      {
+        "schema_version": "1.0.0",
+        "timestamp": "$TIMESTAMP",
+        "scope": "$ARCH_SCOPE",
+        "cycles": $CYCLES_RESULT,
+        "orphans": $ORPHANS_RESULT,
+        "rules": $RULES_RESULT,
+        "summary": {
+          "cycle_count": $CYCLE_COUNT,
+          "orphan_count": $ORPHAN_COUNT,
+          "orphan_ratio": $ORPHAN_RATIO,
+          "violation_count": $VIOLATION_COUNT
+        }
+      }
+      EOF
+
+      echo "Report saved to arch-check-report.json"
+      echo ""
+
+      # 5. Final Check
+      echo "=== Architecture Check Summary ==="
+      echo "Cycles:     $CYCLE_COUNT"
+      echo "Orphans:    $ORPHAN_COUNT (ratio: $ORPHAN_RATIO)"
+      echo "Violations: $VIOLATION_COUNT"
+      echo ""
+
+      FAILED=0
+
+      if [ "$CYCLE_COUNT" -gt 0 ]; then
+        echo "FAIL: Circular dependencies detected"
+        FAILED=1
+      fi
+
+      if [ "$VIOLATION_COUNT" -gt 0 ]; then
+        echo "FAIL: Architecture rule violations detected"
+        FAILED=1
+      fi
+
+      if [ "$FAIL_ON_ORPHANS" = "true" ] && [ "$ORPHAN_EXCEEDED" -eq 1 ]; then
+        echo "FAIL: Orphan ratio exceeds threshold"
+        FAILED=1
+      fi
+
+      if [ "$FAILED" -eq 1 ]; then
+        echo ""
+        echo "Architecture check FAILED!"
+        exit 1
+      fi
+
+      echo "Architecture check PASSED!"
+
+  artifacts:
+    when: always
+    paths:
+      - arch-check-report.json
+    reports:
+      dotenv: arch-check.env
+    expire_in: 30 days
+
+  # 允许失败但生成报告（可选：移除此行使检查强制）
+  # allow_failure: true
+
+# ============================================================
+# 可选：分离任务版本（更细粒度的控制）
+# ============================================================
+# 如果需要将检查拆分为独立任务，可以取消下面的注释
+# 并注释掉上面的 arch-check 任务
+
+# .arch-check-base:
+#   stage: validate
+#   image: node:20-alpine
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#       changes:
+#         - src/**/*
+#         - scripts/**/*
+#         - config/arch-rules.yaml
+#   before_script:
+#     - apk add --no-cache bash jq bc
+#     - npm ci --prefer-offline
+
+# cycle-check:
+#   extends: .arch-check-base
+#   script:
+#     - ./scripts/dependency-guard.sh --cycles --scope "$ARCH_SCOPE" --format json > cycles.json
+#     - |
+#       CYCLE_COUNT=$(jq -r '.summary.total_cycles // 0' cycles.json)
+#       if [ "$CYCLE_COUNT" -gt 0 ]; then
+#         echo "Circular dependencies detected!"
+#         jq -r '.cycles[]?.path | join(" -> ")' cycles.json
+#         exit 1
+#       fi
+#   artifacts:
+#     paths:
+#       - cycles.json
+
+# orphan-check:
+#   extends: .arch-check-base
+#   script:
+#     - ./scripts/dependency-guard.sh --orphan-check --scope "$ARCH_SCOPE" --format json > orphans.json
+#     - cat orphans.json
+#   artifacts:
+#     paths:
+#       - orphans.json
+#   allow_failure: true
+
+# rules-check:
+#   extends: .arch-check-base
+#   script:
+#     - |
+#       if [ -f "$ARCH_RULES_FILE" ]; then
+#         ./scripts/dependency-guard.sh --rules "$ARCH_RULES_FILE" --scope "$ARCH_SCOPE" --format json > rules.json
+#         VIOLATION_COUNT=$(jq -r '.summary.total_violations // 0' rules.json)
+#         if [ "$VIOLATION_COUNT" -gt 0 ]; then
+#           echo "Architecture rule violations detected!"
+#           jq -r '.violations[]? | "\(.source):\(.line) - \(.message)"' rules.json
+#           exit 1
+#         fi
+#       fi
+#   artifacts:
+#     paths:
+#       - rules.json

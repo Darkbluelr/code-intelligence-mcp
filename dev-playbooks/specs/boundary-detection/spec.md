@@ -1,12 +1,19 @@
+---
+last_referenced_by: algorithm-optimization-parity
+last_verified: 2026-01-17
+health: active
+---
+
 # Spec: boundary-detection
 
-> **Version**: 1.0.0
+> **Version**: 1.1.0
 > **Status**: Active
 > **Owner**: Spec Owner
 > **Created**: 2026-01-11
-> **Last Verified**: 2026-01-11
+> **Last Verified**: 2026-01-17
 > **Freshness Check**: 90 days
 > **Source Change**: enhance-code-intelligence
+> **Last Referenced By**: algorithm-optimization-parity
 
 ---
 
@@ -124,3 +131,45 @@ Trace: AC-004, AC-008
 | `node_modules/express/index.js` | library | 1.0 |
 | `dist/server.js` | generated | 1.0 |
 | `tsconfig.json` | config | 1.0 |
+
+---
+
+## Fast Path Optimization (Added by algorithm-optimization-parity)
+
+### REQ-BD-001: 快速路径规则
+
+**描述**: 对常见库代码路径使用快速匹配规则，避免完整边界检测。
+
+**快速规则列表**:
+- `node_modules/*` → 库代码
+- `vendor/*` → 库代码
+- `.git/*` → 库代码
+- `dist/*` → 库代码
+- `build/*` → 库代码
+
+---
+
+### REQ-BD-002: 快速路径优先
+
+**描述**: 快速规则匹配成功后，不调用完整边界检测器。
+
+**性能要求**: 快速路径检测 < 1ms
+
+---
+
+### REQ-BD-003: 完整检测降级
+
+**描述**: 快速规则未匹配时，调用完整边界检测器。
+
+---
+
+## Fast Path Contract Tests
+
+| Test ID | 类型 | 覆盖场景 |
+|---------|------|----------|
+| CT-BD-001 | behavior | node_modules 快速匹配 |
+| CT-BD-002 | behavior | vendor 快速匹配 |
+| CT-BD-003 | behavior | 用户代码路径 |
+| CT-BD-004 | boundary | 嵌套路径处理 |
+| CT-BD-005 | behavior | dist 目录 |
+| CT-BD-006 | performance | 批量检测 < 100ms |

@@ -31,6 +31,7 @@ Usage: boundary-detector.sh [OPTIONS] <file-or-pattern>
 检测文件或目录的代码边界类型。
 
 Options:
+  --path FILE        要检测的文件路径（可选，也可以作为位置参数）
   --config FILE      自定义配置文件路径 (默认: config/boundaries.yaml)
   --format FORMAT    输出格式: text 或 json (默认: text)
   -h, --help         显示帮助信息
@@ -46,10 +47,11 @@ Types:
   library    - 库代码 (不建议修改)
   generated  - 生成代码 (不建议修改)
   vendor     - 第三方代码 (不建议修改)
+  config     - 配置文件
 
 Examples:
   boundary-detector.sh src/index.ts
-  boundary-detector.sh node_modules/lodash/index.js
+  boundary-detector.sh --path node_modules/lodash/index.js --format json
   boundary-detector.sh --format json dist/bundle.js
   boundary-detector.sh --config ./my-boundaries.yaml src/
 EOF
@@ -68,6 +70,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --format)
       FORMAT="$2"
+      shift 2
+      ;;
+    --path)
+      TARGET="$2"
       shift 2
       ;;
     -h|--help)
@@ -108,8 +114,11 @@ BUILTIN_RULES=(
   "**/*.d.ts|generated|0.85|TypeScript类型声明"
   "**/*.min.js|generated|0.95|压缩JavaScript"
   "**/*.min.css|generated|0.95|压缩CSS"
+  "**/*.generated.*|generated|0.90|生成的文件"
   "node_modules/**|library|0.99|Node.js依赖"
-  "vendor/**|vendor|0.95|第三方代码"
+  "**/node_modules/**|library|0.99|嵌套Node.js依赖"
+  "**/vendor/**|library|0.95|vendor目录"
+  "vendor/**|library|0.95|第三方代码"
   "third_party/**|vendor|0.95|第三方代码"
   ".venv/**|library|0.95|Python虚拟环境"
   "venv/**|library|0.95|Python虚拟环境"
@@ -118,6 +127,18 @@ BUILTIN_RULES=(
   "**/__snapshots__/**|generated|0.85|Jest快照"
   ".git/**|generated|0.99|Git内部目录"
   ".idea/**|generated|0.90|JetBrains配置"
+  "config/**|config|0.90|配置目录"
+  "**/*.config.js|config|0.85|配置文件"
+  "**/*.config.ts|config|0.85|配置文件"
+  "tsconfig.json|config|0.95|TypeScript配置"
+  "package.json|config|0.95|NPM配置"
+  "*.yaml|config|0.80|YAML配置文件"
+  "*.yml|config|0.80|YAML配置文件"
+  ".eslintrc*|config|0.90|ESLint配置"
+  ".prettierrc*|config|0.90|Prettier配置"
+  "src/**|user|0.85|用户代码目录"
+  "lib/**|user|0.75|库代码目录"
+  "app/**|user|0.85|应用代码目录"
 )
 
 # 从 YAML 加载规则 (简单解析)

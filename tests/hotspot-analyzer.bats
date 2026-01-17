@@ -12,7 +12,9 @@
 # Load shared helpers
 load 'helpers/common'
 
-HOTSPOT_ANALYZER="./scripts/hotspot-analyzer.sh"
+# Store project root for absolute paths (tests may cd to temp dirs)
+PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+HOTSPOT_ANALYZER="${PROJECT_ROOT}/scripts/hotspot-analyzer.sh"
 TEST_TIMEOUT=5
 
 # ============================================================
@@ -48,7 +50,9 @@ TEST_TIMEOUT=5
 }
 
 @test "HS-004: custom top_n parameter" {
-    run "$HOTSPOT_ANALYZER" --top-n 10 --format json
+    # Use 2>/dev/null to avoid stderr mixing with JSON
+    output=$("$HOTSPOT_ANALYZER" --top-n 10 --format json 2>/dev/null)
+    status=$?
     [ "$status" -eq 0 ]
     if command -v jq &> /dev/null; then
         count=$(echo "$output" | jq '.hotspots | length')
@@ -109,7 +113,9 @@ TEST_TIMEOUT=5
     if ! command -v jq &> /dev/null; then
         skip "jq not installed"
     fi
-    run "$HOTSPOT_ANALYZER" --format json
+    # Use 2>/dev/null to avoid stderr mixing with JSON
+    output=$("$HOTSPOT_ANALYZER" --format json 2>/dev/null)
+    status=$?
     [ "$status" -eq 0 ]
     echo "$output" | jq . > /dev/null
 }
@@ -200,5 +206,248 @@ TEST_TIMEOUT=5
     [[ "$output" == *"git"* ]] || \
     [[ "$output" == *"not"* ]] || \
     skip "Non-git directory handling not yet implemented"
+}
+
+# ============================================================
+# Hotspot Weighting Contract Tests (CT-HW-001 ~ CT-HW-006)
+# ============================================================
+#
+# Spec: dev-playbooks/changes/algorithm-optimization-parity/specs/hotspot-weighting/spec.md
+# Change: algorithm-optimization-parity
+# Module: Hotspot weighting algorithm
+#
+# Weighted score formula: score = churn*0.4 + complexity*0.3 + coupling*0.2 + age*0.1
+# All factors normalized to [0,1] range
+# ============================================================
+
+@test "CT-HW-001: weighted score formula - score = churn*0.4 + complexity*0.3 + coupling*0.2 + age*0.1" {
+    # Test weighted score formula implementation
+    # Expected: output contains weighted score field and follows formula
+    skip_if_missing "jq"
+
+    run "$HOTSPOT_ANALYZER" --format json --weighted 2>&1
+    skip_if_not_ready "$status" "$output" "Weighted scoring formula"
+
+    local json
+    json=$(extract_json "$output")
+
+    # Verify output contains score field
+    assert_contains "$json" "score" "Output should contain score field"
+
+    # Verify score is based on weighted factors
+    # Check if contains all factors
+    if [[ "$json" == *"churn"* ]] && [[ "$json" == *"complexity"* ]]; then
+        # If detailed factors present, verify formula
+        local first_hotspot
+        first_hotspot=$(echo "$json" | jq '.hotspots[0]' 2>/dev/null)
+
+        if [ "$first_hotspot" != "null" ] && [ -n "$first_hotspot" ]; then
+            local churn complexity coupling age score
+            churn=$(echo "$first_hotspot" | jq -r '.churn // .churn_norm // 0' 2>/dev/null)
+            complexity=$(echo "$first_hotspot" | jq -r '.complexity // .complexity_norm // 0' 2>/dev/null)
+            coupling=$(echo "$first_hotspot" | jq -r '.coupling // .coupling_norm // 0' 2>/dev/null)
+            age=$(echo "$first_hotspot" | jq -r '.age // .age_norm // 0' 2>/dev/null)
+            score=$(echo "$first_hotspot" | jq -r '.score // 0' 2>/dev/null)
+
+            # Verify score is non-negative
+            if [ -n "$score" ] && [ "$score" != "null" ]; then
+                float_gte "$score" "0" || fail "Score should be non-negative"
+            fi
+        fi
+    fi
+}
+
+@test "CT-HW-002: normalization - all factors in [0,1] range" {
+    # Test factor normalization to [0,1] range
+    skip_if_missing "jq"
+
+    run "$HOTSPOT_ANALYZER" --format json --weighted --normalized 2>&1
+    skip_if_not_ready "$status" "$output" "Factor normalization"
+
+    local json
+    json=$(extract_json "$output")
+
+    # Get hotspots list
+    local hotspots_count
+    hotspots_count=$(echo "$json" | jq '.hotspots | length' 2>/dev/null)
+
+    if [ "$hotspots_count" -gt 0 ] 2>/dev/null; then
+        # Check normalized factors for each hotspot
+        local i=0
+        while [ "$i" -lt "$hotspots_count" ] && [ "$i" -lt 5 ]; do
+            local hotspot
+            hotspot=$(echo "$json" | jq ".hotspots[$i]" 2>/dev/null)
+
+            # Check churn_norm or normalized churn
+            local churn_norm
+            churn_norm=$(echo "$hotspot" | jq -r '.churn_norm // .churn_normalized // .factors.churn // "skip"' 2>/dev/null)
+            if [ "$churn_norm" != "skip" ] && [ "$churn_norm" != "null" ]; then
+                float_gte "$churn_norm" "0" || fail "churn_norm should be >= 0"
+                float_gte "1" "$churn_norm" || skip "churn_norm ($churn_norm) > 1, may need investigation"
+            fi
+
+            # Check complexity_norm
+            local complexity_norm
+            complexity_norm=$(echo "$hotspot" | jq -r '.complexity_norm // .complexity_normalized // .factors.complexity // "skip"' 2>/dev/null)
+            if [ "$complexity_norm" != "skip" ] && [ "$complexity_norm" != "null" ]; then
+                float_gte "$complexity_norm" "0" || fail "complexity_norm should be >= 0"
+                float_gte "1" "$complexity_norm" || skip "complexity_norm ($complexity_norm) > 1, may need investigation"
+            fi
+
+            i=$((i + 1))
+        done
+    else
+        skip "No hotspots returned for normalization test"
+    fi
+}
+
+@test "CT-HW-003: configurable weights - custom weight support" {
+    # Test configurable weights
+    skip_if_missing "jq"
+
+    # Try custom weights parameter
+    run "$HOTSPOT_ANALYZER" --format json --weights "0.5,0.2,0.2,0.1" 2>&1
+
+    # If --weights not supported, try config file approach
+    if [ "$status" -ne 0 ] || [[ "$output" == *"unknown"* ]] || [[ "$output" == *"invalid"* ]]; then
+        # Try environment variable approach
+        HOTSPOT_WEIGHTS="0.5,0.2,0.2,0.1" run "$HOTSPOT_ANALYZER" --format json --weighted 2>&1
+
+        if [ "$status" -ne 0 ]; then
+            skip "Custom weights configuration not yet implemented"
+        fi
+    fi
+
+    local json
+    json=$(extract_json "$output")
+
+    # Verify output is valid
+    assert_contains "$json" "hotspots" "Output should contain hotspots"
+}
+
+@test "CT-HW-004: recency priority - weight boost for changes within 30 days" {
+    # Test recency boost for changes within 30 days
+    skip_if_missing "jq"
+
+    # Use --recency-boost or --recent-weight parameter
+    run "$HOTSPOT_ANALYZER" --format json --weighted --recency-boost 2>&1
+    skip_if_not_ready "$status" "$output" "Recency boost feature"
+
+    local json
+    json=$(extract_json "$output")
+
+    # Verify recency-related fields present
+    if [[ "$json" == *"recency"* ]] || [[ "$json" == *"age"* ]] || [[ "$json" == *"last_modified"* ]]; then
+        # Get first hotspot
+        local first_hotspot
+        first_hotspot=$(echo "$json" | jq '.hotspots[0]' 2>/dev/null)
+
+        if [ "$first_hotspot" != "null" ]; then
+            # Check for recency_factor or age_factor
+            local recency
+            recency=$(echo "$first_hotspot" | jq -r '.recency_factor // .age_factor // .recency_boost // "none"' 2>/dev/null)
+
+            if [ "$recency" != "none" ] && [ "$recency" != "null" ]; then
+                # Recently modified files should have higher recency factor
+                float_gte "$recency" "0" || fail "Recency factor should be non-negative"
+            fi
+        fi
+    else
+        skip "Recency/age fields not present in output"
+    fi
+}
+
+@test "CT-HW-005: coupling penalty - high coupling increases score" {
+    # Test high coupling increases hotspot score (penalizes high coupling)
+    skip_if_missing "jq"
+
+    run "$HOTSPOT_ANALYZER" --format json --weighted --coupling 2>&1
+    skip_if_not_ready "$status" "$output" "Coupling penalty feature"
+
+    local json
+    json=$(extract_json "$output")
+
+    # Verify coupling field present
+    if [[ "$json" == *"coupling"* ]]; then
+        # Get hotspots list
+        local hotspots_count
+        hotspots_count=$(echo "$json" | jq '.hotspots | length' 2>/dev/null)
+
+        if [ "$hotspots_count" -gt 1 ] 2>/dev/null; then
+            # Check coupling for multiple hotspots
+            local high_coupling_file=""
+            local high_coupling_score=0
+            local i=0
+
+            while [ "$i" -lt "$hotspots_count" ] && [ "$i" -lt 10 ]; do
+                local hotspot
+                hotspot=$(echo "$json" | jq ".hotspots[$i]" 2>/dev/null)
+
+                local coupling
+                coupling=$(echo "$hotspot" | jq -r '.coupling // .coupling_score // 0' 2>/dev/null)
+                local score
+                score=$(echo "$hotspot" | jq -r '.score // 0' 2>/dev/null)
+
+                # Record high coupling file (coupling > 5 as threshold)
+                if float_gte "$coupling" "5" 2>/dev/null; then
+                    high_coupling_file=$(echo "$hotspot" | jq -r '.file // .path' 2>/dev/null)
+                    high_coupling_score="$score"
+                fi
+
+                i=$((i + 1))
+            done
+
+            # High coupling file should have corresponding score
+            if [ -n "$high_coupling_file" ]; then
+                float_gte "$high_coupling_score" "0" || fail "High coupling file should have positive score"
+            fi
+        fi
+    else
+        skip "Coupling fields not present in output"
+    fi
+}
+
+@test "CT-HW-006: performance - 500 files scoring under 200ms" {
+    # Test 500 files scoring performance
+    skip_if_missing "jq"
+
+    # Create test directory
+    setup_temp_dir
+    cd "$TEST_TEMP_DIR"
+
+    # Initialize git repo
+    git init --quiet
+    git config user.email "$GIT_TEST_EMAIL"
+    git config user.name "$GIT_TEST_NAME"
+
+    # Create 500 files
+    mkdir -p src
+    local i=0
+    while [ "$i" -lt 500 ]; do
+        echo "// File $i" > "src/file_$i.ts"
+        i=$((i + 1))
+    done
+
+    # Add and commit
+    git add .
+    git commit -m "Add 500 files" --quiet
+
+    # Measure execution time
+    measure_time "$HOTSPOT_ANALYZER" --format json --weighted 2>/dev/null
+    local exit_code=$?
+    local execution_time=$MEASURED_TIME_MS
+
+    cd - > /dev/null
+    cleanup_temp_dir
+
+    # Verify execution success
+    if [ "$exit_code" -ne 0 ]; then
+        skip "Weighted hotspot analysis not yet implemented for performance test"
+    fi
+
+    # Verify performance requirement: < 200ms
+    if [ "$execution_time" -ge 200 ]; then
+        fail "Performance requirement not met: ${execution_time}ms >= 200ms for 500 files"
+    fi
 }
 

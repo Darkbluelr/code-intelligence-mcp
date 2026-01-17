@@ -12,7 +12,9 @@
 # Load shared helpers
 load 'helpers/common'
 
-HOOK_SCRIPT="./hooks/augment-context-global.sh"
+# Store project root for absolute paths (tests may cd to temp dirs)
+PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+HOOK_SCRIPT="${PROJECT_ROOT}/hooks/augment-context-global.sh"
 
 # ============================================================
 # Basic Functionality Tests

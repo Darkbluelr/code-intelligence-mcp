@@ -27,3 +27,4 @@ ai_tools:
   - claude
   - codex
 
+install_scope: global

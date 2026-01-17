@@ -3,22 +3,26 @@
 
 这些说明适用于 Claude Code。
 
-## DevBooks 协议发现与约束
+## 语言偏好
 
-- **配置发现**：在回答任何问题或写任何代码前，按以下顺序查找配置：
-  1. `.devbooks/config.yaml`（如存在）→ 解析并使用其中的映射
-  2. `dev-playbooks/project.md`（如存在）→ DevBooks 协议
-- 找到配置后，先阅读 `agents_doc`（规则文档），再执行任何操作。
-- Test Owner 与 Coder 必须独立对话/独立实例；Coder 禁止修改 tests/。
-- 任何新功能/破坏性变更/架构改动：必须先创建 `dev-playbooks/changes/<id>/`。
+**默认使用中文**：除非明确要求使用其他语言，否则所有输出都应使用中文，包括：
+- 文档内容
+- 代码注释
+- 提交信息
+- 规格说明
 
-## 工作流命令
+## 工作流
 
-| 命令 | 说明 |
-|------|------|
-| `/devbooks:proposal` | 创建变更提案 |
-| `/devbooks:design` | 创建设计文档 |
-| `/devbooks:apply <role>` | 执行实现（test-owner/coder/reviewer） |
-| `/devbooks:archive` | 归档变更包 |
+当请求满足以下条件时，始终打开 `@/AGENTS.md`：
+- 提及规划或提案（如 proposal、spec、change、plan 等词语）
+- 引入新功能、破坏性变更、架构变更或重大性能/安全工作
+- 请求不明确，需要在编码前了解权威规格
+
+使用 `@/AGENTS.md` 了解：
+- 如何创建和应用变更提案
+- 规格格式和约定
+- 项目结构和指南
+
+保持此托管块，以便 'devbooks update' 可以刷新说明。
 
 <!-- DEVBOOKS:END -->

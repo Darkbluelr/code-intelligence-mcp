@@ -49,6 +49,85 @@ COMPLEXITY_TIMEOUT=1
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPLEXITY_TOOL="${SCRIPT_DIR}/../../tools/devbooks-complexity.sh"
 
+# ==================== 帮助信息 ====================
+show_help() {
+  cat <<'EOF'
+Usage: augment-context-global.sh [OPTIONS]
+
+DevBooks 全局上下文注入 Hook。自动检测代码项目并注入相关上下文。
+
+Options:
+  --help                显示帮助信息
+  --analyze-intent      执行 4 维意图分析并输出结果
+  --prompt TEXT         指定要分析的提示文本（与 --analyze-intent 配合使用）
+  --file PATH           指定相关文件路径（隐式信号来源）
+  --line N              指定文件行号
+  --function NAME       指定函数名（代码信号来源）
+  --with-history        启用历史信号分析
+  --format FORMAT       输出格式: text 或 json（默认: json）
+
+4-Dimensional Intent Signals:
+  - explicit:    直接指令词（fix, add, remove, update, etc.）
+  - implicit:    问题描述（error, bug, issue, crash, etc.）
+  - historical:  文件引用（@file, 文件路径）
+  - code:        代码片段（反引号内容, 函数名）
+
+Examples:
+  echo '{"prompt":"fix auth bug"}' | augment-context-global.sh
+  augment-context-global.sh --analyze-intent --prompt "fix authentication bug"
+  augment-context-global.sh --analyze-intent --file src/auth.ts --line 42
+EOF
+}
+
+# ==================== 命令行参数解析（早期处理） ====================
+CLI_MODE=""
+CLI_PROMPT=""
+CLI_FILE=""
+CLI_LINE=""
+CLI_FUNCTION=""
+CLI_WITH_HISTORY=false
+CLI_FORMAT="json"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --help|-h)
+      show_help
+      exit 0
+      ;;
+    --analyze-intent)
+      CLI_MODE="analyze-intent"
+      shift
+      ;;
+    --prompt)
+      CLI_PROMPT="$2"
+      shift 2
+      ;;
+    --file)
+      CLI_FILE="$2"
+      shift 2
+      ;;
+    --line)
+      CLI_LINE="$2"
+      shift 2
+      ;;
+    --function)
+      CLI_FUNCTION="$2"
+      shift 2
+      ;;
+    --with-history)
+      CLI_WITH_HISTORY=true
+      shift
+      ;;
+    --format)
+      CLI_FORMAT="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
 # 加载共享缓存工具库
 CACHE_UTILS="${SCRIPT_DIR}/../../tools/devbooks-cache-utils.sh"
 if [ -f "$CACHE_UTILS" ]; then
@@ -63,12 +142,52 @@ if [ -f "$COMMON_UTILS" ]; then
   source "$COMMON_UTILS"
 fi
 
-# 如果共享库加载失败，直接退出（统一降级策略，保持 DRY）
-# 与 augment-context.sh 保持一致：不提供内联降级实现
-# 同时检查 cache-utils 和 common 的关键函数
+# 加载 scripts/common.sh（DevBooks 适配函数）
+SCRIPTS_COMMON="${SCRIPT_DIR}/../scripts/common.sh"
+if [ -f "$SCRIPTS_COMMON" ]; then
+  # shellcheck source=../scripts/common.sh
+  source "$SCRIPTS_COMMON"
+fi
+
+# 如果共享库加载失败，在非 CLI 模式下退出
+# CLI 模式（如 --analyze-intent 或 --format json/text）不需要完整的 Hook 功能
 if ! declare -f is_code_intent &>/dev/null || ! declare -f get_cache_key &>/dev/null; then
-  echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":""}}'
-  exit 0
+  # 如果 is_code_intent 不可用，但 get_intent_type 可用（来自 common.sh），定义一个简单版本
+  if ! declare -f is_code_intent &>/dev/null && declare -f get_intent_type &>/dev/null; then
+    is_code_intent() {
+      local input="$1"
+      local intent_type
+      intent_type=$(get_intent_type "$input")
+      case "$intent_type" in
+        debug|refactor|feature) return 0 ;;
+        docs) return 1 ;;
+        *) return 0 ;;
+      esac
+    }
+  fi
+
+  # 如果 get_cache_key 不可用，定义一个简单版本
+  if ! declare -f get_cache_key &>/dev/null; then
+    get_cache_key() { echo "$1" | md5sum 2>/dev/null | cut -d' ' -f1 || echo "$1"; }
+    get_cached() { echo ""; }
+    set_cache() { :; }
+  fi
+
+  # 如果 is_non_code 不可用，定义一个简单版本
+  if ! declare -f is_non_code &>/dev/null; then
+    is_non_code() {
+      echo "$1" | grep -qiE '^(天气|weather|翻译|translate|写邮件|email|闲聊|chat|你好|hello|hi)'
+    }
+  fi
+
+  # CLI 模式可以继续（有内置的 analyze_intent_4d 函数）
+  if [ -z "$CLI_MODE" ] && [ "$CLI_FORMAT" = "json" -o "$CLI_FORMAT" = "text" ]; then
+    # --format json/text 模式也可以继续
+    :
+  elif [ -z "$CLI_MODE" ]; then
+    echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":""}}'
+    exit 0
+  fi
 fi
 
 # 排除模式 - 使用 grep -v 更可靠（rg glob 在某些情况下行为不一致）
@@ -183,12 +302,22 @@ load_project_config() {
   [ -n "$emb_fallback" ] && EMBEDDING_FALLBACK_TO_KEYWORD="$emb_fallback"
 }
 
-# ==================== 输入处理 ====================
-INPUT=$(cat)
-PROMPT=$(echo "$INPUT" | jq -r '.prompt // empty' 2>/dev/null)
+# ==================== 输入处理（延迟 CLI 处理） ====================
+# 如果是 CLI 模式，不从 stdin 读取
+if [ -n "$CLI_MODE" ]; then
+  INPUT=""
+  PROMPT="$CLI_PROMPT"
+else
+  INPUT=$(cat)
+  PROMPT=$(echo "$INPUT" | jq -r '.prompt // empty' 2>/dev/null)
+fi
+
 CWD="${WORKING_DIRECTORY:-$(pwd)}"
 
-[ -z "$PROMPT" ] && { echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":""}}'; exit 0; }
+# CLI 模式处理将延迟到 analyze_intent_4d 函数定义之后
+# 见下面的 "CLI 模式入口" 部分
+
+[ -z "$PROMPT" ] && [ -z "$CLI_MODE" ] && { echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":""}}'; exit 0; }
 
 # ==================== 项目检测 ====================
 is_code_project() {
@@ -833,6 +962,392 @@ $(check_index)"
   echo "$context"
 }
 
+# ==================== 结构化输出构建函数 ====================
+# Trace: AC-G11, AC-G12
+
+# 获取索引状态
+get_index_status() {
+  if [ -n "$EMBEDDING_INDEX" ] && [ -f "$EMBEDDING_INDEX" ]; then
+    echo "ready"
+  elif [ -f "$CWD/index.scip" ]; then
+    # 检查 SCIP 索引是否过时（超过 7 天）
+    local mtime
+    if stat -f %m "$CWD/index.scip" &>/dev/null 2>&1; then
+      mtime=$(stat -f %m "$CWD/index.scip")
+    else
+      mtime=$(stat -c %Y "$CWD/index.scip" 2>/dev/null || echo "0")
+    fi
+    local now
+    now=$(date +%s)
+    local age=$((now - mtime))
+    if [ "$age" -gt 604800 ]; then
+      echo "stale"
+    else
+      echo "ready"
+    fi
+  elif [ -d "$CWD/.git/ckb" ]; then
+    echo "ready"
+  else
+    echo "missing"
+  fi
+}
+
+# 获取热点文件 Top N（JSON 数组）
+get_hotspot_files_json() {
+  local limit="${1:-5}"
+  local hotspot_script="${SCRIPT_DIR}/../scripts/hotspot-analyzer.sh"
+
+  # 尝试调用 hotspot-analyzer.sh
+  if [ -x "$hotspot_script" ]; then
+    local result
+    result=$("$hotspot_script" --format json --top "$limit" --path "$CWD" 2>/dev/null)
+    if [ $? -eq 0 ] && [ -n "$result" ]; then
+      echo "$result" | jq -r '[.hotspots[].file] // []' 2>/dev/null
+      return 0
+    fi
+  fi
+
+  # 降级：使用 git log 分析
+  if [ -d "$CWD/.git" ]; then
+    local files
+    files=$(git -C "$CWD" log --since="30 days ago" --name-only --pretty=format: 2>/dev/null | \
+      grep -v '^$' | \
+      grep -vE 'node_modules|dist|build|\.lock|\.md$|__pycache__|\.pyc$' | \
+      sort | uniq -c | sort -rn | head -"$limit" | awk '{print $2}')
+
+    if [ -n "$files" ]; then
+      echo "$files" | jq -R -s 'split("\n") | map(select(length > 0))'
+      return 0
+    fi
+  fi
+
+  echo '[]'
+}
+
+# 获取最近提交 Top N（JSON 数组）
+get_recent_commits_json() {
+  local limit="${1:-3}"
+
+  if [ -d "$CWD/.git" ]; then
+    git -C "$CWD" log --oneline -"$limit" 2>/dev/null | \
+      jq -R -s 'split("\n") | map(select(length > 0))'
+    return 0
+  fi
+
+  echo '[]'
+}
+
+# 映射意图分析结果到标准格式
+map_intent_to_standard() {
+  local intent_4d="$1"
+
+  # 从 4 维意图分析结果提取主要意图
+  local dominant
+  dominant=$(echo "$intent_4d" | jq -r '.dominant_dimension // "explore"')
+
+  local primary_intent
+  case "$dominant" in
+    explicit)
+      # 检查是否是 debug 相关
+      if echo "$intent_4d" | jq -r '.signals[]?.match' | grep -qiE 'fix|debug|bug'; then
+        primary_intent="debug"
+      else
+        primary_intent="modify"
+      fi
+      ;;
+    implicit)
+      primary_intent="debug"
+      ;;
+    code)
+      primary_intent="modify"
+      ;;
+    *)
+      primary_intent="explore"
+      ;;
+  esac
+
+  local total_weight
+  total_weight=$(echo "$intent_4d" | jq -r '.total_weight // 0')
+
+  # 计算置信度（基于总权重）
+  local confidence
+  confidence=$(awk -v w="$total_weight" 'BEGIN { c = w / 4; if (c > 1) c = 1; printf "%.2f", c }')
+
+  jq -n \
+    --arg intent "$primary_intent" \
+    --arg confidence "$confidence" \
+    '{
+      primary_intent: $intent,
+      target_scope: "project",
+      confidence: ($confidence | tonumber)
+    }'
+}
+
+# 根据意图推荐工具
+get_recommended_tools() {
+  local intent="$1"
+  local symbols="$2"
+
+  local tools='[]'
+
+  case "$intent" in
+    debug)
+      tools=$(jq -n '[
+        {"tool": "ci_bug_locate", "reason": "定位 Bug 相关代码", "suggested_params": {}},
+        {"tool": "ci_call_chain", "reason": "追踪调用链路", "suggested_params": {"depth": 3}}
+      ]')
+      ;;
+    modify)
+      tools=$(jq -n '[
+        {"tool": "ci_call_chain", "reason": "理解函数调用关系", "suggested_params": {"depth": 3}},
+        {"tool": "ci_impact_analysis", "reason": "分析修改影响范围", "suggested_params": {}}
+      ]')
+      ;;
+    explore|understand)
+      tools=$(jq -n '[
+        {"tool": "ci_search", "reason": "搜索相关代码", "suggested_params": {}},
+        {"tool": "ci_graph_rag", "reason": "理解代码结构", "suggested_params": {}}
+      ]')
+      ;;
+    *)
+      tools=$(jq -n '[
+        {"tool": "ci_search", "reason": "搜索相关代码", "suggested_params": {}}
+      ]')
+      ;;
+  esac
+
+  echo "$tools"
+}
+
+# 检测敏感文件
+get_security_constraints() {
+  local sensitive_files='[]'
+  local patterns=(".env" "credentials.json" ".secrets" "*.pem" "*.key")
+
+  for pattern in "${patterns[@]}"; do
+    if ls "$CWD"/$pattern &>/dev/null 2>&1; then
+      sensitive_files=$(echo "$sensitive_files" | jq --arg p "$pattern" '. + ["敏感文件: " + $p]')
+    fi
+  done
+
+  echo "$sensitive_files"
+}
+
+# 构建结构化输出 JSON
+build_structured_output() {
+  local prompt="$1"
+
+  # 1. 获取 DevBooks 上下文
+  local devbooks_ctx
+  if declare -f load_devbooks_context &>/dev/null; then
+    devbooks_ctx=$(load_devbooks_context "$CWD" 2>/dev/null) || devbooks_ctx='{}'
+  else
+    devbooks_ctx='{}'
+  fi
+
+  # 2. 构建 project_profile
+  local project_name
+  project_name=$(jq -r '.name // empty' "$CWD/package.json" 2>/dev/null)
+  [ -z "$project_name" ] && project_name=$(basename "$CWD")
+
+  local tech_stack
+  tech_stack=$(echo "$devbooks_ctx" | jq -r '.project_profile.tech_stack // []')
+  # 如果 DevBooks 没有技术栈，从 package.json 推断
+  if [ "$tech_stack" = "[]" ] && [ -f "$CWD/package.json" ]; then
+    local has_ts=false
+    [ -f "$CWD/tsconfig.json" ] && has_ts=true
+    if [ "$has_ts" = true ]; then
+      tech_stack='["Node.js", "TypeScript"]'
+    else
+      tech_stack='["Node.js"]'
+    fi
+  fi
+
+  local key_constraints
+  key_constraints=$(echo "$devbooks_ctx" | jq -r '.project_profile.key_constraints // []')
+
+  local architecture
+  architecture=$(echo "$devbooks_ctx" | jq -r '.project_profile.architecture // "unknown"')
+  [ "$architecture" = "null" ] && architecture="unknown"
+
+  local project_profile
+  project_profile=$(jq -n \
+    --arg name "$project_name" \
+    --argjson tech_stack "$tech_stack" \
+    --arg architecture "$architecture" \
+    --argjson key_constraints "$key_constraints" \
+    '{
+      name: $name,
+      tech_stack: $tech_stack,
+      architecture: $architecture,
+      key_constraints: $key_constraints
+    }')
+
+  # 3. 构建 current_state
+  local index_status
+  index_status=$(get_index_status)
+
+  local hotspot_files
+  hotspot_files=$(get_hotspot_files_json 5)
+
+  local recent_commits
+  recent_commits=$(get_recent_commits_json 3)
+
+  local current_state
+  current_state=$(jq -n \
+    --arg index_status "$index_status" \
+    --argjson hotspot_files "$hotspot_files" \
+    --argjson recent_commits "$recent_commits" \
+    '{
+      index_status: $index_status,
+      hotspot_files: $hotspot_files,
+      recent_commits: $recent_commits
+    }')
+
+  # 4. 构建 task_context
+  local intent_4d
+  intent_4d=$(analyze_intent_4d "$prompt")
+
+  local intent_analysis
+  intent_analysis=$(map_intent_to_standard "$intent_4d")
+
+  local primary_intent
+  primary_intent=$(echo "$intent_analysis" | jq -r '.primary_intent')
+
+  # 提取符号并搜索相关代码片段
+  local symbols
+  symbols=$(extract_symbols "$prompt")
+
+  local relevant_snippets='[]'
+  if [ -n "$symbols" ]; then
+    local first_symbol
+    first_symbol=$(echo "$symbols" | head -1)
+    if [ -n "$first_symbol" ]; then
+      local snippet_result
+      snippet_result=$(search_symbol "$first_symbol")
+      if [ -n "$snippet_result" ]; then
+        local first_file
+        # 提取文件名（冒号前的部分，去掉行号等信息）
+        first_file=$(echo "$snippet_result" | head -1 | sed 's/:.*//' | sed 's/-[0-9]*$//')
+        if [ -n "$first_file" ] && [ ! "$first_file" = "$snippet_result" ]; then
+          relevant_snippets=$(jq -n --arg file "$first_file" '[{"file": $file, "relevance": 0.8}]')
+        fi
+      fi
+    fi
+  fi
+
+  local task_context
+  task_context=$(jq -n \
+    --argjson intent_analysis "$intent_analysis" \
+    --argjson relevant_snippets "$relevant_snippets" \
+    '{
+      intent_analysis: $intent_analysis,
+      relevant_snippets: $relevant_snippets,
+      call_chains: []
+    }')
+
+  # 5. 构建 recommended_tools
+  local recommended_tools
+  recommended_tools=$(get_recommended_tools "$primary_intent" "$symbols")
+
+  # 6. 构建 constraints
+  local architectural_constraints
+  architectural_constraints=$(echo "$devbooks_ctx" | jq -r '.constraints.architectural // []')
+
+  local security_constraints
+  security_constraints=$(get_security_constraints)
+
+  local constraints
+  constraints=$(jq -n \
+    --argjson architectural "$architectural_constraints" \
+    --argjson security "$security_constraints" \
+    '{
+      architectural: $architectural,
+      security: $security
+    }')
+
+  # 组合最终输出
+  jq -n \
+    --argjson project_profile "$project_profile" \
+    --argjson current_state "$current_state" \
+    --argjson task_context "$task_context" \
+    --argjson recommended_tools "$recommended_tools" \
+    --argjson constraints "$constraints" \
+    '{
+      project_profile: $project_profile,
+      current_state: $current_state,
+      task_context: $task_context,
+      recommended_tools: $recommended_tools,
+      constraints: $constraints
+    }'
+}
+
+# 构建文本格式输出
+build_text_output() {
+  local json_output="$1"
+
+  local output=""
+
+  # 项目画像
+  output+="=== 项目画像 ===\n"
+  output+="名称: $(echo "$json_output" | jq -r '.project_profile.name')\n"
+  output+="技术栈: $(echo "$json_output" | jq -r '.project_profile.tech_stack | join(", ")')\n"
+  output+="架构: $(echo "$json_output" | jq -r '.project_profile.architecture')\n"
+
+  # 当前状态
+  output+="\n=== 当前状态 ===\n"
+  output+="索引状态: $(echo "$json_output" | jq -r '.current_state.index_status')\n"
+  output+="热点文件:\n"
+  # 使用 process substitution 避免子 shell 变量丢失问题
+  local hotspot_list
+  hotspot_list=$(echo "$json_output" | jq -r '.current_state.hotspot_files[]' 2>/dev/null)
+  if [ -n "$hotspot_list" ]; then
+    while IFS= read -r file; do
+      [ -n "$file" ] && output+="  - $file\n"
+    done <<< "$hotspot_list"
+  fi
+  output+="最近提交:\n"
+  local commits_list
+  commits_list=$(echo "$json_output" | jq -r '.current_state.recent_commits[]' 2>/dev/null)
+  if [ -n "$commits_list" ]; then
+    while IFS= read -r commit; do
+      [ -n "$commit" ] && output+="  - $commit\n"
+    done <<< "$commits_list"
+  fi
+
+  # 任务上下文
+  output+="\n=== 任务上下文 ===\n"
+  output+="主要意图: $(echo "$json_output" | jq -r '.task_context.intent_analysis.primary_intent')\n"
+  output+="置信度: $(echo "$json_output" | jq -r '.task_context.intent_analysis.confidence')\n"
+
+  # 推荐工具
+  output+="\n=== 推荐工具 ===\n"
+  local tools_list
+  tools_list=$(echo "$json_output" | jq -r '.recommended_tools[] | "  - \(.tool): \(.reason)"' 2>/dev/null)
+  if [ -n "$tools_list" ]; then
+    output+="$tools_list\n"
+  fi
+
+  # 约束
+  output+="\n=== 约束 ===\n"
+  local arch_constraints
+  arch_constraints=$(echo "$json_output" | jq -r '.constraints.architectural[]' 2>/dev/null)
+  if [ -n "$arch_constraints" ]; then
+    while IFS= read -r c; do
+      [ -n "$c" ] && output+="  - $c\n"
+    done <<< "$arch_constraints"
+  fi
+  local sec_constraints
+  sec_constraints=$(echo "$json_output" | jq -r '.constraints.security[]' 2>/dev/null)
+  if [ -n "$sec_constraints" ]; then
+    while IFS= read -r c; do
+      [ -n "$c" ] && output+="  - $c\n"
+    done <<< "$sec_constraints"
+  fi
+
+  printf '%b' "$output"
+}
+
 # 添加 Graph-RAG 上下文（或降级到关键词搜索）
 add_graph_context() {
   local context="$1"
@@ -915,9 +1430,80 @@ empty_response() {
   echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":""}}'
 }
 
+# ==================== CLI 模式入口 ====================
+# 处理 --analyze-intent 等 CLI 模式命令
+if [ "$CLI_MODE" = "analyze-intent" ]; then
+  # 如果没有 prompt，使用文件和函数信息构造
+  if [ -z "$PROMPT" ]; then
+    if [ -n "$CLI_FILE" ]; then
+      PROMPT="file: $CLI_FILE"
+      [ -n "$CLI_LINE" ] && PROMPT="$PROMPT at line $CLI_LINE"
+    fi
+    if [ -n "$CLI_FUNCTION" ]; then
+      PROMPT="${PROMPT:+$PROMPT }function: $CLI_FUNCTION"
+    fi
+  fi
+
+  # 执行 4 维意图分析
+  if [ -z "$PROMPT" ]; then
+    echo '{"error": "No prompt or file specified"}'
+    exit 1
+  fi
+
+  # 构建分析结果
+  result=$(analyze_intent_4d "$PROMPT")
+
+  # 添加额外信号（来自命令行参数）
+  if [ -n "$CLI_FILE" ]; then
+    result=$(echo "$result" | jq --arg f "$CLI_FILE" '.signals += [{type: "implicit", match: $f, weight: 0.6}]')
+  fi
+  if [ -n "$CLI_FUNCTION" ]; then
+    result=$(echo "$result" | jq --arg fn "$CLI_FUNCTION" '.signals += [{type: "code", match: $fn, weight: 0.7}]')
+  fi
+  if [ "$CLI_WITH_HISTORY" = true ]; then
+    result=$(echo "$result" | jq '.signals += [{type: "historical", match: "with-history", weight: 0.6}]')
+  fi
+
+  if [ "$CLI_FORMAT" = "text" ]; then
+    echo "Intent Analysis:"
+    echo "  explicit:    $(echo "$result" | jq -r '.weights.explicit')"
+    echo "  implicit:    $(echo "$result" | jq -r '.weights.implicit')"
+    echo "  historical:  $(echo "$result" | jq -r '.weights.historical')"
+    echo "  code:        $(echo "$result" | jq -r '.weights.code')"
+    echo "  dominant:    $(echo "$result" | jq -r '.dominant_dimension')"
+    echo "Signals:"
+    echo "$result" | jq -r '.signals[] | "  - \(.type): \(.match) (weight: \(.weight))"'
+  else
+    echo "$result"
+  fi
+  exit 0
+fi
+
 # ==================== 主入口 ====================
 main() {
-  # 非代码意图快速退出
+  # 结构化输出模式（当 --format json 且有 prompt 时）
+  # 这是 MP7/MP8 的主要输出模式
+  if [ "$CLI_FORMAT" = "json" ] && [ -n "$PROMPT" ]; then
+    # 构建 5 层结构化输出
+    local structured_output
+    structured_output=$(build_structured_output "$PROMPT")
+
+    # 直接输出结构化 JSON（不包装在 hookSpecificOutput 中）
+    echo "$structured_output"
+    exit 0
+  fi
+
+  # 文本格式输出模式
+  if [ "$CLI_FORMAT" = "text" ] && [ -n "$PROMPT" ]; then
+    local structured_output
+    structured_output=$(build_structured_output "$PROMPT")
+
+    # 输出文本格式
+    build_text_output "$structured_output"
+    exit 0
+  fi
+
+  # 非代码意图快速退出（原有 Hook 模式）
   is_non_code "$PROMPT" && { empty_response; exit 0; }
 
   # 加载项目配置

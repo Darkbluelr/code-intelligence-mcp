@@ -1,0 +1,6 @@
+# LLM Rerank with retry configuration
+features:
+  llm_rerank:
+    enabled: true
+    provider: anthropic
+    max_retries: 3

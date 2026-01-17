@@ -1,0 +1,47 @@
+# Federation Configuration
+# Version: 1.0.0
+# Purpose: Define cross-repository contract discovery settings
+#
+# This file is used by federation-lite.sh to locate and index API contracts.
+# See: dev-playbooks/changes/augment-upgrade-phase2/specs/federation-lite/spec.md
+
+schema_version: "1.0.0"
+
+federation:
+  # Explicit repository list
+  repositories:
+    - name: "code-intelligence-mcp"
+      path: "."
+      contracts:
+        - "**/*.proto"
+        - "**/openapi.yaml"
+        - "**/swagger.json"
+        - "**/*.d.ts"
+
+    # Example: Add sibling repositories
+    # - name: "api-gateway"
+    #   path: "../api-gateway"
+    #   contracts:
+    #     - "api/**/*.proto"
+    #     - "openapi/openapi.yaml"
+    #
+    # - name: "shared-types"
+    #   path: "../shared-types"
+    #   contracts:
+    #     - "src/**/*.d.ts"
+
+  # Auto-discovery settings
+  auto_discover:
+    enabled: false
+    search_paths:
+      - "../*"
+    contract_patterns:
+      - "**/*.proto"
+      - "**/openapi.yaml"
+      - "**/swagger.json"
+      - "**/*.graphql"
+      - "**/types/**/*.ts"
+
+  # Update strategy
+  update:
+    trigger: "manual"  # manual | on-push | scheduled

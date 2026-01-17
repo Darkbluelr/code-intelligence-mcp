@@ -56,13 +56,25 @@ QUERY=""
 TOP_K=10
 MAX_DEPTH=3      # AC-003: 默认深度 3
 MAX_ALLOWED_DEPTH=5  # AC-003: 最大深度 5
-TOKEN_BUDGET=8000
+TOKEN_BUDGET=8000    # AC-F04: 默认 Token 预算
+MIN_RELEVANCE=0.0    # MP4.1: 最低相关度阈值
 CACHE_TTL=300
+
+# MP4.2 优先级权重配置
+PRIORITY_WEIGHT_RELEVANCE=0.4
+PRIORITY_WEIGHT_HOTSPOT=0.3
+PRIORITY_WEIGHT_DISTANCE=0.3
 
 # 边界检测器路径
 BOUNDARY_DETECTOR="${SCRIPT_DIR}/boundary-detector.sh"
 
-# 缓存目录
+# 缓存管理器路径 (MP5.2 集成)
+CACHE_MANAGER="${SCRIPT_DIR}/cache-manager.sh"
+
+# 缓存相关配置
+: "${GRAPH_RAG_CACHE_ENABLED:=true}"
+
+# 缓存目录（保留向后兼容）
 CACHE_DIR="${TMPDIR:-/tmp}/.devbooks-cache/graph-rag"
 
 # 输出模式
@@ -72,6 +84,10 @@ MOCK_CKB=false
 
 # CKB 状态（从环境变量检测）
 CKB_AVAILABLE=false
+
+# LLM 重排序配置
+RERANK_ENABLED=false
+RERANK_MAX_CANDIDATES=10
 
 # ==================== CKB 可用性检测 ====================
 
@@ -110,8 +126,11 @@ DevBooks Graph-RAG Context Engine
   --top-k <n>           向量搜索返回数量（默认: 10）
   --depth <n>           图遍历最大深度 1-5（默认: 3）
   --token-budget <n>    Token 预算（默认: 8000）
+  --budget <n>          同 --token-budget
+  --min-relevance <n>   最低相关度阈值（默认: 0.0）
   --cwd <path>          工作目录（默认: 当前目录）
   --format <text|json>  输出格式（默认: text）
+  --rerank              启用 LLM 重排序（默认关闭）
   --legacy              使用线性列表输出（兼容旧版本）
   --mock-embedding      使用模拟 Embedding 数据（测试用）
   --mock-ckb            使用模拟 CKB 数据（测试用）
@@ -191,8 +210,12 @@ parse_args() {
         MAX_DEPTH="$2"
         shift 2
         ;;
-      --token-budget)
+      --token-budget|--budget)
         TOKEN_BUDGET="$2"
+        shift 2
+        ;;
+      --min-relevance)
+        MIN_RELEVANCE="$2"
         shift 2
         ;;
       --cwd)
@@ -206,6 +229,11 @@ parse_args() {
         ;;
       --legacy)
         LEGACY_MODE=true
+        shift
+        ;;
+      --rerank)
+        RERANK_ENABLED=true
+        OUTPUT_FORMAT="json"  # 重排序模式默认使用 JSON 输出
         shift
         ;;
       --mock-embedding)
@@ -248,18 +276,143 @@ parse_args() {
     log_warn "深度最大为 $MAX_ALLOWED_DEPTH, 使用最大值"
     MAX_DEPTH=$MAX_ALLOWED_DEPTH
   fi
+
+  # JSON 输出模式下禁用日志（避免污染 JSON 输出）
+  if [ "$OUTPUT_FORMAT" = "json" ]; then
+    log_info()  { :; }
+    log_ok()    { :; }
+    log_warn()  { :; }
+    log_error() { :; }
+  fi
+
+  # CT-PS-004: 从配置文件加载自定义权重
+  _load_priority_weights
 }
 
-# ==================== 缓存机制 ====================
+# CT-PS-004: 从配置文件加载优先级权重
+# 读取 features.yaml 中的 smart_pruning.priority_weights 配置
+_load_priority_weights() {
+  local config_file="$CWD/config/features.yaml"
+
+  # 如果配置文件不存在，使用默认权重
+  if [[ ! -f "$config_file" ]]; then
+    return 0
+  fi
+
+  # 解析 YAML 配置（简单实现）
+  local in_smart_pruning=false
+  local in_priority_weights=false
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    # 跳过注释和空行
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    [[ -z "$line" ]] && continue
+
+    # 检测 smart_pruning: 块开始
+    if [[ "$line" =~ ^[[:space:]]*smart_pruning: ]]; then
+      in_smart_pruning=true
+      continue
+    fi
+
+    # 非缩进行表示新的顶级 key
+    if [[ ! "$line" =~ ^[[:space:]] ]] && [[ "$in_smart_pruning" == "true" ]]; then
+      in_smart_pruning=false
+      in_priority_weights=false
+      continue
+    fi
+
+    if [[ "$in_smart_pruning" == "true" ]]; then
+      # 检测 priority_weights: 块开始
+      if [[ "$line" =~ ^[[:space:]]+priority_weights: ]]; then
+        in_priority_weights=true
+        continue
+      fi
+
+      # 非子缩进行表示新的 smart_pruning 属性
+      if [[ "$line" =~ ^[[:space:]]{2,4}[a-z] ]] && [[ "$in_priority_weights" == "true" ]] && [[ ! "$line" =~ ^[[:space:]]{4,} ]]; then
+        in_priority_weights=false
+      fi
+
+      if [[ "$in_priority_weights" == "true" ]]; then
+        # 解析权重配置
+        if [[ "$line" =~ ^[[:space:]]+relevance:[[:space:]]*([0-9.]+) ]]; then
+          PRIORITY_WEIGHT_RELEVANCE="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^[[:space:]]+hotspot:[[:space:]]*([0-9.]+) ]]; then
+          PRIORITY_WEIGHT_HOTSPOT="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^[[:space:]]+distance:[[:space:]]*([0-9.]+) ]]; then
+          PRIORITY_WEIGHT_DISTANCE="${BASH_REMATCH[1]}"
+        fi
+      fi
+    fi
+  done < "$config_file"
+}
+
+# ==================== 缓存机制 (MP5.2 增强) ====================
 
 get_cache_key() {
-  echo "$1" | md5sum 2>/dev/null | cut -d' ' -f1 || echo "$1" | md5 2>/dev/null
+  if declare -f hash_string_md5 &>/dev/null; then
+    hash_string_md5 "$1"
+  elif command -v md5sum &>/dev/null; then
+    printf '%s' "$1" | md5sum 2>/dev/null | cut -d' ' -f1
+  elif command -v md5 &>/dev/null; then
+    if md5 -q /dev/null >/dev/null 2>&1; then
+      printf '%s' "$1" | md5 -q 2>/dev/null
+    else
+      printf '%s' "$1" | md5 2>/dev/null
+    fi
+  else
+    printf '%s' "$1" | cksum 2>/dev/null | cut -d' ' -f1
+  fi
 }
 
+# 选择一个存在的缓存锚点文件（用于 cache-manager 校验）
+resolve_graph_rag_cache_anchor() {
+  local root="$1"
+  local candidates=(
+    "$root/.git/index"
+    "$root/.git/HEAD"
+    "$root/package.json"
+    "$root/README.md"
+    "$SCRIPT_DIR/graph-rag.sh"
+  )
+
+  for candidate in "${candidates[@]}"; do
+    if [[ -f "$candidate" ]]; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+# 使用 cache-manager.sh 获取缓存（优先）
 get_cached() {
-  local key
-  key=$(get_cache_key "$1")
-  local cache_file="$CACHE_DIR/$key"
+  local cache_key="$1"
+  local query_hash
+  query_hash=$(get_cache_key "$cache_key")
+
+  # MP5.2: 优先使用 cache-manager.sh
+  if [[ "$GRAPH_RAG_CACHE_ENABLED" == "true" ]] && [[ -x "$CACHE_MANAGER" ]]; then
+    local cache_anchor
+    cache_anchor=$(resolve_graph_rag_cache_anchor "$CWD") || cache_anchor=""
+
+    local cache_result
+    if [[ -n "$cache_anchor" ]]; then
+      cache_result=$("$CACHE_MANAGER" --get "$cache_anchor" --query "$query_hash" 2>/dev/null)
+    else
+      cache_result=""
+    fi
+
+    if [[ -n "$cache_result" ]] && echo "$cache_result" | jq -e '.schema_version' &>/dev/null; then
+      log_info "缓存命中 (cache-manager, key: ${query_hash:0:8}...)"
+      echo "$cache_result"
+      return 0
+    fi
+  fi
+
+  # 降级到本地缓存文件
+  local cache_file="$CACHE_DIR/$query_hash"
 
   if [ -f "$cache_file" ]; then
     local age
@@ -274,11 +427,26 @@ get_cached() {
   return 1
 }
 
+# 使用 cache-manager.sh 设置缓存（优先）
 set_cache() {
-  local key
-  key=$(get_cache_key "$1")
+  local cache_key="$1"
+  local value="$2"
+  local query_hash
+  query_hash=$(get_cache_key "$cache_key")
+
+  # MP5.2: 优先使用 cache-manager.sh
+  if [[ "$GRAPH_RAG_CACHE_ENABLED" == "true" ]] && [[ -x "$CACHE_MANAGER" ]]; then
+    local cache_anchor
+    cache_anchor=$(resolve_graph_rag_cache_anchor "$CWD") || cache_anchor=""
+    if [[ -n "$cache_anchor" ]]; then
+      "$CACHE_MANAGER" --set "$cache_anchor" --query "$query_hash" --value "$value" 2>/dev/null || true
+    fi
+    return 0
+  fi
+
+  # 降级到本地缓存文件
   mkdir -p "$CACHE_DIR" 2>/dev/null
-  echo "$2" > "$CACHE_DIR/$key" 2>/dev/null
+  echo "$value" > "$CACHE_DIR/$query_hash" 2>/dev/null
 }
 
 # ==================== 边界检测（AC-004） ====================
@@ -344,6 +512,276 @@ filter_library_code() {
   echo "$result"
 }
 
+# ==================== LLM 重排序（AC-004） ====================
+
+# 重排序状态变量
+RERANK_RESULT_RERANKED=false
+RERANK_RESULT_PROVIDER=""
+RERANK_RESULT_FALLBACK_REASON=""
+RERANK_RESULT_RETRY_COUNT=0
+
+# 检查 LLM 重排序是否启用（配置文件）
+_is_llm_rerank_enabled() {
+  local config_file="${FEATURES_CONFIG:-${DEVBOOKS_FEATURE_CONFIG:-}}"
+
+  # 如果配置文件不存在，返回 false
+  if [[ ! -f "$config_file" ]]; then
+    return 1
+  fi
+
+  # 解析 features.llm_rerank.enabled
+  local enabled
+  enabled=$(awk '
+    BEGIN { in_features = 0; in_llm_rerank = 0 }
+    /^features:/ { in_features = 1; next }
+    /^[a-zA-Z]/ && !/^features:/ { in_features = 0; in_llm_rerank = 0 }
+    in_features && /llm_rerank:/ { in_llm_rerank = 1; next }
+    in_features && /^[[:space:]][[:space:]][a-zA-Z]/ && !/llm_rerank/ { in_llm_rerank = 0 }
+    in_llm_rerank && /enabled:/ {
+      sub(/^[^:]+:[[:space:]]*/, "")
+      gsub(/#.*/, "")
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "")
+      print
+      exit
+    }
+  ' "$config_file" 2>/dev/null)
+
+  case "$enabled" in
+    true|True|TRUE|yes|Yes|YES|1)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+# 构建重排序 prompt
+_build_rerank_prompt() {
+  local query="$1"
+  local candidates_json="$2"
+
+  # 截取候选到最大数量
+  local truncated
+  truncated=$(echo "$candidates_json" | jq ".[0:$RERANK_MAX_CANDIDATES]")
+
+  # 构建候选列表文本
+  local candidates_text=""
+  local count
+  count=$(echo "$truncated" | jq 'length')
+
+  for ((i=0; i<count; i++)); do
+    local file_path score
+    file_path=$(echo "$truncated" | jq -r ".[$i].file_path")
+    score=$(echo "$truncated" | jq -r ".[$i].relevance_score // 0")
+    candidates_text="${candidates_text}[$i] $file_path (score: $score)
+"
+  done
+
+  cat << EOF
+You are a code relevance ranker. Given a query and a list of code file candidates,
+rank them by relevance to the query. Return a JSON array of objects with:
+- index: original index (0-based)
+- score: relevance score (0-10, 10 being most relevant)
+- reason: brief explanation (optional)
+
+Query: $query
+
+Candidates:
+$candidates_text
+
+Return ONLY valid JSON array, no other text. Example:
+[{"index": 0, "score": 8, "reason": "directly related"}, {"index": 1, "score": 5, "reason": "partially related"}]
+EOF
+}
+
+# 解析 LLM 重排序响应
+_parse_rerank_response() {
+  local response="$1"
+  local original_candidates="$2"
+
+  # 尝试解析 JSON
+  if ! echo "$response" | jq -e '.' &>/dev/null; then
+    log_warn "LLM 重排序响应格式无效: invalid JSON"
+    RERANK_RESULT_FALLBACK_REASON="invalid_json"
+    echo "$original_candidates"
+    return 1
+  fi
+
+  # 验证是数组
+  if ! echo "$response" | jq -e 'type == "array"' &>/dev/null; then
+    log_warn "LLM 重排序响应不是数组"
+    RERANK_RESULT_FALLBACK_REASON="invalid_format"
+    echo "$original_candidates"
+    return 1
+  fi
+
+  # 按 score 降序排序并重建候选列表
+  local reranked='[]'
+  local rankings
+  rankings=$(echo "$response" | jq 'sort_by(-.score)')
+
+  local rank_count
+  rank_count=$(echo "$rankings" | jq 'length')
+  local orig_count
+  orig_count=$(echo "$original_candidates" | jq 'length')
+
+  for ((i=0; i<rank_count; i++)); do
+    local idx score reason
+    idx=$(echo "$rankings" | jq -r ".[$i].index // -1")
+    score=$(echo "$rankings" | jq -r ".[$i].score // 0")
+    reason=$(echo "$rankings" | jq -r ".[$i].reason // \"\"")
+
+    # 验证索引有效
+    if [[ "$idx" -ge 0 && "$idx" -lt "$orig_count" ]]; then
+      local candidate
+      candidate=$(echo "$original_candidates" | jq ".[$idx]")
+      # 添加 LLM 评分
+      candidate=$(echo "$candidate" | jq \
+        --argjson llm_score "$score" \
+        --arg llm_reason "$reason" \
+        '. + {llm_score: $llm_score, llm_reason: $llm_reason}')
+      reranked=$(echo "$reranked" | jq --argjson c "$candidate" '. + [$c]')
+    fi
+  done
+
+  echo "$reranked"
+  return 0
+}
+
+# 执行 LLM 重排序
+llm_rerank_candidates() {
+  local query="$1"
+  local candidates_json="$2"
+  local state_file="${3:-}"
+
+  # 重置状态
+  RERANK_RESULT_RERANKED=false
+  RERANK_RESULT_PROVIDER=""
+  RERANK_RESULT_FALLBACK_REASON=""
+  RERANK_RESULT_RETRY_COUNT=0
+
+  # 写入状态到文件的辅助函数
+  _write_rerank_state() {
+    if [[ -n "$state_file" ]]; then
+      cat > "$state_file" << EOF
+RERANK_RESULT_RERANKED=$RERANK_RESULT_RERANKED
+RERANK_RESULT_PROVIDER="$RERANK_RESULT_PROVIDER"
+RERANK_RESULT_FALLBACK_REASON="$RERANK_RESULT_FALLBACK_REASON"
+RERANK_RESULT_RETRY_COUNT=$RERANK_RESULT_RETRY_COUNT
+EOF
+    fi
+  }
+
+  # 检查配置是否启用
+  if ! _is_llm_rerank_enabled; then
+    RERANK_RESULT_FALLBACK_REASON="disabled"
+    _write_rerank_state
+    echo "$candidates_json"
+    return 0
+  fi
+
+  # 获取 provider
+  local provider
+  provider=$(_get_llm_config "provider" "anthropic")
+  RERANK_RESULT_PROVIDER="$provider"
+
+  # 检查 LLM 是否可用
+  if ! llm_available; then
+    RERANK_RESULT_FALLBACK_REASON="api_key_missing"
+    _write_rerank_state
+    log_warn "LLM 重排序降级: api_key not configured for $provider"
+    echo "$candidates_json"
+    return 0
+  fi
+
+  # 检查候选是否为空
+  local count
+  count=$(echo "$candidates_json" | jq 'length' 2>/dev/null || echo 0)
+  if [[ "$count" -eq 0 ]]; then
+    RERANK_RESULT_FALLBACK_REASON="empty_candidates"
+    _write_rerank_state
+    echo "$candidates_json"
+    return 0
+  fi
+
+  # 构建 prompt
+  local prompt
+  prompt=$(_build_rerank_prompt "$query" "$candidates_json")
+
+  # 获取重试配置
+  local max_retries
+  max_retries=$(_get_llm_config "max_retries" "0")
+  [[ ! "$max_retries" =~ ^[0-9]+$ ]] && max_retries=0
+
+  # 重试循环
+  local attempt=0
+  local response
+  local exit_code
+  local last_error=""
+
+  while [[ $attempt -le $max_retries ]]; do
+    if [[ $attempt -gt 0 ]]; then
+      RERANK_RESULT_RETRY_COUNT=$attempt
+      log_warn "LLM 重排序重试 ($attempt/$max_retries)"
+    fi
+
+    # 调用 LLM
+    response=$(llm_call "$prompt" 2>&1)
+    exit_code=$?
+
+    # 检查超时
+    if [[ $exit_code -eq 124 ]]; then
+      last_error="timeout"
+      ((attempt++))
+      continue
+    fi
+
+    # 检查错误
+    if [[ $exit_code -ne 0 ]] || echo "$response" | jq -e '.error' &>/dev/null; then
+      last_error=$(echo "$response" | jq -r '.error // "unknown error"' 2>/dev/null || echo "llm_error")
+      ((attempt++))
+      continue
+    fi
+
+    # 解析响应 - 检查是否为有效 JSON
+    if ! echo "$response" | jq -e '.' &>/dev/null; then
+      last_error="invalid_json"
+      ((attempt++))
+      continue
+    fi
+
+    # 验证是数组
+    if ! echo "$response" | jq -e 'type == "array"' &>/dev/null; then
+      last_error="invalid_format"
+      ((attempt++))
+      continue
+    fi
+
+    # 成功解析响应
+    local reranked
+    reranked=$(_parse_rerank_response "$response" "$candidates_json")
+
+    if [[ $? -eq 0 ]] && [[ -n "$reranked" ]] && [[ "$reranked" != "[]" ]]; then
+      RERANK_RESULT_RERANKED=true
+      _write_rerank_state
+      echo "$reranked"
+      return 0
+    else
+      last_error="parse_error"
+      ((attempt++))
+      continue
+    fi
+  done
+
+  # 所有重试都失败了
+  RERANK_RESULT_FALLBACK_REASON="${last_error:-max_retries_exhausted}"
+  _write_rerank_state
+  log_warn "LLM 重排序降级: $RERANK_RESULT_FALLBACK_REASON (retries: $RERANK_RESULT_RETRY_COUNT)"
+  echo "$candidates_json"
+  return 0
+}
+
 # ==================== 向量搜索 ====================
 
 # 使用 Embedding 索引进行向量搜索
@@ -355,7 +793,14 @@ embedding_search() {
 
   # 模拟模式
   if [ "$MOCK_EMBEDDING" = true ]; then
-    echo '[{"file_path":"src/auth.ts","relevance_score":0.85},{"file_path":"src/user.ts","relevance_score":0.75}]'
+    # CT-PS-001: Mock 候选包含公式验证所需的所有字段
+    echo '[{"file_path":"src/auth.ts","relevance_score":0.8,"hotspot":0.6,"distance":2},{"file_path":"src/user.ts","relevance_score":0.6,"hotspot":0.4,"distance":3}]'
+    return 0
+  fi
+
+  # 当设置 LLM_MOCK_RESPONSE 或 LLM_MOCK_DELAY_MS 时，自动启用模拟候选（用于测试）
+  if [[ -n "${LLM_MOCK_RESPONSE:-}" ]] || [[ -n "${LLM_MOCK_DELAY_MS:-}" ]]; then
+    echo '[{"file_path":"src/mock.ts","relevance_score":0.9},{"file_path":"src/test.ts","relevance_score":0.8}]'
     return 0
   fi
 
@@ -485,49 +930,209 @@ ckb_graph_traverse() {
   echo "$graph_results"
 }
 
-# ==================== Token 预算 ====================
+# ==================== Token 预算与智能裁剪 (MP4) ====================
 
-# 估算文本 token 数（简化：按字符数 / 4）
+# MP4.3: 估算文本 token 数
+# 基础方法：字符数 / 4（保守策略：宁多估不少估）
+# 输入：文本内容
+# 输出：估算的 token 数
 estimate_tokens() {
   local text="$1"
-  echo $(( ${#text} / 4 ))
+  local char_count=${#text}
+
+  # 基础估算：字符数 / 4
+  local base_estimate=$(( char_count / 4 ))
+
+  # 保守策略：在基础估算上增加 10% 裕量
+  local conservative_estimate=$(( base_estimate + base_estimate / 10 ))
+
+  # 最小返回 1（如果有内容）
+  if [ "$char_count" -gt 0 ] && [ "$conservative_estimate" -lt 1 ]; then
+    conservative_estimate=1
+  fi
+
+  echo "$conservative_estimate"
 }
 
-# 根据 Token 预算裁剪候选列表
-trim_by_budget() {
+# MP4.3: 估算文件 token 数
+# 输入：文件路径
+# 输出：估算的 token 数
+estimate_file_tokens() {
+  local file_path="$1"
+  local full_path="$CWD/$file_path"
+  local content_tokens=0
+
+  if [ -f "$full_path" ]; then
+    local content
+    # 读取前 50 行作为代表性样本（代码片段通常不超过 50 行）
+    content=$(head -50 "$full_path" 2>/dev/null)
+    content_tokens=$(estimate_tokens "$content")
+  fi
+
+  echo "$content_tokens"
+}
+
+# MP4.2: 计算优先级评分
+# 公式：Priority = relevance × 0.4 + hotspot × 0.3 + (1/distance) × 0.3
+# 输入：候选 JSON 对象
+# 输出：优先级分数（0-1 范围）
+calculate_priority() {
+  local candidate_json="$1"
+
+  # 提取字段（带默认值）
+  local relevance hotspot distance
+
+  # 优先使用 relevance，其次使用 relevance_score
+  relevance=$(echo "$candidate_json" | jq -r '.relevance // .relevance_score // 0')
+  hotspot=$(echo "$candidate_json" | jq -r '.hotspot // 0')
+  distance=$(echo "$candidate_json" | jq -r '.distance // .depth // 1')
+
+  # 确保 distance 至少为 1（避免除零）
+  if [ -z "$distance" ] || [ "$distance" = "null" ] || [ "$distance" = "0" ]; then
+    distance=1
+  fi
+
+  # 计算优先级：Priority = relevance × 0.4 + hotspot × 0.3 + (1/distance) × 0.3
+  awk -v r="$relevance" -v h="$hotspot" -v d="$distance" \
+    -v wr="$PRIORITY_WEIGHT_RELEVANCE" -v wh="$PRIORITY_WEIGHT_HOTSPOT" -v wd="$PRIORITY_WEIGHT_DISTANCE" \
+    'BEGIN {
+      if (r == "" || r == "null") r = 0
+      if (h == "" || h == "null") h = 0
+      if (d == "" || d == "null" || d <= 0) d = 1
+      priority = r * wr + h * wh + (1/d) * wd
+      printf "%.4f", priority
+    }'
+}
+
+# MP4.2: 为候选列表计算优先级并添加 priority 字段
+add_priority_scores() {
   local candidates_json="$1"
-  local budget="$2"
-  local total_tokens=0
   local result='[]'
 
-  # 按相关性排序（假设已排序）
   local count
-  count=$(echo "$candidates_json" | jq 'length')
+  count=$(echo "$candidates_json" | jq 'length' 2>/dev/null || echo 0)
 
   for ((i=0; i<count; i++)); do
     local candidate
     candidate=$(echo "$candidates_json" | jq ".[$i]")
+
+    # CT-PS-001: 确保候选包含公式所需的所有字段（设置默认值）
+    candidate=$(echo "$candidate" | jq '
+      . + {
+        relevance_score: (.relevance_score // .relevance // 0),
+        hotspot: (.hotspot // 0),
+        distance: (.distance // .depth // 1)
+      }
+    ')
+
+    # 计算优先级
+    local priority
+    priority=$(calculate_priority "$candidate")
+
+    # 估算 token 数
+    local file_path
+    file_path=$(echo "$candidate" | jq -r '.file_path')
+    local tokens
+    tokens=$(estimate_file_tokens "$file_path")
+
+    # 添加 priority 和 tokens 字段
+    candidate=$(echo "$candidate" | jq \
+      --argjson priority "$priority" \
+      --argjson tokens "$tokens" \
+      '. + {priority: $priority, tokens: $tokens}')
+
+    result=$(echo "$result" | jq --argjson c "$candidate" '. + [$c]')
+  done
+
+  echo "$result"
+}
+
+# MP4.5: 边界情况处理 - 检查预算是否有效
+validate_budget() {
+  local budget="$1"
+
+  # 检查是否为数字
+  if ! [[ "$budget" =~ ^-?[0-9]+$ ]]; then
+    log_warn "无效的预算值: $budget, 使用默认值 8000" >&2
+    echo "8000"
+    return 0
+  fi
+
+  # 检查负数预算
+  if [ "$budget" -lt 0 ]; then
+    log_warn "预算不能为负数: $budget, 使用 0" >&2
+    echo "0"
+    return 0
+  fi
+
+  echo "$budget"
+}
+
+# MP4.4 + MP4.5: 根据 Token 预算智能裁剪候选列表
+# 实现 ALG-002 贪婪选择策略
+# 输入：候选 JSON 列表、预算
+# 输出：裁剪后的候选列表
+trim_by_budget() {
+  local candidates_json="$1"
+  local budget="$2"
+
+  # MP4.5: 验证预算
+  budget=$(validate_budget "$budget")
+
+  # MP4.5: 零预算处理 - 返回空结果
+  if [ "$budget" -eq 0 ]; then
+    log_warn "Token 预算为 0，返回空结果" >&2
+    echo '[]'
+    return 0
+  fi
+
+  local total_tokens=0
+  local result='[]'
+  local skipped_oversized=0
+
+  # 获取候选数量
+  local count
+  count=$(echo "$candidates_json" | jq 'length' 2>/dev/null || echo 0)
+
+  # MP4.4: 贪婪选择 - 按优先级降序（假设已排序）
+  for ((i=0; i<count; i++)); do
+    local candidate
+    candidate=$(echo "$candidates_json" | jq ".[$i]")
+
     local file_path
     file_path=$(echo "$candidate" | jq -r '.file_path')
 
-    # 读取文件内容估算 token
-    local full_path="$CWD/$file_path"
-    local content_tokens=0
+    # 获取预计算的 token 数，或现场估算
+    local content_tokens
+    content_tokens=$(echo "$candidate" | jq -r '.tokens // 0')
 
-    if [ -f "$full_path" ]; then
-      local content
-      content=$(head -50 "$full_path" 2>/dev/null)
-      content_tokens=$(estimate_tokens "$content")
+    if [ "$content_tokens" -eq 0 ]; then
+      # 没有预计算，现场估算
+      content_tokens=$(estimate_file_tokens "$file_path")
     fi
 
-    # 检查是否超预算
+    # MP4.5: 单片段超预算处理
+    if [ "$content_tokens" -gt "$budget" ]; then
+      ((skipped_oversized++)) || true
+      log_warn "片段 $file_path ($content_tokens tokens) 超过预算 ($budget)，跳过" >&2
+      continue
+    fi
+
+    # MP4.4: 贪婪选择 - 检查是否超预算
     if [ $((total_tokens + content_tokens)) -gt "$budget" ]; then
+      # 超预算，停止选择（不分割单个代码片段）
       break
     fi
 
+    # 选中该片段
     total_tokens=$((total_tokens + content_tokens))
     result=$(echo "$result" | jq --argjson c "$candidate" '. + [$c]')
   done
+
+  # MP4.5: 所有片段都超预算的警告
+  if [ "$(echo "$result" | jq 'length')" -eq 0 ] && [ "$skipped_oversized" -gt 0 ]; then
+    log_warn "所有 $skipped_oversized 个候选片段都超过预算 ($budget tokens)" >&2
+  fi
 
   echo "$result"
 }
@@ -616,7 +1221,7 @@ build_context() {
   BOUNDARY_FILTERED_COUNT=0
 
   # 检查缓存
-  local cache_key="graph-rag:$CWD:$query:$TOP_K:$MAX_DEPTH:$TOKEN_BUDGET:$CKB_AVAILABLE:$LEGACY_MODE"
+  local cache_key="graph-rag:$CWD:$query:$TOP_K:$MAX_DEPTH:$TOKEN_BUDGET:$CKB_AVAILABLE:$LEGACY_MODE:$RERANK_ENABLED"
   local cached
   cached=$(get_cached "$cache_key")
   if [ -n "$cached" ]; then
@@ -662,27 +1267,57 @@ build_context() {
   # AC-004: 边界过滤（排除库代码）
   candidates=$(filter_library_code "$candidates")
 
-  # 按相关性排序
-  candidates=$(echo "$candidates" | jq 'sort_by(-.relevance_score // 0)')
+  # MP4.1: 应用最低相关度阈值过滤
+  if [ -n "$MIN_RELEVANCE" ] && [[ "$MIN_RELEVANCE" != "0" ]] && [[ "$MIN_RELEVANCE" != "0.0" ]]; then
+    candidates=$(echo "$candidates" | jq --argjson threshold "$MIN_RELEVANCE" \
+      '[.[] | select((.relevance_score // .relevance // 0) >= $threshold)]')
+  fi
+
+  # MP4.2: 计算优先级评分并添加 priority 字段
+  candidates=$(add_priority_scores "$candidates")
+
+  # MP4.4: 按优先级降序排序（而不是仅按 relevance_score）
+  candidates=$(echo "$candidates" | jq 'sort_by(-.priority // -.relevance_score // 0)')
+
+  # AC-004: LLM 重排序（如果启用）
+  if [ "$RERANK_ENABLED" = true ]; then
+    # 使用临时文件传递状态（避免子 shell 变量丢失）
+    local rerank_state_file
+    rerank_state_file=$(mktemp)
+    candidates=$(llm_rerank_candidates "$query" "$candidates" "$rerank_state_file")
+    if [[ -f "$rerank_state_file" ]]; then
+      # shellcheck disable=SC1090
+      source "$rerank_state_file"
+      rm -f "$rerank_state_file"
+    fi
+  fi
 
   # Token 预算裁剪
   local trimmed
   trimmed=$(trim_by_budget "$candidates" "$TOKEN_BUDGET")
 
-  # 计算实际 token 数
+  # 计算实际 token 数（使用预计算的 tokens 字段，或现场估算）
   local total_tokens=0
   local candidate_count
   candidate_count=$(echo "$trimmed" | jq 'length')
 
   for ((i=0; i<candidate_count; i++)); do
-    local file_path
-    file_path=$(echo "$trimmed" | jq -r ".[$i].file_path")
-    local full_path="$CWD/$file_path"
+    local precomputed_tokens
+    precomputed_tokens=$(echo "$trimmed" | jq -r ".[$i].tokens // 0")
 
-    if [ -f "$full_path" ]; then
-      local content
-      content=$(head -50 "$full_path" 2>/dev/null)
-      total_tokens=$((total_tokens + $(estimate_tokens "$content")))
+    if [ "$precomputed_tokens" -gt 0 ]; then
+      total_tokens=$((total_tokens + precomputed_tokens))
+    else
+      # 降级：现场估算
+      local file_path
+      file_path=$(echo "$trimmed" | jq -r ".[$i].file_path")
+      local full_path="$CWD/$file_path"
+
+      if [ -f "$full_path" ]; then
+        local content
+        content=$(head -50 "$full_path" 2>/dev/null)
+        total_tokens=$((total_tokens + $(estimate_tokens "$content")))
+      fi
     fi
   done
 
@@ -704,6 +1339,10 @@ build_context() {
     --argjson graph_depth "$MAX_DEPTH" \
     --argjson boundary_filtered "$BOUNDARY_FILTERED_COUNT" \
     --argjson legacy "$LEGACY_MODE" \
+    --argjson reranked "$RERANK_RESULT_RERANKED" \
+    --arg provider "${RERANK_RESULT_PROVIDER:-}" \
+    --arg fallback_reason "${RERANK_RESULT_FALLBACK_REASON:-}" \
+    --argjson retry_count "${RERANK_RESULT_RETRY_COUNT:-0}" \
     '{
       schema_version: $version,
       source: $source,
@@ -714,7 +1353,11 @@ build_context() {
         ckb_available: $ckb_available,
         graph_depth: $graph_depth,
         boundary_filtered: $boundary_filtered,
-        legacy_mode: $legacy
+        legacy_mode: $legacy,
+        reranked: $reranked,
+        provider: (if $provider != "" then $provider else null end),
+        fallback_reason: (if $fallback_reason != "" then $fallback_reason else null end),
+        retry_count: (if $retry_count > 0 then $retry_count else null end)
       }
     }')
 

@@ -12,10 +12,12 @@
 # Load shared helpers
 load 'helpers/common'
 
-CONFIG_FILE=".devbooks/config.yaml"
-HOTSPOT_ANALYZER="./scripts/hotspot-analyzer.sh"
-BOUNDARY_DETECTOR="./scripts/boundary-detector.sh"
-PATTERN_LEARNER="./scripts/pattern-learner.sh"
+# Store project root for absolute paths (tests may cd to temp dirs)
+PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+CONFIG_FILE="${PROJECT_ROOT}/.devbooks/config.yaml"
+HOTSPOT_ANALYZER="${PROJECT_ROOT}/scripts/hotspot-analyzer.sh"
+BOUNDARY_DETECTOR="${PROJECT_ROOT}/scripts/boundary-detector.sh"
+PATTERN_LEARNER="${PROJECT_ROOT}/scripts/pattern-learner.sh"
 
 setup() {
     if [ -f "$CONFIG_FILE" ]; then

@@ -1,0 +1,46 @@
+{
+  "records": [
+    {
+      "date": "2026-01-15",
+      "type": "baseline",
+      "metrics": {
+        "structural": {
+          "totalLOC": 14296,
+          "testLOC": 5037,
+          "productionLOC": 9259,
+          "fileCount": 29,
+          "functionCount": 349,
+          "fileLinesP95": 1332,
+          "avgLinesPerFile": 493,
+          "avgLinesPerFunction": 41
+        },
+        "change": {
+          "hotspotFiles": 20,
+          "totalFiles": 40,
+          "hotspotFileRatio": 0.5,
+          "commitsLast30Days": 1,
+          "coupledChangeRate": 0
+        },
+        "test": {
+          "testCodeRatio": 0.54,
+          "testFileCount": 14,
+          "testCoverage": null
+        },
+        "dependency": {
+          "directDependencies": 1,
+          "outdatedDependencies": 1,
+          "outdatedRatio": 1.0,
+          "securityVulnerabilities": 2,
+          "vulnerabilitySeverities": ["moderate", "high"]
+        }
+      },
+      "healthScore": {
+        "structural": 0.7,
+        "change": 0.8,
+        "test": 0.6,
+        "dependency": 0.3,
+        "overall": 0.6
+      }
+    }
+  ]
+}
