@@ -102,42 +102,68 @@ ci_bug_locate --error "TypeError: Cannot read property 'user'"
 | Tool | Description |
 |------|-------------|
 | `ci_search` | Semantic code search with embeddings |
-| `ci_graph_rag` | Graph-based context retrieval |
+| `ci_graph_rag` | Graph-based context retrieval with smart pruning |
 | `ci_call_chain` | Function call chain tracing |
-| `ci_bug_locate` | Intelligent bug location |
+| `ci_bug_locate` | Intelligent bug location with impact analysis |
 | `ci_complexity` | Code complexity analysis |
 | `ci_hotspot` | High-churn file detection |
-| `ci_impact` | Transitive impact analysis |
+| `ci_impact` | Transitive impact analysis with confidence decay |
 | `ci_arch_check` | Architecture rule validation |
-| `ci_vuln` | Vulnerability scanning |
+| `ci_vuln` | Vulnerability scanning and dependency tracing |
+| `ci_index_status` | Manage embedding index (status/build/clear) |
+| `ci_boundary` | Code boundary detection (user/library/generated) |
+| `ci_graph_store` | Graph store operations (init/query/stats) |
+| `ci_federation` | Cross-repo API contract tracking |
+| `ci_ast_delta` | Incremental AST parsing |
+| `ci_cod` | Architecture visualization (Mermaid/D3.js) |
+| `ci_intent` | Query history and preference learning |
 
-[See all 20+ tools →](docs/TECHNICAL.md#mcp-tools)
+**20+ tools available** - Each tool supports `--help` for detailed usage.
 
 ## Configuration
 
 ### Embedding Providers
 
-Supports multiple embedding providers:
+Supports multiple embedding providers for semantic search:
 
 ```yaml
 # config/llm-providers.yaml
 embedding:
   provider: ollama  # or openai, anthropic
   model: nomic-embed-text
+
+  # Ollama (local, free)
+  # provider: ollama
+  # base_url: http://localhost:11434
+
+  # OpenAI (cloud, paid)
+  # provider: openai
+  # api_key: sk-...
+
+  # Anthropic (cloud, paid)
+  # provider: anthropic
+  # api_key: sk-ant-...
 ```
 
 ### Optional Features
 
 All features degrade gracefully:
-- No embeddings? Falls back to keyword search
-- No SCIP index? Uses regex parsing
-- No external tools? Core features still work
+- **No embeddings?** Falls back to keyword search
+- **No SCIP index?** Uses regex parsing
+- **No external tools?** Core features still work
+- **No git history?** Hotspot analysis disabled
+
+This means you can start using the MCP server immediately without any configuration.
 
 ## Documentation
 
-- Technical Documentation: `docs/TECHNICAL.md` - Complete API reference and architecture
-- Configuration Guide: `docs/TECHNICAL.md` - Detailed configuration options
-- Architecture: `docs/TECHNICAL.md` - System design and components
+For advanced usage, see the local documentation:
+- Complete tool reference and examples
+- Architecture and system design
+- Performance tuning guide
+- Troubleshooting tips
+
+Run `./install.sh` to access full documentation locally.
 
 ## Examples
 

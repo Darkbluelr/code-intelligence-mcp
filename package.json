@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "start": "node dist/server.js",
     "lint": "shellcheck scripts/*.sh hooks/*.sh",
     "test": "echo \"No tests yet\" && exit 0"

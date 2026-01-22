@@ -16,7 +16,7 @@ Code Intelligence MCP Server 通过以下功能增强 AI 编程助手对代码�
 - **调用链分析**：追踪函数依赖和影响
 - **智能上下文**：自动向 AI 对话注入相关代码片段
 
-完美适配 [Claude Code](https://claude.ai/code)、[Cline](https://github.com/cline/cline) 或任何兼容 MCP 的 AI 助手。
+完美适配 Claude Code、Cline 或任何兼容 MCP 的 AI 助手。
 
 ## 快速开始
 
@@ -137,9 +137,13 @@ embedding:
 
 ## 文档
 
-- [技术文档](docs/TECHNICAL.md) - 完整 API 参考和架构
-- [配置指南](docs/TECHNICAL.md#configuration) - 详细配置选项
-- [架构说明](docs/TECHNICAL.md#architecture) - 系统设计和组件
+高级用法请参考本地文档：
+- 完整工具参考和示例
+- 架构和系统设计
+- 性能调优指南
+- 故障排除技巧
+
+运行 `./install.sh` 以访问完整本地文档。
 
 ## 示例
 
@@ -178,7 +182,7 @@ ci_arch_check --path src/
 
 ## 贡献
 
-欢迎贡献！请先阅读我们的[贡献指南](CONTRIBUTING.md)。
+欢迎贡献！请先阅读 `CONTRIBUTING.md`。
 
 ## 许可证
 
@@ -186,11 +190,8 @@ MIT License - 详见 [LICENSE](LICENSE) 文件。
 
 ## 致谢
 
-构建于：
-- [Model Context Protocol](https://modelcontextprotocol.io/) by Anthropic
-- [tree-sitter](https://tree-sitter.github.io/) 用于 AST 解析
-- [SCIP](https://github.com/sourcegraph/scip) 用于代码索引
+构建于：Model Context Protocol、tree-sitter、SCIP
 
 ---
 
-**需要帮助？** [提交 issue](https://github.com/Darkbluelr/code-intelligence-mcp/issues) 或查看[文档](docs/TECHNICAL.md)。
+需要帮助？请在你的仓库提交 issue 或查看 `docs/TECHNICAL.md`。
