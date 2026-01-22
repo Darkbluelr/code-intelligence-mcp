@@ -1,0 +1,3 @@
+{"query": "graph store", "expected": ["scripts/graph-store.sh", "scripts/graph-rag.sh"]}
+{"query": "call chain", "expected": ["scripts/call-chain.sh"]}
+{"query": "semantic anomaly", "expected": ["scripts/semantic-anomaly.sh"]}

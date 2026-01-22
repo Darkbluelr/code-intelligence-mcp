@@ -1,0 +1,12 @@
+[
+  {"type": "UNUSED_IMPORT", "file": "benchmark.ts", "line": 1},
+  {"type": "UNUSED_IMPORT", "file": "benchmark.ts", "line": 2},
+  {"type": "MISSING_ERROR_HANDLER", "file": "benchmark.ts", "line": 5},
+  {"type": "MISSING_ERROR_HANDLER", "file": "benchmark.ts", "line": 6},
+  {"type": "NAMING_VIOLATION", "file": "benchmark.ts", "line": 8},
+  {"type": "NAMING_VIOLATION", "file": "benchmark.ts", "line": 9},
+  {"type": "MISSING_LOG", "file": "benchmark.ts", "line": 10},
+  {"type": "MISSING_LOG", "file": "benchmark.ts", "line": 11},
+  {"type": "INCONSISTENT_API_CALL", "file": "benchmark.ts", "line": 15},
+  {"type": "INCONSISTENT_API_CALL", "file": "benchmark.ts", "line": 16}
+]

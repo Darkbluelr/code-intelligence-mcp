@@ -28,7 +28,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 # 设置日志前缀
-LOG_PREFIX="ast-delta"
+export LOG_PREFIX="ast-delta"
 
 # ==================== 配置 ====================
 
@@ -43,12 +43,18 @@ LOG_PREFIX="ast-delta"
 # 版本戳文件
 VERSION_STAMP_FILE="$AST_CACHE_DIR/.version"
 
-# 状态常量
+# 状态常量（预留用于未来的状态机实现）
+# shellcheck disable=SC2034
 STATE_IDLE="IDLE"
+# shellcheck disable=SC2034
 STATE_CHECK="CHECK"
+# shellcheck disable=SC2034
 STATE_INCREMENTAL="INCREMENTAL"
+# shellcheck disable=SC2034
 STATE_FULL_REBUILD="FULL_REBUILD"
+# shellcheck disable=SC2034
 STATE_FALLBACK="FALLBACK"
+# shellcheck disable=SC2034
 STATE_CLEANUP="CLEANUP"
 
 # ==================== 辅助函数 ====================

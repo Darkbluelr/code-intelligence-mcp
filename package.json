@@ -19,8 +19,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/user/code-intelligence-mcp.git"
+    "url": "git+https://github.com/Darkbluelr/code-intelligence-mcp.git"
   },
+  "bugs": {
+    "url": "https://github.com/Darkbluelr/code-intelligence-mcp/issues"
+  },
+  "homepage": "https://github.com/Darkbluelr/code-intelligence-mcp#readme",
   "keywords": [
     "mcp",
     "code-intelligence",
@@ -39,5 +43,9 @@
     "tree-sitter": "^0.21.1",
     "tree-sitter-typescript": "^0.23.2",
     "typescript": "^5.0.0"
-  }
+  },
+  "overrides": {
+    "hono": ">=4.11.4"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

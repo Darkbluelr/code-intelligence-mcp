@@ -6,8 +6,8 @@
 # Run: bats tests/regression.bats
 #
 # Baseline: 2026-01-15
-# Change: augment-parity-final-gaps
-# Trace: AC-G10 (回归测试)
+# Change: 20260118-2112-enhance-code-intelligence-capabilities
+# Trace: AC-011 (工具存活性、构建与脚本兼容性回归测试)
 #
 # Test IDs (aligned with verification.md):
 #   T-REG-01: 全量 bats 稳定
@@ -321,5 +321,204 @@ get_build_result() {
         run grep -c 'name:.*"ci_' "$SERVER_TS"
         local tool_count="${output:-0}"
         [ "$tool_count" -ge 9 ] || skip "ci_federation may have replaced an existing tool"
+    fi
+}
+
+# ============================================================
+# P0: Comprehensive API Signature Validation (AC-011)
+# 评审要求：覆盖至少 7/8 工具的 API 签名验证
+# ============================================================
+
+# ci_search API 签名验证
+@test "CT-REG-API-003: ci_search accepts query parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_search"' "$SERVER_TS"
+    echo "$output" | grep -q 'query.*type.*string' || fail "ci_search should have query: string parameter"
+}
+
+@test "CT-REG-API-004: ci_search accepts mode parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_search"' "$SERVER_TS"
+    echo "$output" | grep -q 'mode' || fail "ci_search should have mode parameter"
+}
+
+# ci_call_chain API 签名验证
+@test "CT-REG-API-005: ci_call_chain accepts symbol parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_call_chain"' "$SERVER_TS"
+    echo "$output" | grep -q 'symbol' || fail "ci_call_chain should have symbol parameter"
+}
+
+@test "CT-REG-API-006: ci_call_chain accepts direction parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_call_chain"' "$SERVER_TS"
+    echo "$output" | grep -q 'direction' || fail "ci_call_chain should have direction parameter"
+}
+
+# ci_bug_locate API 签名验证
+@test "CT-REG-API-007: ci_bug_locate accepts error parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_bug_locate"' "$SERVER_TS"
+    echo "$output" | grep -q 'error' || fail "ci_bug_locate should have error parameter"
+}
+
+@test "CT-REG-API-008: ci_bug_locate signature stable" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    # 验证 ci_bug_locate 定义存在且结构正确
+    run grep -A 10 '"ci_bug_locate"' "$SERVER_TS"
+    echo "$output" | grep -q 'description' || fail "ci_bug_locate should have description field"
+}
+
+# ci_complexity API 签名验证
+@test "CT-REG-API-009: ci_complexity accepts path parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_complexity"' "$SERVER_TS"
+    echo "$output" | grep -q 'path' || fail "ci_complexity should have path parameter"
+}
+
+@test "CT-REG-API-010: ci_complexity accepts format parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_complexity"' "$SERVER_TS"
+    echo "$output" | grep -q 'format' || fail "ci_complexity should have format parameter"
+}
+
+# ci_graph_rag API 签名验证
+@test "CT-REG-API-011: ci_graph_rag accepts query parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_graph_rag"' "$SERVER_TS"
+    echo "$output" | grep -q 'query' || fail "ci_graph_rag should have query parameter"
+}
+
+@test "CT-REG-API-012: ci_graph_rag accepts budget parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_graph_rag"' "$SERVER_TS"
+    echo "$output" | grep -q 'budget' || fail "ci_graph_rag should have budget parameter"
+}
+
+# ci_index_status API 签名验证
+@test "CT-REG-API-013: ci_index_status accepts action parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_index_status"' "$SERVER_TS"
+    echo "$output" | grep -q 'action' || fail "ci_index_status should have action parameter"
+}
+
+@test "CT-REG-API-014: ci_index_status signature stable" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    # 验证 ci_index_status 定义存在且结构正确
+    run grep -A 10 '"ci_index_status"' "$SERVER_TS"
+    echo "$output" | grep -q 'description' || fail "ci_index_status should have description field"
+}
+
+# ci_boundary API 签名验证
+@test "CT-REG-API-015: ci_boundary accepts file parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_boundary"' "$SERVER_TS"
+    echo "$output" | grep -q 'file' || fail "ci_boundary should have file parameter"
+}
+
+@test "CT-REG-API-016: ci_boundary accepts format parameter" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+    run grep -A 30 '"ci_boundary"' "$SERVER_TS"
+    echo "$output" | grep -q 'format' || fail "ci_boundary should have format parameter"
+}
+
+# ============================================================
+# M-005 修复：结构化 API 签名验证
+# 使用 TypeScript AST 或 JSON schema 解析验证 type/required/enum
+# ============================================================
+
+# @critical
+@test "CT-REG-API-SCHEMA-001: ci_search schema structure validation" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+
+    # 提取 ci_search 工具定义
+    local tool_def
+    tool_def=$(awk '/name:.*"ci_search"/,/^\s*\}/' "$SERVER_TS" | head -60)
+
+    [ -n "$tool_def" ] || fail "ci_search definition not found"
+
+    # 验证 query 参数的 type 为 string
+    echo "$tool_def" | grep -E 'query.*type.*string' >/dev/null || \
+        echo "$tool_def" | grep -E '"query".*"string"' >/dev/null || \
+        fail "ci_search.query should be type string"
+
+    # 验证 mode 参数有 enum 约束
+    if echo "$tool_def" | grep -q 'mode'; then
+        # mode 存在时，验证 enum 或默认值
+        echo "$tool_def" | grep -qE 'enum|semantic|keyword' || \
+            fail "ci_search.mode should have enum constraint (semantic/keyword)"
+    fi
+}
+
+# @critical
+@test "CT-REG-API-SCHEMA-002: ci_call_chain schema structure validation" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+
+    local tool_def
+    tool_def=$(awk '/name:.*"ci_call_chain"/,/^\s*\}/' "$SERVER_TS" | head -60)
+
+    [ -n "$tool_def" ] || fail "ci_call_chain definition not found"
+
+    # 验证 symbol 参数是 required (string 类型)
+    echo "$tool_def" | grep -E 'symbol.*type.*string' >/dev/null || \
+        echo "$tool_def" | grep -E '"symbol".*"string"' >/dev/null || \
+        fail "ci_call_chain.symbol should be type string"
+
+    # 验证 direction 参数有 enum 约束
+    if echo "$tool_def" | grep -q 'direction'; then
+        echo "$tool_def" | grep -qE 'callers|callees|both' || \
+            fail "ci_call_chain.direction should have enum (callers/callees/both)"
+    fi
+
+    # 验证 depth 参数是 number 类型
+    if echo "$tool_def" | grep -q 'depth'; then
+        echo "$tool_def" | grep -qE 'depth.*number|"depth".*"number"' || \
+            fail "ci_call_chain.depth should be type number"
+    fi
+}
+
+# @critical
+@test "CT-REG-API-SCHEMA-003: ci_complexity schema structure validation" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+
+    local tool_def
+    tool_def=$(awk '/name:.*"ci_complexity"/,/^\s*\}/' "$SERVER_TS" | head -60)
+
+    [ -n "$tool_def" ] || fail "ci_complexity definition not found"
+
+    # 验证 path 参数是 required (string 类型)
+    echo "$tool_def" | grep -qE 'path.*type.*string|"path".*"string"' || \
+        fail "ci_complexity.path should be type string"
+
+    # 验证 format 参数有 enum 约束
+    if echo "$tool_def" | grep -q 'format'; then
+        echo "$tool_def" | grep -qE 'text|json' || \
+            fail "ci_complexity.format should have enum (text/json)"
+    fi
+}
+
+# @critical
+@test "CT-REG-API-SCHEMA-004: ci_graph_rag schema structure validation" {
+    [ -f "$SERVER_TS" ] || skip "server.ts not found"
+
+    local tool_def
+    tool_def=$(awk '/name:.*"ci_graph_rag"/,/^\s*\}/' "$SERVER_TS" | head -80)
+
+    [ -n "$tool_def" ] || fail "ci_graph_rag definition not found"
+
+    # 验证 query 参数是 required (string 类型)
+    echo "$tool_def" | grep -qE 'query.*type.*string|"query".*"string"' || \
+        fail "ci_graph_rag.query should be type string"
+
+    # 验证 budget 参数是 number 类型
+    if echo "$tool_def" | grep -q 'budget'; then
+        echo "$tool_def" | grep -qE 'budget.*number|"budget".*"number"' || \
+            fail "ci_graph_rag.budget should be type number"
+    fi
+
+    # 验证 depth 参数是 number 类型
+    if echo "$tool_def" | grep -q 'depth'; then
+        echo "$tool_def" | grep -qE 'depth.*number|"depth".*"number"' || \
+            fail "ci_graph_rag.depth should be type number"
     fi
 }

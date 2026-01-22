@@ -17,7 +17,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 # 设置日志前缀
-LOG_PREFIX="cod-visualizer"
+export LOG_PREFIX="cod-visualizer"
 
 # ==================== 配置 ====================
 
@@ -192,7 +192,6 @@ _generate_level1_mermaid() {
     echo "    end"
     echo ""
     echo "    USER((User)) --> CORE"
-    echo "    EXT_MCP[MCP Client] --> CORE"
     echo "    CORE --> SCRIPTS"
     echo "    SCRIPTS --> CONFIG"
 
@@ -216,11 +215,9 @@ _generate_level1_d3json() {
     {"id": "scripts", "group": "system", "label": "Scripts", "hotspot": 0.7, "complexity": 15},
     {"id": "config", "group": "system", "label": "Configuration", "hotspot": 0.2, "complexity": 5},
     {"id": "user", "group": "external", "label": "User", "hotspot": 0, "complexity": 0},
-    {"id": "mcp_client", "group": "external", "label": "MCP Client", "hotspot": 0, "complexity": 0}
   ],
   "links": [
     {"source": "user", "target": "core", "type": "USES"},
-    {"source": "mcp_client", "target": "core", "type": "CALLS"},
     {"source": "core", "target": "scripts", "type": "IMPORTS"},
     {"source": "scripts", "target": "config", "type": "IMPORTS"}
   ],

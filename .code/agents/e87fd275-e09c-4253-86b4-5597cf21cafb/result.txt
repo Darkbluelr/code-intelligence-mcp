@@ -1,0 +1,197 @@
+现在我将审计可选配置/依赖的运行时行为逻辑。基于对关键脚本的分析,我将生成需要补充到 README 的行为说明清单。
+
+## 可选配置的默认行为清单（需补充到 README）
+
+### 1. **Embedding 索引（语义搜索）**
+
+**配置位置**: `.devbooks/embeddings/index.tsv`
+
+**未配置时的行为**:
+- **自动降级**: 降级到关键词搜索（ripgrep）
+- **自动构建**: 如果检测到 API Key（`OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `AZURE_OPENAI_API_KEY`），后台触发索引构建
+- **配置开关**: `embedding.auto_build: true` (默认启用)
+- **降级提示**: 返回 `fallback_reason: "no_api_key"` 或 `"building"` 或 `"index_not_found"`
+- **影响范围**: `ci_search`, `ci_graph_rag` 工具降级到关键词模式
+
+**相关文件**: `scripts/embedding.sh:184-420`, `hooks/augment-context-global.sh:393-420`
+
+---
+
+### 2. **CKB MCP Server（代码知识库）**
+
+**配置位置**: 外部 MCP 服务（需单独安装）
+
+**未配置时的行为**:
+- **优雅降级**: Graph-RAG 跳过图遍历，仅使用向量搜索
+- **配置开关**: `graph_rag.ckb.enabled: true`, `graph_rag.ckb.fallback_to_import: true` (默认启用)
+- **降级提示**: 日志输出 `"CKB 不可用，降级到 import 分析"`
+- **影响范围**: `ci_graph_rag` 工具的图遍历功能不可用，但向量搜索仍可用
+
+**相关文件**: `scripts/graph-rag-core.sh` (检测逻辑), `scripts/graph-rag-retrieval.sh` (降级逻辑)
+
+---
+
+### 3. **ADR 目录（架构决策记录）**
+
+**配置位置**: `docs/adr/`, `doc/adr/`, `ADR/`, `adr/` (按优先级搜索)
+
+**未配置时的行为**:
+- **静默跳过**: `ci_adr scan` 返回空结果 `[]`
+- **无警告**: 不输出错误或警告信息
+- **影响范围**: ADR 关键词关联功能不可用，不影响其他工具
+
+**相关文件**: `scripts/adr-parser.sh:84-100`
+
+---
+
+### 4. **Federation 配置（跨仓库契约追踪）**
+
+**配置位置**: `config/federation.yaml`, `.devbooks/federation-index.json`
+
+**未配置时的行为**:
+- **返回空结果**: `ci_federation --search` 返回 `{"status": "empty", "edges_created": 0}`
+- **虚拟边生成跳过**: `generate-virtual-edges` 返回 `{"status": "empty", "message": "No federation index found"}`
+- **无错误**: 不抛出异常，优雅返回空数据
+- **影响范围**: 跨仓库 API 契约追踪不可用
+
+**相关文件**: `scripts/federation-lite.sh:54-58`
+
+---
+
+### 5. **Daemon 守护进程（热启动缓存）**
+
+**配置位置**: `.devbooks/daemon.sock`, `.devbooks/daemon.pid`
+
+**未配置时的行为**:
+- **冷启动模式**: 工具直接执行，无缓存预热
+- **性能影响**: P95 延迟从 <500ms 增加到 2-3s
+- **配置开关**: `DAEMON_WARMUP_ENABLED: true` (默认启用)
+- **启动方式**: 手动运行 `./scripts/daemon.sh start` 或 `ci_warmup`
+- **影响范围**: 所有工具的首次查询延迟增加
+
+**相关文件**: `scripts/daemon.sh:29-33`
+
+---
+
+### 6. **功能开关（Feature Flags）**
+
+**配置位置**: `config/features.yaml`
+
+**未配置时的行为**:
+- **默认禁用**: 如果配置文件不存在，所有功能默认禁用
+- **全局开关**: 环境变量 `DEVBOOKS_ENABLE_ALL_FEATURES=1` 强制启用所有功能
+- **影响范围**: 
+  - `context_signals`: 上下文信号加权（默认启用）
+  - `llm_rerank`: LLM 重排序（默认启用）
+  - `hybrid_retrieval`: 混合检索（默认启用）
+  - 其他功能见 `config/features.yaml`
+
+**相关文件**: `scripts/common.sh:414-456`, `config/features.yaml`
+
+---
+
+### 7. **LLM 重排序（Reranker）**
+
+**配置位置**: `features.llm_rerank.enabled`, API Key (`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`)
+
+**未配置时的行为**:
+- **跳过重排序**: 直接返回原始搜索结果
+- **无警告**: 静默跳过，不影响结果返回
+- **配置开关**: `llm_rerank.enabled: true` (默认启用，但需 API Key)
+- **影响范围**: 搜索结果相关性可能降低 5-10%
+
+**相关文件**: `scripts/common.sh:538-568`, `hooks/augment-context-global.sh:910-940`
+
+---
+
+### 8. **复杂度工具（Hotspot 分析）**
+
+**配置位置**: 外部工具 `radon` / `scc` / `gocyclo`
+
+**未配置时的行为**:
+- **降级到纯频率模式**: 热点分析仅基于 Git 变更频率，不计算复杂度
+- **安装提示**: 输出 `"⚠️ 复杂度工具缺失，建议安装：pip install radon 或 brew install scc"`
+- **输出格式变化**: 不显示 `complexity` 字段，仅显示 `changes` 字段
+- **影响范围**: `ci_hotspot` 工具的复杂度加权功能不可用
+
+**相关文件**: `hooks/augment-context-global.sh:704-800`
+
+---
+
+### 9. **Git 仓库（版本控制）**
+
+**配置位置**: `.git/` 目录
+
+**未配置时的行为**:
+- **热点分析失败**: `get_hotspots()` 返回空结果
+- **最近提交为空**: `get_recent_commits_json()` 返回 `[]`
+- **上下文层失效**: Commit 分类和 Bug 历史提取不可用
+- **影响范围**: 热点文件、最近提交、上下文层功能不可用
+
+**相关文件**: `hooks/augment-context-global.sh:802-849`, `scripts/context-layer.sh`
+
+---
+
+### 10. **DevBooks 项目配置**
+
+**配置位置**: `.devbooks/config.yaml`, `dev-playbooks/project.md`
+
+**未配置时的行为**:
+- **基础上下文模式**: 返回空的项目画像 `{}`
+- **无架构约束**: 不加载架构约束和设计约束
+- **无活跃变更**: 不检测活跃变更包
+- **影响范围**: 结构化上下文输出的 `project_profile` 和 `constraints` 为空
+
+**相关文件**: `scripts/common.sh:798-1110`
+
+---
+
+## 推荐补充到 README 的章节
+
+建议在 README 中添加以下章节：
+
+```markdown
+## Optional Dependencies & Fallback Behavior
+
+### Embedding Index
+- **Location**: `.devbooks/embeddings/index.tsv`
+- **Fallback**: Keyword search (ripgrep)
+- **Auto-build**: Enabled if API key detected
+- **Config**: `embedding.auto_build: true`
+
+### CKB MCP Server
+- **Fallback**: Vector search only (no graph traversal)
+- **Config**: `graph_rag.ckb.enabled: true`
+
+### ADR Directory
+- **Location**: `docs/adr/`, `doc/adr/`, `ADR/`, `adr/`
+- **Fallback**: Returns empty results `[]`
+
+### Federation Config
+- **Location**: `config/federation.yaml`
+- **Fallback**: Returns `{"status": "empty"}`
+
+### Daemon Process
+- **Fallback**: Cold-start mode (2-3s latency vs <500ms)
+- **Start**: `./scripts/daemon.sh start`
+
+### Feature Flags
+- **Location**: `config/features.yaml`
+- **Default**: Disabled if file missing
+- **Override**: `DEVBOOKS_ENABLE_ALL_FEATURES=1`
+
+### Complexity Tools
+- **Tools**: `radon`, `scc`, `gocyclo`
+- **Fallback**: Frequency-only hotspot analysis
+- **Install**: `pip install radon` or `brew install scc`
+
+### Git Repository
+- **Fallback**: Hotspot/commit history unavailable
+
+### LLM Reranker
+- **Requires**: API key (`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`)
+- **Fallback**: Skip reranking (5-10% relevance drop)
+- **Config**: `llm_rerank.enabled: true`
+```
+
+这份清单明确了每个可选配置的降级行为、默认值和影响范围，符合"证据优先、声明存疑"的审计原则。

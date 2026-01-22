@@ -1,0 +1,334 @@
+dev-playbooks/project.md:143:- Test Owner 先产出 tests/verification，并运行以确认 **Red** 基线；记录失败证据到 `dev-playbooks/changes/<id>/evidence/`（若无证据目录可新建）。
+dev-playbooks/project.md:223:| Test Owner | `devbooks-test-owner` | `verification.md` + `tests/**` | 先跑 Red 基线，记录证据到 `evidence/` |
+dev-playbooks/README.md:37:| 变更产物的可追溯性 | 变更包集中存档（proposal/design/spec/tasks/verification/evidence） | 主要以变更目录/文件组织为主 | 以文档+任务编排为主 | 无 |
+dev-playbooks/README.md:273:- **变更包**：每个变更包含 proposal/design/spec/plan/verification/evidence，整个生命周期可在一个位置追溯
+dev-playbooks/README.md:314:| Green 证据检查 | archive, strict | `evidence/green-final/` 存在且非空 |
+dev-playbooks/constitution.md:83:1. 在 `evidence/` 中记录紧急修复原因
+dev-playbooks/specs/benchmark/spec.md:58:benchmark.sh --compare evidence/baseline-metrics.json
+dev-playbooks/specs/benchmark/spec.md:107:benchmark.sh --output evidence/benchmark-report.md
+dev-playbooks/specs/benchmark/spec.md:173:- 保存基线数据到 `evidence/baseline-metrics.json`
+dev-playbooks/specs/benchmark/spec.md:183:**When**: 运行 `benchmark.sh --compare evidence/baseline-metrics.json`
+dev-playbooks/specs/benchmark/spec.md:210:**When**: 运行 `benchmark.sh --output evidence/benchmark-report.md`
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:477:| Red 基线 | `dev-playbooks/changes/achieve-augment-full-parity/evidence/red-baseline/` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:478:| Green 最终 | `dev-playbooks/changes/achieve-augment-full-parity/evidence/green-final/` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:479:| 性能报告 | `dev-playbooks/changes/achieve-augment-full-parity/evidence/performance-report.md` |
+dev-playbooks/docs/DevBooks配置指南.md:41:   - 产物落点是否一致（proposal/design/tasks/verification/specs/evidence）
+dev-playbooks/docs/DevBooks配置指南.md:78:| 证据 | `<change-root>/<change-id>/evidence/**` | Red/Green 证据（按需） |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1054:| Red 基线 | `dev-playbooks/changes/achieve-augment-full-parity/evidence/red-baseline/` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1055:| Green 最终 | `dev-playbooks/changes/achieve-augment-full-parity/evidence/green-final/` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1056:| 性能报告 | `dev-playbooks/changes/achieve-augment-full-parity/evidence/performance-report.md` |
+dev-playbooks/specs/drift-detector/spec.md:91:**报告存储**：`evidence/drift-detection-report.md`
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:305:| REQ-AD-001 | AC-F01 | T-AD-001, T-AD-002, T-AD-004 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:306:| REQ-AD-004 | AC-F01 | T-AD-006 | evidence/red-baseline/performance.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:307:| REQ-IA-002 | AC-F02 | T-IA-003, T-IA-004 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:308:| REQ-CV-002 | AC-F03 | T-CV-005 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:309:| REQ-SP-001 | AC-F04 | T-SP-001, T-SP-003 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:310:| REQ-FV-002 | AC-F05 | T-FV-002 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:311:| REQ-IL-001 | AC-F06 | T-IL-001 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:312:| REQ-IL-003 | AC-F09 | T-IL-003 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:313:| REQ-VT-001 | AC-F07 | T-VT-001, T-VT-002, T-VT-003 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:314:| REQ-VT-002 | AC-F10 | T-VT-004 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:315:| 向后兼容 | AC-F08 | T-INT-001 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:323:| Red 基线 | `dev-playbooks/changes/achieve-augment-full-parity/evidence/red-baseline/` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:324:| Green 最终 | `dev-playbooks/changes/achieve-augment-full-parity/evidence/green-final/` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:325:| 性能报告 | `dev-playbooks/changes/achieve-augment-full-parity/evidence/performance-report.md` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:485:- 生成：`dev-playbooks/changes/achieve-augment-full-parity/evidence/`
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:517:  - 输出：`evidence/performance-report.md`
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:339:| V1 | 热点算法输出正确 | `scripts/hotspot-analyzer.sh` 输出 Top-20 热点 | `evidence/hotspot-output.log` |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:340:| V2 | 意图分析 4 维信号 | 检查 hook 输出包含 4 类信号 | `evidence/intent-output.log` |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:341:| V3 | 子图检索保留边关系 | 检查输出包含 `--calls-->` 等关系 | `evidence/subgraph-output.log` |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:342:| V4 | 边界识别正确 | `node_modules/` 标记为库代码 | `evidence/boundary-output.log` |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:344:| V6 | 数据流追踪 | `--trace-data-flow` 输出参数流 | `evidence/dataflow-output.log` |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:345:| V7 | AST Diff 增量更新 | 修改单文件后只更新相关节点 | `evidence/ast-diff-output.log` |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:435:| 2026-01-10 | Judge | B1（缺少基线数据） | **成立** | M1：补充基线测量任务，产出 `evidence/baseline-metrics.md` |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:443:| 2026-01-10 | Judge | B1-R2（基线数值缺失） | **成立** | M5：`evidence/baseline-metrics.md` 核心指标必须为具体数值（非"待测量"） |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:457:| V-M1 | 基线测量完成 | `evidence/baseline-metrics.md` 存在（182 行） | ✅ 通过 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:476:| M1 | 补充基线指标测量任务 | Author / Test Owner | `evidence/baseline-metrics.md` 包含 Top-5 命中率等基线数值 | ✅ 已完成 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:480:| M5 | 补充基线指标实际数值 | Author / Test Owner | `evidence/baseline-metrics.md` 中 Top-5 命中率等核心指标为具体数值 | ✅ 已完成 (Top-5: 0%, 搜索: 67%) |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:488:| V-M1 | 基线测量完成 | 文件存在且数值非空 | `evidence/baseline-metrics.md` |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:491:| V-M5 | 基线数值非空 | 检查 Top-5 命中率等字段为具体数值（非"待测量"） | `evidence/baseline-metrics.md` |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:538:| 热点算法输出 | `evidence/hotspot-output.log` | AC-001 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:539:| 意图分析输出 | `evidence/intent-output.log` | AC-002 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:540:| 子图检索输出 | `evidence/subgraph-output.log` | AC-003 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:541:| 边界识别输出 | `evidence/boundary-output.log` | AC-004 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:543:| 数据流追踪输出 | `evidence/dataflow-output.log` | AC-006 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:544:| AST Diff 输出 | `evidence/ast-diff-output.log` | AC-007 |
+dev-playbooks/changes/archive/augment-final-10-percent/proposal.md:401:scripts/benchmark.sh --all --output evidence/baseline/
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:189:> 证据落点: `dev-playbooks/changes/enhance-code-intelligence/evidence/red-baseline/`
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:146:# evidence/scripts/knapsack-benchmark.sh
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:973:| Red 基线 | `dev-playbooks/changes/algorithm-optimization-parity/evidence/red-baseline/` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:974:| Green 最终 | `dev-playbooks/changes/algorithm-optimization-parity/evidence/green-final/` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:975:| 性能对比 | `dev-playbooks/changes/algorithm-optimization-parity/evidence/performance-comparison.md` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:976:| 算法验证 | `dev-playbooks/changes/algorithm-optimization-parity/evidence/algorithm-validation.md` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1232:| M-01 语料库构建性能数据 | design.md 或 evidence/ | 补充基准数据 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1251:- [ ] Test Owner 产出 Red 基线，证据落点：`evidence/red-baseline/`
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1252:- [ ] Coder 实现后 Green 证据落点：`evidence/green-final/`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:930:**证据落点**：`evidence/baseline-metrics.json`（包含原始测量数据和测试脚本）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1001:  3. 检查 `evidence/rollback-validation.log` 中的延迟数据
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1003:- **证据落点**：`evidence/rollback-validation.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1017:- **证据落点**：`evidence/rollback-validation.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1031:- **证据落点**：`evidence/rollback-validation.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1045:scripts/benchmark.sh --metric graph_query_latency > evidence/rollback-validation.log
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1051:npm test -- tests/graph-store.bats >> evidence/rollback-validation.log
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1057:npm test >> evidence/rollback-validation.log
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1072:| AC-001 | 上下文压缩率 > 60%，信息保留率 > 85% | 运行 benchmark.sh，检查压缩指标 | `evidence/compression-metrics.json` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1073:| AC-002 | 架构漂移检测准确率 > 90% | 人工标注 10 个漂移案例，运行 drift-detector.sh | `evidence/drift-detection-accuracy.json` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1075:| AC-004 | 图查询 P95 < 200ms | 运行 benchmark.sh，检查延迟指标 | `evidence/graph-query-latency.json` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1076:| AC-005 | 混合检索 MRR@10 提升 > 15% | 运行 benchmark.sh，对比基线 | `evidence/retrieval-quality.json` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1077:| AC-006 | 重排序管线默认启用，可配置关闭 | 检查 config/features.yaml，运行集成测试 | `evidence/reranker-integration.log` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1078:| AC-007 | 上下文层信号正确纳入检索权重 | 运行 graph-rag.sh，检查 priority score 计算 | `evidence/context-signals.log` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1079:| AC-008 | 异常检测结果进入 Bug 定位链路 | 运行 bug-locator.sh，检查异常文件优先级 | `evidence/anomaly-feedback.log` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1080:| AC-009 | benchmark.sh 输出完整指标报告 | 运行 benchmark.sh，检查输出格式 | `evidence/benchmark-report.md` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1082:| AC-011 | 无性能回退（现有功能延迟 < 基线 × 1.1） | 运行 benchmark.sh，对比基线 | `evidence/performance-regression.json` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1083:| AC-012 | 功能开关正确控制所有新功能 | 逐个关闭开关，验证功能禁用 | `evidence/feature-toggle-test.log` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1150:   - 保存基线数据到 `evidence/baseline-metrics.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1160:   - 在变更后运行 `scripts/benchmark.sh --compare evidence/baseline-metrics.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1162:   - 输出回退报告到 `evidence/performance-regression.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1173:     3. 运行 `scripts/benchmark.sh --compare evidence/baseline-metrics.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1179:   - **证据落点**：`evidence/performance-regression.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1209:1. **自动化指标**：通过 benchmark.sh 自动收集，输出到 `evidence/` 目录
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1219:| `evidence/compression-metrics.json` | AC-001 | 实现完成后 | JSON | Coder |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1220:| `evidence/drift-detection-accuracy.json` | AC-002 | 人工标注完成后 | JSON | Test Owner |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1221:| `evidence/data-flow-tracing.log` | AC-003 | 测试通过后 | Bats 报告 | Test Owner |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1222:| `evidence/graph-query-latency.json` | AC-004 | benchmark.sh 运行后 | JSON | Coder |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1223:| `evidence/retrieval-quality.json` | AC-005 | benchmark.sh 运行后 | JSON | Coder |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1224:| `evidence/reranker-integration.log` | AC-006 | 集成测试通过后 | 日志 | Coder |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1225:| `evidence/context-signals.log` | AC-007 | 功能测试通过后 | 日志 | Coder |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1226:| `evidence/anomaly-feedback.log` | AC-008 | 集成测试通过后 | 日志 | Coder |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1227:| `evidence/benchmark-report.md` | AC-009 | benchmark.sh 运行后 | Markdown | Coder |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1228:| `evidence/test-results.txt` | AC-010 | npm test 运行后 | Bats 报告 | Test Owner |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1229:| `evidence/performance-regression.json` | AC-011 | benchmark.sh --compare 运行后 | JSON | Coder |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1230:| `evidence/feature-toggle-test.log` | AC-012 | 功能开关测试后 | 日志 | Test Owner |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1231:| `evidence/baseline-metrics.json` | 基线数据 | 变更前 | JSON | Coder |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1232:| `evidence/rollback-validation.log` | 回滚验证 | 回滚测试后 | 日志 | Test Owner |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1362:  - 证据落点：`evidence/baseline-metrics.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1372:  - 证据落点：`evidence/rollback-validation.log`
+dev-playbooks/changes/archive/augment-parity/proposal.md:358:| Red 基线 | `dev-playbooks/changes/augment-parity/evidence/red-baseline/` |
+dev-playbooks/changes/archive/augment-parity/proposal.md:359:| Green 最终 | `dev-playbooks/changes/augment-parity/evidence/green-final/` |
+dev-playbooks/changes/archive/augment-parity/proposal.md:360:| 性能报告 | `dev-playbooks/changes/augment-parity/evidence/performance-report.md` |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:216:mkdir -p dev-playbooks/changes/augment-final-10-percent/evidence/red-baseline
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:219:bats tests/llm-provider.bats 2>&1 | tee evidence/red-baseline/llm-provider-$(date +%Y%m%d-%H%M%S).log
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:220:bats tests/semantic-anomaly.bats 2>&1 | tee evidence/red-baseline/semantic-anomaly-$(date +%Y%m%d-%H%M%S).log
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:221:bats tests/data-flow-tracing.bats 2>&1 | tee evidence/red-baseline/data-flow-$(date +%Y%m%d-%H%M%S).log
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:224:echo "Red Baseline Summary - $(date)" > evidence/red-baseline/summary.md
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:351:| proposal.md 5.1 | AC-001, AC-002 | tests/llm-provider.bats | evidence/red-baseline/llm-provider-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:352:| proposal.md 5.2 | AC-003 | tests/semantic-anomaly.bats | evidence/red-baseline/semantic-anomaly-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:353:| proposal.md 5.3 | AC-004, AC-004a | tests/data-flow-tracing.bats | evidence/red-baseline/data-flow-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:354:| proposal.md 5.4 | AC-005, AC-005a | tests/keystroke-cancel.bats | evidence/red-baseline/keystroke-cancel-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:355:| proposal.md 5.5 | AC-006, AC-006a | tests/context-compressor.bats | evidence/red-baseline/context-compressor-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:356:| proposal.md 5.6 | AC-007, AC-007a | tests/long-term-memory.bats | evidence/red-baseline/long-term-memory-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:357:| proposal.md 5.7 | AC-008, AC-008a, AC-008b | tests/federation-lite.bats | evidence/red-baseline/federation-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:358:| proposal.md 5.8 | AC-009, AC-009a, AC-009b | tests/cod-visualizer.bats | evidence/red-baseline/cod-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:359:| proposal.md 5.9 | AC-009c | tests/graph-store.bats | evidence/red-baseline/graph-store-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:360:| proposal.md 5.10 | AC-010, AC-010a | tests/drift-detector.bats | evidence/red-baseline/drift-detector-*.log |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:229:| V1 | 多级缓存生效 | 连续两次相同查询，第二次 < 100ms | `evidence/cache-benchmark.log` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:230:| V2 | 循环依赖检测 | 检测已知循环依赖的测试项目 | `evidence/cycle-detection.log` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:231:| V3 | 架构规则校验 | 违规代码被正确识别 | `evidence/arch-violation.log` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:232:| V4 | Commit 语义分类 | 正确分类 fix/feat/refactor | `evidence/commit-classify.log` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:233:| V5 | Bug 修复历史权重 | 热点分数包含 bug_weight | `evidence/hotspot-enhanced.log` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:235:| V7 | Pre-commit 集成 | 钩子正常触发 | `evidence/pre-commit-test.log` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:236:| V8 | 循环依赖检测误报率 | 误报率 < 5%（测试集 20+ 样本，含 10+ 真循环 + 10+ 非循环） | `evidence/cycle-false-positive.log` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:245:| N4 | 缓存磁盘占用 | < 50MB（1000 文件项目）；**上限行为**：达到 50MB 时启用 LRU 淘汰（按访问时间删除最旧 20% 缓存条目），日志记录淘汰事件；可配置 `cache.max_size_mb` 和 `cache.eviction_strategy`（lru/fifo/none） | `du -sh`；`evidence/cache-eviction.log` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:361:**验证要求**（落点在 design.md / evidence/）：
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:366:| VR-02 | 提供至少 3 个违规代码样本用于 V3 测试 | `evidence/arch-violation-samples/` | ⏳ test-owner 阶段产出 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:367:| VR-03 | 提供 hotspot-analyzer.sh 无 Bug 历史时的 golden file | `evidence/baseline-hotspot.golden` | ⏳ test-owner 阶段产出 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:392:| VR-02 | 违规代码样本（≥3 个） | test-owner | `evidence/arch-violation-samples/` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:393:| VR-03 | hotspot-analyzer.sh 无 Bug 历史 golden file | test-owner | `evidence/baseline-hotspot.golden` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:72:- `evidence/context-compression-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:90:- `evidence/drift-detection-report.md`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:105:- `evidence/data-flow-tracing-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:120:- `evidence/graph-query-performance.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:135:- `evidence/hybrid-retrieval-quality.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:151:- `evidence/reranker-performance.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:172:- `evidence/context-signals-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:186:- `evidence/semantic-anomaly-report.md`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:202:- `evidence/benchmark-report.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:216:- `evidence/feature-toggle-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:229:- `evidence/performance-regression-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:243:- `evidence/schema-migration-test.log`
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:253:| ALG-001 + ALG-002 | tests/graph-rag.bats | evidence/red-baseline/graph-rag-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:254:| ALG-003 | tests/impact-analyzer.bats | evidence/red-baseline/test-*-part*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:255:| ALG-004 + ALG-005 | tests/intent-learner.bats | evidence/red-baseline/test-*-part*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:256:| ALG-006 | tests/federation-lite.bats | evidence/red-baseline/test-*-part*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:257:| ALG-007 | tests/pattern-learner.bats | evidence/red-baseline/pattern-decay-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:258:| ALG-008 | tests/hotspot-analyzer.bats | evidence/red-baseline/hotspot-weighting-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:259:| ALG-009 | tests/boundary-detector.bats | evidence/red-baseline/ct-bd-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:260:| ALG-010 | tests/cache-manager.bats | evidence/red-baseline/cache-lru-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:261:| ALG-011 | tests/intent-classification.bats | evidence/red-baseline/test-*-intent.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:262:| **汇总** | - | evidence/red-baseline/summary-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:341:2. ✅ 生成 Red 基线证据至 `evidence/red-baseline/`
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:362:| @full 测试日志 | evidence/green-final/full-test-20260117-132620.log | 2026-01-17 |
+dev-playbooks/changes/archive/augment-parity/design.md:793:| Red 基线 | `evidence/red-baseline/` | 新增测试初始失败状态 |
+dev-playbooks/changes/archive/augment-parity/design.md:794:| Green 最终 | `evidence/green-final/` | 所有测试通过状态 |
+dev-playbooks/changes/archive/augment-parity/design.md:795:| 性能报告 | `evidence/performance-report.md` | P95 延迟测量结果 |
+dev-playbooks/changes/archive/augment-parity/design.md:796:| SCIP 解析日志 | `evidence/scip-parse.log` | 解析成功证据 |
+dev-playbooks/changes/archive/augment-parity/archive-summary.md:93:| Red 基线 | `evidence/red-baseline/` | ✅ 已生成 |
+dev-playbooks/changes/archive/augment-parity/archive-summary.md:94:| Green 最终 | `evidence/green-final/test-run-20260115.log` | ✅ 已生成 |
+dev-playbooks/changes/archive/augment-parity/archive-summary.md:95:| 性能报告 | `evidence/green-final/performance-report.md` | ✅ 已生成 |
+dev-playbooks/changes/archive/augment-parity/verification.md:109:**证据路径**: `dev-playbooks/changes/augment-parity/evidence/red-baseline/`
+dev-playbooks/changes/archive/augment-parity/verification.md:119:**证据路径**: `dev-playbooks/changes/augment-parity/evidence/green-final/`
+dev-playbooks/changes/archive/20260118-0057-upgrade-code-intelligence-capabilities/verification.md:33:- Red 基线: `evidence/red-baseline/test-results.txt`
+dev-playbooks/changes/archive/20260118-0057-upgrade-code-intelligence-capabilities/verification.md:34:- Green 结果: `evidence/green-final/test-results.txt`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:17:- Red 基线证据目录：`dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:18:- Green 证据目录：`dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:19:- @full 运行日志：`dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/full-test-20260119-162156.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:22:- Commit Hash：`9b3ba6f921c196129be001dfa1ef7b9a76a29a9e`（证据：`dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/commit-hash.txt`）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:195:| AC-001 | REQ-CC-001~006 | T-CC-001, T-CC-002, T-CC-003, T-CC-004, T-CC-005, T-CC-006, T-CC-007, T-CC-008, T-CC-009, T-CC-010, T-CC-011, T-CC-012, T-CC-013, T-CC-ERROR-001, T-CC-ERROR-002, T-CC-ERROR-003, T-CC-ERROR-004, T-CC-ERROR-005, T-PERF-CC-001 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/context-compressor-20260119-092722.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:196:| AC-002 | REQ-DD-001~009 | T-DD-001, T-DD-002, T-DD-ERROR-001, T-DD-003, T-DD-004, T-DD-005, T-DD-006, T-DD-007, T-DD-008, T-DD-009, T-PERF-DD-001 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/drift-detector-20260119-092752.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:197:| AC-003 | REQ-DFT-001~009 | DF-BASE-001, DF-BASE-002, DF-BASE-003, DF-BASE-004, DF-FORWARD-001, DF-BACKWARD-001, DF-BOTH-001, DF-CROSS-001, DF-DEPTH-001, DF-DEPTH-002, DF-DEPTH-003, DF-OUTPUT-001, DF-OUTPUT-002, DF-CYCLE-001, DF-LANG-001, DF-ERROR-001, DF-ERROR-002, DF-ERROR-003, PERF-DFT-001, PERF-DFT-002 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/data-flow-tracing-20260119-092801.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:198:| AC-004 | REQ-GS-001~012 | SC-GS-001, SC-GS-002, SC-GS-003, SC-GS-004, SC-GS-004c, SC-GS-004b, SC-GS-005, SC-GS-006, SC-GS-007, SC-GS-008, SC-GS-008b, SC-GS-012, SC-GS-009, SC-GS-010, SC-GS-011, AC-N03a, AC-N03b, AC-N03c, test_edge_types, test_edge_types_python, test_edge_types_fallback, test_find_path_basic, test_find_path_depth, test_find_path_filter, test_find_path_no_path, test_find_path_output | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/graph-store-20260119-092813.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:199:| AC-005 | REQ-HR-001~008 | HR-BASE-001, HR-BASE-002, T-HR-001, T-HR-CKB-001, T-HR-002, T-HR-006, T-HR-003, T-HR-004, T-HR-005, HR-INTEGRATION-001, HR-INTEGRATION-002, HR-PERF-001, HR-ERROR-001, HR-ERROR-002, HR-OUTPUT-001, HR-ERROR-003, HR-ERROR-004, HR-ERROR-005 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/hybrid-retrieval-20260119-093341.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:200:| AC-006 | REQ-LR-001~003 | SC-LR-001, SC-LR-002, SC-LR-003, SC-LR-004, SC-LR-005, SC-LR-006, SC-LR-007, SC-LR-008, SC-LR-009, SC-LR-010, SC-LR-011, SC-LR-012, CT-LR-003 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/llm-rerank-20260119-093357.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:201:| AC-007 | REQ-CL-001~005 | T-CS-001, T-CS-002, T-CS-002b, T-CS-003, T-CS-004, T-CS-005, T-CS-006 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/long-term-memory-20260119-093510.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:202:| AC-008 | REQ-SA-001~005 | T-SA-001, T-SA-002, T-SA-003, T-SA-004, T-SA-005, T-SA-006, T-SA-007, T-SA-008, T-SA-009, T-SA-010, T-SA-011, T-SA-012, T-SA-013, T-SA-014, T-SA-015 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/semantic-anomaly-20260119-093457.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:203:| AC-009 | REQ-BM-001~006 | BM-BASE-001, BM-BASE-002, T-BM-001, T-BM-002, T-BM-003, T-BM-004, T-BM-005, T-BM-006, BM-ERROR-001, BM-ERROR-002, BM-INTEGRATION-001, PERF-BM-001 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/benchmark-20260119-093416.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:204:| AC-010 | REQ-FT-001 | T-FT-001, T-FT-002, T-FT-003, T-FT-004, T-FT-005, T-FT-006, T-FT-007, T-FT-008, T-FT-009 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/feature-toggle-20260119-075158.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:205:| AC-011 | AC-011 验收标准 | CT-REG-001, CT-REG-001b, CT-REG-002, CT-REG-002b, CT-REG-003, CT-REG-003b, CT-REG-004, CT-REG-004b, CT-REG-005, CT-REG-005b, CT-REG-006, CT-REG-006b, CT-REG-007, CT-REG-007b, CT-REG-008, CT-REG-008b, CT-REG-BUILD-001, CT-REG-BUILD-002, CT-REG-SCRIPT-001, CT-REG-SCRIPT-002, CT-REG-SCRIPT-003, CT-REG-SCRIPT-004, CT-REG-CONFIG-001, CT-REG-MCP-001, CT-REG-MCP-002, CT-REG-API-001, CT-REG-API-002, CT-REG-NEW-001, CT-REG-NEW-002 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:206:| AC-012 | REQ-SM-001 | test_migrate_check_old, test_migrate_check_new, test_migrate_apply, test_migrate_backup | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:299:- 日志：`dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/full-test-20260119-162156.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:301:- 失败清单：`dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/full-test-20260119-162156.failures.txt`（not ok 38 项）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:302:- Commit Hash：`9b3ba6f921c196129be001dfa1ef7b9a76a29a9e`（证据：`dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/commit-hash.txt`）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:369:证据路径: `evidence/green-final/retest-20260120-summary.md`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:658:证据目录：`evidence/green/`
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:852:| 性能基准 | `evidence/benchmark.sh` | P95 < 500ms |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:859:| 缓存性能报告 | `evidence/cache-benchmark.log` | L1/L2 命中延迟 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:860:| 循环检测报告 | `evidence/cycle-detection.log` | 覆盖率 + 误报率 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:861:| 架构违规样本 | `evidence/arch-violation-samples/` | ≥3 个样本 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:862:| Golden File | `evidence/baseline-hotspot.golden` | 无 Bug 历史基线 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:863:| Pre-commit 测试 | `evidence/pre-commit-test.log` | 钩子触发验证 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:864:| LRU 淘汰日志 | `evidence/cache-eviction.log` | 淘汰行为验证 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/semantic-anomaly/spec.md:120:**报告存储**：`evidence/semantic-anomaly-report.md`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/semantic-anomaly/spec.md:190:- 保存到 `evidence/semantic-anomaly-report.md`
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:107:| Red 基线 | `evidence/red-baseline/summary.md` | 初始失败测试记录 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:108:| Green 最终 | `evidence/green-final/verification-summary.md` | 最终验证摘要 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:109:| 测试报告 | `evidence/green-final/test-summary-20260114.md` | 完整测试统计 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:110:| 缓存基准 | `evidence/cache-benchmark.log` | 性能测试日志 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:111:| 循环检测 | `evidence/cycle-detection.log` | 循环依赖检测日志 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:112:| Golden File | `evidence/baseline-hotspot.golden` | 热点分析基线 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:205:**证据存放位置**: `dev-playbooks/changes/augment-upgrade-phase2/evidence/red-baseline/`
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:223:- [x] `evidence/red-baseline/test-2026-01-14.log` - Red 基线测试日志
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:224:- [x] `evidence/red-baseline/summary.md` - 失败摘要
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:225:- [x] `evidence/green-final/` - Green 阶段证据
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:226:- [x] `evidence/green-final/test-summary-20260114.md` - 测试摘要报告
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:227:- [x] `evidence/green-final/bats-full-*.log` - 完整测试日志
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:228:- [x] `evidence/cache-benchmark.log` - 缓存性能报告
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:229:- [x] `evidence/cycle-detection.log` - 循环检测报告
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:230:- [x] `evidence/baseline-hotspot.golden` - 热点分析基线
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:26:- `evidence/context-compression-test.log`（证据文件）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:49:- [x] MP1.6 运行测试并生成证据文件 `evidence/context-compression-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:60:- `evidence/drift-detection-report.md`（漂移报告）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:85:- [x] MP2.7 运行测试并生成证据文件 `evidence/drift-detection-report.md`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:96:- `evidence/data-flow-tracing-test.log`（证据文件）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:119:- [x] MP3.6 运行测试并生成证据文件 `evidence/data-flow-tracing-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:130:- `evidence/graph-query-performance.json`（性能证据）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:131:- `evidence/schema-migration-test.log`（迁移证据）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:157:- [x] MP4.8 运行性能测试并生成证据文件 `evidence/graph-query-performance.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:158:- [x] MP4.9 运行迁移测试并生成证据文件 `evidence/schema-migration-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:170:- `evidence/hybrid-retrieval-quality.json`（质量证据）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:194:- [x] MP5.6 运行质量测试并生成证据文件 `evidence/hybrid-retrieval-quality.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:205:- `evidence/reranker-performance.json`（性能证据）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:227:- [x] MP6.6 运行性能测试并生成证据文件 `evidence/reranker-performance.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:239:- `evidence/context-signals-test.log`（证据文件）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:264:- [x] MP7.7 运行测试并生成证据文件 `evidence/context-signals-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:275:- `evidence/semantic-anomaly-report.md`（异常报告）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:300:- [x] MP8.8 运行测试并生成证据文件 `evidence/semantic-anomaly-report.md`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:310:- `evidence/benchmark-report.json`（评测报告）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:334:- [x] MP9.7 运行评测并生成证据文件 `evidence/benchmark-report.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:345:- `evidence/feature-toggle-test.log`（功能开关证据）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:346:- `evidence/performance-regression-test.log`（性能回退证据）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:369:- [x] MP10.5 运行功能开关测试并生成证据文件 `evidence/feature-toggle-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:370:- [x] MP10.6 运行性能回退测试并生成证据文件 `evidence/performance-regression-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/benchmark/spec.md:56:benchmark.sh --compare evidence/baseline-metrics.json
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/benchmark/spec.md:105:benchmark.sh --output evidence/benchmark-report.md
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/benchmark/spec.md:171:- 保存基线数据到 `evidence/baseline-metrics.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/benchmark/spec.md:181:**When**: 运行 `benchmark.sh --compare evidence/baseline-metrics.json`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/benchmark/spec.md:208:**When**: 运行 `benchmark.sh --output evidence/benchmark-report.md`
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/red-baseline/summary.md:89:- 完整日志: `evidence/red-baseline/test-2026-01-14.log`
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/red-baseline/summary.md:90:- 本摘要: `evidence/red-baseline/summary.md`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/drift-detector/spec.md:89:**报告存储**：`evidence/drift-detection-report.md`
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1044:| Red 基线 | `dev-playbooks/changes/augment-parity-final-gaps/evidence/red-baseline/` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1045:| Green 最终 | `dev-playbooks/changes/augment-parity-final-gaps/evidence/green-final/` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1046:| 性能报告 | `dev-playbooks/changes/augment-parity-final-gaps/evidence/performance-report.md` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1047:| 迁移测试 | `dev-playbooks/changes/augment-parity-final-gaps/evidence/migrate-test.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1048:| LRU PoC 测试 | `dev-playbooks/changes/augment-parity-final-gaps/evidence/lru-poc-test.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1053:# evidence/scripts/benchmark.sh
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1059:REPORT_FILE="${1:-evidence/performance-report.md}"
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1242:- [ ] **OPT-04**：在 evidence/ 中添加性能基准测试脚本（支撑冷启动 -50%、重复查询 10x 提速的声明）
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1293:  - 在 5.4 节添加 evidence/scripts/benchmark.sh 脚本
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1427:- [ ] Test Owner 阶段执行 Red 基线，产出 `evidence/red-baseline/`
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1428:- [ ] Coder 阶段执行 Green 验证，产出 `evidence/green-final/`
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1429:- [ ] 性能基准脚本首次运行时记录基线到 `evidence/baseline-metrics.md`
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:734:- `evidence/cache-benchmark.log`：性能基准报告
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:776:**交付物**：`evidence/cache-benchmark.log`
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:829:**交付物**：`evidence/baseline-hotspot.golden`
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:1081:| 性能基准 | `evidence/benchmark.sh` | P95 < 500ms |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:539:| Red 基线 | `dev-playbooks/changes/augment-parity-final-gaps/evidence/red-baseline/` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:540:| Green 最终 | `dev-playbooks/changes/augment-parity-final-gaps/evidence/green-final/` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:541:| 性能报告 | `dev-playbooks/changes/augment-parity-final-gaps/evidence/performance-report.md` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:542:| 迁移测试 | `dev-playbooks/changes/augment-parity-final-gaps/evidence/migrate-test.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:543:| LRU PoC 测试 | `dev-playbooks/changes/augment-parity-final-gaps/evidence/lru-poc-test.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:547:性能基准测试脚本位于 `evidence/scripts/benchmark.sh`，覆盖：
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/proposal.md:261:- Red 基线：`dev-playbooks/changes/optimize-indexing-pipeline-20260117/evidence/red-baseline/`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/proposal.md:262:- Green 证据：`dev-playbooks/changes/optimize-indexing-pipeline-20260117/evidence/green-final/`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/proposal.md:322:- [ ] 交付闸门证据（后续 Apply 阶段产出并归档）：`npm run lint`、`npm run build`、`npm test` 通过；关键命令输出归档到 `dev-playbooks/changes/optimize-indexing-pipeline-20260117/evidence/green-final/`。
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:202:| 记录 Red 基线性能数据 | evidence/red-baseline/ | P0 |
+dev-playbooks/changes/archive/augment-final-10-percent/evidence/red-baseline/summary.md:86:dev-playbooks/changes/augment-final-10-percent/evidence/red-baseline/
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:510:| Red 基线 | `dev-playbooks/changes/optimize-indexing-pipeline-20260117/evidence/red-baseline/` | 测试失败日志 |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:511:| Green 最终 | `dev-playbooks/changes/optimize-indexing-pipeline-20260117/evidence/green-final/` | 测试通过日志 + lint + build |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:512:| 离线验证 | `evidence/green-final/offline-proto.log` | 离线环境下 parse 成功日志 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/benchmark-implementation-summary.md:130:- `evidence/benchmark-test-final.log`: 完整测试日志
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/benchmark-implementation-summary.md:131:- `evidence/benchmark-report.json`: 实际评测报告
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/benchmark-implementation-summary.md:132:- `evidence/benchmark-implementation-summary.md`: 本文档
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:386:- Green 证据：`dev-playbooks/changes/augment-parity-final-gaps/evidence/green-final/test-20260116-225946-final.log`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:460:| 边类型扩展 | AC-G01 | T-GS-01, T-GS-02, T-GS-03 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:461:| 迁移命令 | AC-G01a | T-GS-04, T-GS-05, T-GS-06, T-GS-07 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:462:| 路径查询 | AC-G02 | T-GS-08, T-GS-09, T-GS-10, T-GS-11, T-GS-12 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:463:| ADR 解析 | AC-G03 | T-ADR-01, T-ADR-02, T-ADR-03, T-ADR-04, T-ADR-05 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:464:| 对话上下文 | AC-G04 | T-CC-01, T-CC-02, T-CC-03, T-CC-04 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:465:| 预热机制 | AC-G05 | T-DM-01, T-DM-02, T-DM-03, T-DM-04 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:466:| 请求取消 | AC-G06 | T-DM-05, T-DM-06, T-DM-07, T-DM-08 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:467:| LRU 缓存 | AC-G07 | T-SLC-01, T-SLC-02, T-SLC-03, T-SLC-04, T-SLC-05 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:468:| Bug 定位融合 | AC-G08 | T-BLF-01, T-BLF-02, T-BLF-03, T-BLF-04, T-BLF-05 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:469:| CI/CD 模板 | AC-G09 | T-CI-01, T-CI-02, T-CI-03, T-CI-04, T-CI-05, T-CI-06 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:470:| 回归测试 | AC-G10 | T-REG-01, T-REG-02 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:471:| 结构化上下文输出 | AC-G11 | T-SCO-01, T-SCO-02, T-SCO-03, T-SCO-04, T-SCO-05, T-SCO-06 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:472:| DevBooks 适配 | AC-G12 | T-DBA-01, T-DBA-02, T-DBA-03, T-DBA-04, T-DBA-05 | `evidence/red-baseline/test-20260116-172302.log` | `evidence/green-final/test-20260116-225946-final.log` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:201:**证据路径**: `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:275:- `evidence/red-baseline/`: Red 基线证据日志
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:70:| Lint (ShellCheck) | `npm run lint` | PASS | `evidence/green-final/lint-*.log` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:71:| Build (TypeScript) | `npm run build` | PASS | `evidence/green-final/build-*.log` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:72:| Unit Tests | `bats tests/indexer-scheduler.bats` | PASS (38/38) | `evidence/green-final/indexer-scheduler-*.log` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:88:Green 验证通过。详见 `evidence/green-final/summary.md`。
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:185:| REQ-IP-001 Incremental Indexing | AC-001, AC-006, AC-007, AC-008 | IS-001, IS-006, IS-007, IS-008 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:186:| REQ-IP-002 Reliable Fallback | AC-002, AC-009 | IS-002, IS-009 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:187:| REQ-SP-001 Offline Proto | AC-003 | IS-003 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:188:| REQ-CLI-001 Compatibility | AC-004 | IS-004 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:189:| REQ-MCP-001 Semantic Alignment | AC-005 | IS-005 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:190:| REQ-DB-001 Concurrent Safety | AC-010 | IS-010 | evidence/red-baseline/*.log |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:230:| Red Baseline | `evidence/red-baseline/` | Test failure logs before implementation |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:231:| Green Final | `evidence/green-final/` | Test pass logs after implementation |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:274:2. Red baseline evidence collected in `evidence/red-baseline/`
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:146:**Deliverables**：README 与 `docs/Augment.md` 同步、（如需）新增 `CHANGELOG.md`、evidence 目录与性能基准脚本、全量回归通过。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:147:**影响范围（Files/Modules）**：`README.md`、`docs/Augment.md`、`dev-playbooks/changes/augment-parity-final-gaps/evidence/**`、（可选）`CHANGELOG.md`。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:154:- [x] MP10.3（LSC）新增变更包脚本目录并提供批量验证/复现脚本（例如 `evidence/scripts/benchmark.sh`）（AC-G10；锚点：脚本可重复执行 + 证据产出落点正确）
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:155:- [x] MP10.4 全量回归：`npm test` 全绿，并输出 Green 证据到 `evidence/green-final/`（AC-G10；锚点：测试报告/日志归档）
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/green-final/summary-20260116-225600.md:9:- 测试日志: `evidence/green-final/test-20260116-225518.log`
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/green-final/summary-20260116-225600.md:28:| Red 基线 | `evidence/red-baseline/` | ✅ |
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/green-final/summary-20260116-225600.md:29:| Green 最终 | `evidence/green-final/` | ✅ |
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/green-final/summary-20260116-225600.md:30:| 性能报告 | `evidence/performance-report.md` | ✅ |
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/green-final/summary-20260116-225600.md:31:| 迁移测试 | `evidence/migrate-test.log` | ✅ |
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/green-final/summary-20260116-225600.md:32:| LRU PoC 测试 | `evidence/lru-poc-test.log` | ✅ |
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/green-final/summary-20260116-225600.md:33:| 基准脚本 | `evidence/scripts/benchmark.sh` | ✅ |
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/green-final/summary-20260116-225600.md:34:| 验证脚本 | `evidence/scripts/verify-change.sh` | ✅ |
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/scripts/verify-change.sh:76:verify_evidence() {
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/scripts/verify-change.sh:79:    local evidence_base="$SCRIPT_DIR/.."
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/scripts/verify-change.sh:83:    [[ -f "$evidence_base/performance-report.md" ]] || missing+=("performance-report.md")
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/scripts/verify-change.sh:84:    [[ -f "$evidence_base/migrate-test.log" ]] || missing+=("migrate-test.log")
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/scripts/verify-change.sh:85:    [[ -f "$evidence_base/lru-poc-test.log" ]] || missing+=("lru-poc-test.log")
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/scripts/verify-change.sh:86:    [[ -d "$evidence_base/red-baseline" ]] || missing+=("red-baseline/")
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/scripts/verify-change.sh:142:    verify_evidence
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/coder-completion-report.md:42:1. 测试日志：`evidence/green-final/semantic-anomaly-output-fix-20260119-135400.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/coder-completion-report.md:43:2. 修复总结：`evidence/semantic-anomaly-output-fix-summary.md`
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/performance-report.md:69:性能基准测试脚本位于 `evidence/scripts/benchmark.sh`。
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/performance-report.md:73:./dev-playbooks/changes/augment-parity-final-gaps/evidence/scripts/benchmark.sh
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/P0-FIXES-SUMMARY.md:248:dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/p0-fixes-20260119-*.log

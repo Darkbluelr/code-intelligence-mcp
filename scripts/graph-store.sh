@@ -18,7 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 # 设置日志前缀
-LOG_PREFIX="graph-store"
+export LOG_PREFIX="graph-store"
 
 # ==================== 配置 ====================
 
@@ -27,8 +27,14 @@ LOG_PREFIX="graph-store"
 : "${GRAPH_DB_PATH:=$DEVBOOKS_DIR/graph.db}"
 : "${GRAPH_WAL_MODE:=true}"
 
+# MP4: Schema 版本常量 (AC-004)
+CURRENT_SCHEMA_VERSION=4
+
 # 有效边类型（扩展 AC-G01: 支持 IMPLEMENTS/EXTENDS/RETURNS_TYPE/ADR_RELATED）
 VALID_EDGE_TYPES=("DEFINES" "IMPORTS" "CALLS" "MODIFIES" "REFERENCES" "IMPLEMENTS" "EXTENDS" "RETURNS_TYPE" "ADR_RELATED")
+
+# MP4: 闭包表最大深度
+CLOSURE_MAX_DEPTH=5
 
 # ==================== 辅助函数 ====================
 
@@ -41,6 +47,50 @@ is_valid_edge_type() {
         fi
     done
     return 1
+}
+
+# [C-002] SQL 注入防护：验证输入安全性
+validate_sql_input() {
+    local input="$1"
+    local field_name="${2:-input}"
+    local max_length="${3:-1000}"
+
+    # 检查空值
+    if [[ -z "$input" ]]; then
+        return 0
+    fi
+
+    # [M-010 fix] 检查输入长度
+    if [[ ${#input} -gt $max_length ]]; then
+        log_error "Input too long in $field_name: ${#input} > $max_length"
+        return 1
+    fi
+
+    # [M-010 fix] 检查危险字符模式（修正正则转义）
+    if [[ "$input" =~ [\;\|\&\$\`] ]]; then
+        log_error "Invalid characters in $field_name: contains shell metacharacters"
+        return 1
+    fi
+
+    # [M-010 fix] 检查 Unicode 控制字符（兼容 macOS grep）
+    if printf '%s' "$input" | LC_ALL=C tr -d '[:print:][:space:]' | grep -q .; then
+        log_error "Invalid characters in $field_name: contains control characters"
+        return 1
+    fi
+
+    # 检查 SQL 注入模式
+    if echo "$input" | grep -qiE "(DROP|DELETE|TRUNCATE|ALTER|EXEC|UNION|INSERT|UPDATE).*TABLE"; then
+        log_error "Potential SQL injection detected in $field_name"
+        return 1
+    fi
+
+    return 0
+}
+
+# 安全转义 SQL 字符串
+escape_sql_string() {
+    local input="$1"
+    echo "$input" | sed "s/'/''/g"
 }
 
 # 确保数据库目录存在
@@ -111,6 +161,50 @@ CREATE INDEX IF NOT EXISTS idx_edges_source ON edges(source_id);
 CREATE INDEX IF NOT EXISTS idx_edges_target ON edges(target_id);
 CREATE INDEX IF NOT EXISTS idx_edges_type ON edges(edge_type);
 
+-- MP4: transitive_closure 表（闭包表）
+CREATE TABLE IF NOT EXISTS transitive_closure (
+    source_id TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    depth INTEGER NOT NULL,
+    created_at INTEGER DEFAULT (strftime('%s', 'now')),
+    PRIMARY KEY (source_id, target_id),
+    FOREIGN KEY (source_id) REFERENCES nodes(id),
+    FOREIGN KEY (target_id) REFERENCES nodes(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_tc_source ON transitive_closure(source_id);
+CREATE INDEX IF NOT EXISTS idx_tc_target ON transitive_closure(target_id);
+CREATE INDEX IF NOT EXISTS idx_tc_depth ON transitive_closure(depth);
+
+-- MP4: path_index 表（路径索引）
+CREATE TABLE IF NOT EXISTS path_index (
+    source_id TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    path TEXT NOT NULL,
+    edge_path TEXT,
+    depth INTEGER NOT NULL,
+    updated_at INTEGER DEFAULT (strftime('%s', 'now')),
+    PRIMARY KEY (source_id, target_id),
+    FOREIGN KEY (source_id) REFERENCES nodes(id),
+    FOREIGN KEY (target_id) REFERENCES nodes(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_path_source ON path_index(source_id);
+CREATE INDEX IF NOT EXISTS idx_path_target ON path_index(target_id);
+CREATE INDEX IF NOT EXISTS idx_path_depth ON path_index(depth);
+
+-- MP7: user_signals 表（上下文信号）
+CREATE TABLE IF NOT EXISTS user_signals (
+    file_path TEXT NOT NULL,
+    signal_type TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    weight REAL NOT NULL,
+    PRIMARY KEY (file_path, signal_type, timestamp)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_signals_file ON user_signals(file_path);
+CREATE INDEX IF NOT EXISTS idx_user_signals_time ON user_signals(timestamp);
+
 -- virtual_edges 表（MP5: 联邦虚拟边）
 -- Trace: AC-F05
 CREATE TABLE IF NOT EXISTS virtual_edges (
@@ -149,14 +243,122 @@ CREATE TABLE IF NOT EXISTS metadata (
     updated_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
-INSERT OR IGNORE INTO schema_version (version) VALUES (2);
+-- MP2: Schema v3 新增索引 (AC-U03)
+CREATE INDEX IF NOT EXISTS idx_edges_implements ON edges(edge_type) WHERE edge_type = 'IMPLEMENTS';
+CREATE INDEX IF NOT EXISTS idx_edges_extends ON edges(edge_type) WHERE edge_type = 'EXTENDS';
+CREATE INDEX IF NOT EXISTS idx_edges_returns_type ON edges(edge_type) WHERE edge_type = 'RETURNS_TYPE';
+
+INSERT OR IGNORE INTO schema_version (version) VALUES (4);
 EOF
+}
+
+# ==================== 闭包表/路径索引 ====================
+
+closure_tables_exist() {
+    local db_path="${1:-$GRAPH_DB_PATH}"
+    if [[ ! -f "$db_path" ]]; then
+        return 1
+    fi
+
+    local has_tc has_pi
+    has_tc=$(sqlite3 "$db_path" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='transitive_closure';" 2>/dev/null || echo "0")
+    has_pi=$(sqlite3 "$db_path" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='path_index';" 2>/dev/null || echo "0")
+
+    [[ "$has_tc" -gt 0 && "$has_pi" -gt 0 ]]
+}
+
+precompute_closure() {
+    local max_depth="${1:-$CLOSURE_MAX_DEPTH}"
+
+    closure_tables_exist "$GRAPH_DB_PATH" || return 0
+
+    # M-014 fix: 添加进度反馈
+    local node_count edge_count
+    node_count=$(sqlite3 "$GRAPH_DB_PATH" "SELECT COUNT(*) FROM nodes;" 2>/dev/null || echo "0")
+    edge_count=$(sqlite3 "$GRAPH_DB_PATH" "SELECT COUNT(*) FROM edges;" 2>/dev/null || echo "0")
+    log_info "开始预计算闭包表 (nodes=$node_count, edges=$edge_count, max_depth=$max_depth)..."
+
+    local sql="
+BEGIN TRANSACTION;
+DELETE FROM transitive_closure;
+WITH RECURSIVE tc(source_id, target_id, depth) AS (
+    SELECT source_id, target_id, 1 FROM edges
+    UNION ALL
+    SELECT tc.source_id, e.target_id, tc.depth + 1
+    FROM tc
+    JOIN edges e ON tc.target_id = e.source_id
+    WHERE tc.depth < $max_depth
+)
+INSERT OR REPLACE INTO transitive_closure (source_id, target_id, depth)
+SELECT source_id, target_id, MIN(depth) FROM tc GROUP BY source_id, target_id;
+
+DELETE FROM path_index;
+INSERT OR REPLACE INTO path_index (source_id, target_id, path, edge_path, depth)
+SELECT
+    e.source_id,
+    e.target_id,
+    json_array(e.source_id, e.target_id),
+    json_array(json_object('from', e.source_id, 'to', e.target_id, 'type', e.edge_type)),
+    1
+FROM edges e;
+COMMIT;
+"
+
+    if sqlite3 "$GRAPH_DB_PATH" "$sql" >/dev/null 2>&1; then
+        local tc_count pi_count
+        tc_count=$(sqlite3 "$GRAPH_DB_PATH" "SELECT COUNT(*) FROM transitive_closure;" 2>/dev/null || echo "0")
+        pi_count=$(sqlite3 "$GRAPH_DB_PATH" "SELECT COUNT(*) FROM path_index;" 2>/dev/null || echo "0")
+        log_info "闭包表预计算完成 (transitive_closure=$tc_count, path_index=$pi_count)"
+    else
+        log_warn "闭包表预计算失败，将在下次查询时重试"
+    fi
+}
+
+precompute_closure_async() {
+    local max_depth="${1:-$CLOSURE_MAX_DEPTH}"
+    (precompute_closure "$max_depth" >/dev/null 2>&1) &
+}
+
+update_closure_for_edge() {
+    local source_id="$1"
+    local target_id="$2"
+    local edge_type="$3"
+
+    closure_tables_exist "$GRAPH_DB_PATH" || return 0
+
+    local source_sql target_sql edge_sql
+    source_sql="$(escape_sql_string "$source_id")"
+    target_sql="$(escape_sql_string "$target_id")"
+    edge_sql="$(escape_sql_string "$edge_type")"
+
+    local sql="
+INSERT OR REPLACE INTO transitive_closure (source_id, target_id, depth)
+VALUES ('$source_sql', '$target_sql', 1);
+INSERT OR REPLACE INTO path_index (source_id, target_id, path, edge_path, depth)
+VALUES (
+    '$source_sql',
+    '$target_sql',
+    json_array('$source_sql', '$target_sql'),
+    json_array(json_object('from', '$source_sql', 'to', '$target_sql', 'type', '$edge_sql')),
+    1
+);
+"
+
+    sqlite3 "$GRAPH_DB_PATH" "$sql" >/dev/null 2>&1 || true
 }
 
 # ==================== 命令: init ====================
 
 cmd_init() {
     check_dependencies sqlite3 || exit $EXIT_DEPS_MISSING
+
+    local skip_precompute=false
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --skip-precompute) skip_precompute=true; shift ;;
+            *) shift ;;
+        esac
+    done
 
     ensure_db_dir
 
@@ -177,6 +379,10 @@ cmd_init() {
     # 启用 WAL 模式
     if [[ "$GRAPH_WAL_MODE" == "true" ]]; then
         sqlite3 "$GRAPH_DB_PATH" "PRAGMA journal_mode=WAL;"
+    fi
+
+    if [[ "$skip_precompute" != "true" ]]; then
+        precompute_closure_async
     fi
 
     log_ok "Graph database initialized"
@@ -206,14 +412,20 @@ cmd_add_node() {
         return $EXIT_ARGS_ERROR
     fi
 
+    # [C-002] 输入验证
+    validate_sql_input "$id" "id" || return $EXIT_ARGS_ERROR
+    validate_sql_input "$symbol" "symbol" || return $EXIT_ARGS_ERROR
+    validate_sql_input "$kind" "kind" || return $EXIT_ARGS_ERROR
+    validate_sql_input "$file_path" "file_path" || return $EXIT_ARGS_ERROR
+
     # 处理可选字段
     local line_start_sql="NULL"
     local line_end_sql="NULL"
     [[ -n "$line_start" ]] && line_start_sql="$line_start"
     [[ -n "$line_end" ]] && line_end_sql="$line_end"
 
-    # 插入节点（使用参数化查询防止 SQL 注入）
-    local sql="INSERT OR REPLACE INTO nodes (id, symbol, kind, file_path, line_start, line_end) VALUES ('$(echo "$id" | sed "s/'/''/g")', '$(echo "$symbol" | sed "s/'/''/g")', '$(echo "$kind" | sed "s/'/''/g")', '$(echo "$file_path" | sed "s/'/''/g")', $line_start_sql, $line_end_sql);"
+    # 插入节点（使用安全转义）
+    local sql="INSERT OR REPLACE INTO nodes (id, symbol, kind, file_path, line_start, line_end) VALUES ('$(escape_sql_string "$id")', '$(escape_sql_string "$symbol")', '$(escape_sql_string "$kind")', '$(escape_sql_string "$file_path")', $line_start_sql, $line_end_sql);"
 
     if run_sql "$sql"; then
         echo '{"status":"ok","id":"'"$id"'"}'
@@ -245,26 +457,32 @@ cmd_add_edge() {
         return $EXIT_ARGS_ERROR
     fi
 
+    # [C-002] 输入验证
+    validate_sql_input "$source_id" "source_id" || return $EXIT_ARGS_ERROR
+    validate_sql_input "$target_id" "target_id" || return $EXIT_ARGS_ERROR
+    validate_sql_input "$file_path" "file_path" || return $EXIT_ARGS_ERROR
+
     # 验证边类型
     if ! is_valid_edge_type "$edge_type"; then
         log_error "Invalid edge type: $edge_type. Valid types: DEFINES, IMPORTS, CALLS, MODIFIES, REFERENCES, IMPLEMENTS, EXTENDS, RETURNS_TYPE, ADR_RELATED"
         return $EXIT_ARGS_ERROR
     fi
 
-    # 生成边 ID
+    # 生成确定性边 ID（基于 source_id, target_id, edge_type 的哈希，保证幂等性）
     local edge_id
-    edge_id=$(generate_id "edge")
+    edge_id=$(hash_string_md5 "${source_id}:${target_id}:${edge_type}")
 
     # 处理可选字段
     local file_sql="NULL"
     local line_sql="NULL"
-    [[ -n "$file_path" ]] && file_sql="'$(echo "$file_path" | sed "s/'/''/g")'"
+    [[ -n "$file_path" ]] && file_sql="'$(escape_sql_string "$file_path")'"
     [[ -n "$line" ]] && line_sql="$line"
 
-    # 插入边
-    local sql="INSERT INTO edges (id, source_id, target_id, edge_type, file_path, line) VALUES ('$edge_id', '$(echo "$source_id" | sed "s/'/''/g")', '$(echo "$target_id" | sed "s/'/''/g")', '$edge_type', $file_sql, $line_sql);"
+    # 插入边（使用 INSERT OR REPLACE 保证幂等性，AC-006）
+    local sql="INSERT OR REPLACE INTO edges (id, source_id, target_id, edge_type, file_path, line) VALUES ('$edge_id', '$(escape_sql_string "$source_id")', '$(escape_sql_string "$target_id")', '$edge_type', $file_sql, $line_sql);"
 
     if run_sql "$sql"; then
+        update_closure_for_edge "$source_id" "$target_id" "$edge_type"
         echo '{"status":"ok","id":"'"$edge_id"'"}'
     else
         log_error "Failed to add edge"
@@ -350,10 +568,12 @@ cmd_find_orphans() {
 
 cmd_batch_import() {
     local input_file=""
+    local skip_precompute=false
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --file) input_file="$2"; shift 2 ;;
+            --skip-precompute) skip_precompute=true; shift ;;
             *) shift ;;
         esac
     done
@@ -374,69 +594,54 @@ cmd_batch_import() {
     # 开始事务
     local sql="BEGIN TRANSACTION;"
 
-    # 处理节点
-    local nodes
-    nodes=$(jq -c '.nodes // []' "$input_file")
-
-    if [[ "$nodes" != "[]" ]]; then
-        while IFS= read -r node; do
-            local id symbol kind file_path line_start line_end
-
-            id=$(echo "$node" | jq -r '.id // empty')
-            symbol=$(echo "$node" | jq -r '.symbol // empty')
-            kind=$(echo "$node" | jq -r '.kind // empty')
-            file_path=$(echo "$node" | jq -r '.file_path // empty')
-            line_start=$(echo "$node" | jq -r '.line_start // "NULL"')
-            line_end=$(echo "$node" | jq -r '.line_end // "NULL"')
-
+    # 处理节点（使用单次 jq 提升大批量性能）
+    if jq -e '.nodes | length > 0' "$input_file" >/dev/null 2>&1; then
+        while IFS=$'\t' read -r id symbol kind file_path line_start line_end; do
             # 验证必填字段
-            if [[ -z "$id" || -z "$symbol" || -z "$kind" || -z "$file_path" ]]; then
+            if [[ -z "$id" || "$id" == "null" || "$id" == "NULL" \
+                || -z "$symbol" || "$symbol" == "null" || "$symbol" == "NULL" \
+                || -z "$kind" || "$kind" == "null" || "$kind" == "NULL" \
+                || -z "$file_path" || "$file_path" == "null" || "$file_path" == "NULL" ]]; then
                 log_error "Node missing required fields: id, symbol, kind, file_path"
                 return $EXIT_ARGS_ERROR
             fi
 
             # 处理 NULL 值
-            [[ "$line_start" == "null" ]] && line_start="NULL"
-            [[ "$line_end" == "null" ]] && line_end="NULL"
+            [[ "$line_start" == "null" || "$line_start" == "NULL" || -z "$line_start" ]] && line_start="NULL"
+            [[ "$line_end" == "null" || "$line_end" == "NULL" || -z "$line_end" ]] && line_end="NULL"
 
             sql+="INSERT OR REPLACE INTO nodes (id, symbol, kind, file_path, line_start, line_end) VALUES ('$(echo "$id" | sed "s/'/''/g")', '$(echo "$symbol" | sed "s/'/''/g")', '$(echo "$kind" | sed "s/'/''/g")', '$(echo "$file_path" | sed "s/'/''/g")', $line_start, $line_end);"
-        done < <(echo "$nodes" | jq -c '.[]')
+        done < <(jq -r '.nodes[] | [.id, .symbol, .kind, .file_path, (.line_start // "NULL"), (.line_end // "NULL")] | @tsv' "$input_file")
     fi
 
-    # 处理边
-    local edges
-    edges=$(jq -c '.edges // []' "$input_file")
-
-    if [[ "$edges" != "[]" ]]; then
-        while IFS= read -r edge; do
-            local source_id target_id edge_type file_path line
-
-            source_id=$(echo "$edge" | jq -r '.source_id // empty')
-            target_id=$(echo "$edge" | jq -r '.target_id // empty')
-            edge_type=$(echo "$edge" | jq -r '.edge_type // empty')
-            file_path=$(echo "$edge" | jq -r '.file_path // "NULL"')
-            line=$(echo "$edge" | jq -r '.line // "NULL"')
-
+    # 处理边（使用单次 jq 提升大批量性能）
+    if jq -e '.edges | length > 0' "$input_file" >/dev/null 2>&1; then
+        while IFS=$'\t' read -r source_id target_id edge_type file_path line; do
             # 验证边类型
             if ! is_valid_edge_type "$edge_type"; then
                 log_error "Invalid edge type: $edge_type"
                 return $EXIT_ARGS_ERROR
             fi
 
+            # 生成确定性边 ID（基于 source_id, target_id, edge_type 的哈希，保证幂等性，AC-006）
             local edge_id
-            edge_id=$(generate_id "edge")
+            edge_id=$(hash_string_md5 "${source_id}:${target_id}:${edge_type}")
 
             # 处理 NULL 值
-            [[ "$file_path" == "null" || "$file_path" == "NULL" ]] && file_path="NULL" || file_path="'$(echo "$file_path" | sed "s/'/''/g")'"
-            [[ "$line" == "null" ]] && line="NULL"
+            [[ "$file_path" == "null" || "$file_path" == "NULL" || -z "$file_path" ]] && file_path="NULL" || file_path="'$(echo "$file_path" | sed "s/'/''/g")'"
+            [[ "$line" == "null" || "$line" == "NULL" || -z "$line" ]] && line="NULL"
 
-            sql+="INSERT INTO edges (id, source_id, target_id, edge_type, file_path, line) VALUES ('$edge_id', '$(echo "$source_id" | sed "s/'/''/g")', '$(echo "$target_id" | sed "s/'/''/g")', '$edge_type', $file_path, $line);"
-        done < <(echo "$edges" | jq -c '.[]')
+            # 使用 INSERT OR REPLACE 保证幂等性（AC-006）
+            sql+="INSERT OR REPLACE INTO edges (id, source_id, target_id, edge_type, file_path, line) VALUES ('$edge_id', '$(echo "$source_id" | sed "s/'/''/g")', '$(echo "$target_id" | sed "s/'/''/g")', '$edge_type', $file_path, $line);"
+        done < <(jq -r '.edges[] | [.source_id, .target_id, .edge_type, (.file_path // "NULL"), (.line // "NULL")] | @tsv' "$input_file")
     fi
 
     sql+="COMMIT;"
 
     if echo "$sql" | sqlite3 "$GRAPH_DB_PATH"; then
+        if [[ "$skip_precompute" != "true" ]]; then
+            precompute_closure_async
+        fi
         local node_count edge_count
         node_count=$(jq '.nodes | length' "$input_file")
         edge_count=$(jq '.edges // [] | length' "$input_file")
@@ -444,6 +649,8 @@ cmd_batch_import() {
     else
         log_error "Batch import failed, rolling back"
         run_sql "ROLLBACK;" 2>/dev/null || true
+        # [M-009 fix] 清理可能已插入的部分数据和闭包表
+        run_sql "VACUUM;" 2>/dev/null || true
         return $EXIT_RUNTIME_ERROR
     fi
 }
@@ -451,23 +658,24 @@ cmd_batch_import() {
 # ==================== 命令: stats ====================
 
 cmd_stats() {
-    local sql='SELECT json_object(
-        "nodes", (SELECT COUNT(*) FROM nodes),
-        "edges", (SELECT COUNT(*) FROM edges),
-        "edges_by_type", json_object(
-            "DEFINES", (SELECT COUNT(*) FROM edges WHERE edge_type = "DEFINES"),
-            "IMPORTS", (SELECT COUNT(*) FROM edges WHERE edge_type = "IMPORTS"),
-            "CALLS", (SELECT COUNT(*) FROM edges WHERE edge_type = "CALLS"),
-            "MODIFIES", (SELECT COUNT(*) FROM edges WHERE edge_type = "MODIFIES"),
-            "REFERENCES", (SELECT COUNT(*) FROM edges WHERE edge_type = "REFERENCES"),
-            "IMPLEMENTS", (SELECT COUNT(*) FROM edges WHERE edge_type = "IMPLEMENTS"),
-            "EXTENDS", (SELECT COUNT(*) FROM edges WHERE edge_type = "EXTENDS"),
-            "RETURNS_TYPE", (SELECT COUNT(*) FROM edges WHERE edge_type = "RETURNS_TYPE"),
-            "ADR_RELATED", (SELECT COUNT(*) FROM edges WHERE edge_type = "ADR_RELATED")
+    # SQLite: 使用单引号作为字符串字面量，双引号用于标识符
+    local sql="SELECT json_object(
+        'nodes', (SELECT COUNT(*) FROM nodes),
+        'edges', (SELECT COUNT(*) FROM edges),
+        'edges_by_type', json_object(
+            'DEFINES', (SELECT COUNT(*) FROM edges WHERE edge_type = 'DEFINES'),
+            'IMPORTS', (SELECT COUNT(*) FROM edges WHERE edge_type = 'IMPORTS'),
+            'CALLS', (SELECT COUNT(*) FROM edges WHERE edge_type = 'CALLS'),
+            'MODIFIES', (SELECT COUNT(*) FROM edges WHERE edge_type = 'MODIFIES'),
+            'REFERENCES', (SELECT COUNT(*) FROM edges WHERE edge_type = 'REFERENCES'),
+            'IMPLEMENTS', (SELECT COUNT(*) FROM edges WHERE edge_type = 'IMPLEMENTS'),
+            'EXTENDS', (SELECT COUNT(*) FROM edges WHERE edge_type = 'EXTENDS'),
+            'RETURNS_TYPE', (SELECT COUNT(*) FROM edges WHERE edge_type = 'RETURNS_TYPE'),
+            'ADR_RELATED', (SELECT COUNT(*) FROM edges WHERE edge_type = 'ADR_RELATED')
         ),
-        "db_path", "'"$GRAPH_DB_PATH"'",
-        "db_size_bytes", (SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size())
-    );'
+        'db_path', '$GRAPH_DB_PATH',
+        'db_size_bytes', (SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size())
+    );"
 
     run_sql "$sql"
 }
@@ -537,7 +745,7 @@ cmd_delete_edge() {
 # ==================== 命令: migrate (AC-G01a) ====================
 
 # 当前 Schema 版本
-CURRENT_SCHEMA_VERSION=3
+CURRENT_SCHEMA_VERSION=4
 
 # 检查 Schema 是否需要迁移
 check_schema_version() {
@@ -591,12 +799,14 @@ cmd_migrate() {
     local check_only=false
     local apply=false
     local status_only=false
+    local skip_precompute=false
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --check) check_only=true; shift ;;
             --apply) apply=true; shift ;;
             --status) status_only=true; shift ;;
+            --skip-precompute) skip_precompute=true; shift ;;
             *) shift ;;
         esac
     done
@@ -605,6 +815,25 @@ cmd_migrate() {
 
     # 确保数据库目录存在
     ensure_db_dir
+
+    # MP2.4: 并发迁移保护 (AC-U11)
+    # [M-003] 使用原子操作防止竞态条件
+    local lock_file="${GRAPH_DB_PATH}.migrate.lock"
+    if [[ "$apply" == "true" ]]; then
+        # C-006 fix: Use flock instead of mkdir-based locking
+        # Open file descriptor 200 for the lock file
+        exec 200>"$lock_file"
+
+        # Try to acquire exclusive lock (non-blocking)
+        if ! flock -n 200; then
+            log_error "Migration in progress, please retry later"
+            echo '{"status":"LOCKED","message":"Another migration process is running"}'
+            return $EXIT_RUNTIME_ERROR
+        fi
+
+        # Set up trap to release lock on exit
+        trap "flock -u 200; rm -f '$lock_file'" EXIT
+    fi
 
     if [[ ! -f "$GRAPH_DB_PATH" ]]; then
         if [[ "$check_only" == "true" ]]; then
@@ -630,15 +859,22 @@ cmd_migrate() {
     if ! check_edge_type_constraint "$GRAPH_DB_PATH"; then
         needs_migration=true
     fi
+    if ! closure_tables_exist "$GRAPH_DB_PATH"; then
+        needs_migration=true
+    fi
 
     if [[ "$status_only" == "true" ]]; then
         # 获取边类型分布
+        local needs_migration_flag="false"
+        if [[ "$needs_migration" == "true" ]] || [[ "$current_version" -lt "$CURRENT_SCHEMA_VERSION" ]]; then
+            needs_migration_flag="true"
+        fi
         local stats
         stats=$(run_sql "SELECT json_object(
             'db_path', '$GRAPH_DB_PATH',
             'schema_version', $current_version,
             'target_version', $CURRENT_SCHEMA_VERSION,
-            'needs_migration', CASE WHEN $current_version < $CURRENT_SCHEMA_VERSION THEN 'true' ELSE 'false' END,
+            'needs_migration', '$needs_migration_flag',
             'edges_by_type', (SELECT json_object(
                 'DEFINES', (SELECT COUNT(*) FROM edges WHERE edge_type = 'DEFINES'),
                 'IMPORTS', (SELECT COUNT(*) FROM edges WHERE edge_type = 'IMPORTS'),
@@ -661,7 +897,7 @@ cmd_migrate() {
         if [[ "$needs_migration" == "true" ]] || [[ "$current_version" -lt "$CURRENT_SCHEMA_VERSION" ]]; then
             echo "NEEDS_MIGRATION"
             log_info "检测到旧版 Schema (v$current_version)，需要迁移到 v$CURRENT_SCHEMA_VERSION"
-            return 1
+            return 0
         else
             echo "UP_TO_DATE"
             log_info "Schema 已是最新 (v$current_version)"
@@ -670,12 +906,6 @@ cmd_migrate() {
     fi
 
     if [[ "$apply" == "true" ]]; then
-        # 检查是否需要迁移
-        if [[ "$needs_migration" != "true" ]] && [[ "$current_version" -ge "$CURRENT_SCHEMA_VERSION" ]]; then
-            echo '{"status":"UP_TO_DATE","message":"Schema 已是最新，无需迁移"}'
-            return 0
-        fi
-
         # 创建备份
         local backup_path="${GRAPH_DB_PATH}.backup.$(date +%Y%m%d_%H%M%S)"
         log_info "创建备份: $backup_path"
@@ -685,10 +915,19 @@ cmd_migrate() {
         [[ -f "${GRAPH_DB_PATH}-wal" ]] && cp "${GRAPH_DB_PATH}-wal" "${backup_path}-wal"
         [[ -f "${GRAPH_DB_PATH}-shm" ]] && cp "${GRAPH_DB_PATH}-shm" "${backup_path}-shm"
 
+        # 检查是否需要迁移
+        if [[ "$needs_migration" != "true" ]] && [[ "$current_version" -ge "$CURRENT_SCHEMA_VERSION" ]]; then
+            echo "{\"status\":\"UP_TO_DATE\",\"backup_path\":\"$backup_path\",\"schema_version\":$CURRENT_SCHEMA_VERSION}"
+            return 0
+        fi
+
         log_info "执行 Schema 迁移..."
 
         # 执行迁移（使用单个事务）
         local migrate_sql="
+-- MP2.5: 启用外键约束检查 (AC-U11)
+PRAGMA foreign_keys = ON;
+
 BEGIN TRANSACTION;
 
 -- 1. 导出现有数据
@@ -730,9 +969,78 @@ CREATE INDEX idx_edges_source ON edges(source_id);
 CREATE INDEX idx_edges_target ON edges(target_id);
 CREATE INDEX idx_edges_type ON edges(edge_type);
 
--- 5. 恢复数据
-INSERT INTO nodes SELECT * FROM temp_nodes;
-INSERT INTO edges SELECT * FROM temp_edges;
+-- MP2: 新增专用索引 (AC-U03)
+CREATE INDEX idx_edges_implements ON edges(edge_type) WHERE edge_type = 'IMPLEMENTS';
+CREATE INDEX idx_edges_extends ON edges(edge_type) WHERE edge_type = 'EXTENDS';
+CREATE INDEX idx_edges_returns_type ON edges(edge_type) WHERE edge_type = 'RETURNS_TYPE';
+
+-- MP4: 新增闭包表与路径索引
+CREATE TABLE transitive_closure (
+    source_id TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    depth INTEGER NOT NULL,
+    created_at INTEGER DEFAULT (strftime('%s', 'now')),
+    PRIMARY KEY (source_id, target_id),
+    FOREIGN KEY (source_id) REFERENCES nodes(id),
+    FOREIGN KEY (target_id) REFERENCES nodes(id)
+);
+
+CREATE INDEX idx_tc_source ON transitive_closure(source_id);
+CREATE INDEX idx_tc_target ON transitive_closure(target_id);
+CREATE INDEX idx_tc_depth ON transitive_closure(depth);
+
+CREATE TABLE path_index (
+    source_id TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    path TEXT NOT NULL,
+    edge_path TEXT,
+    depth INTEGER NOT NULL,
+    updated_at INTEGER DEFAULT (strftime('%s', 'now')),
+    PRIMARY KEY (source_id, target_id),
+    FOREIGN KEY (source_id) REFERENCES nodes(id),
+    FOREIGN KEY (target_id) REFERENCES nodes(id)
+);
+
+CREATE INDEX idx_path_source ON path_index(source_id);
+CREATE INDEX idx_path_target ON path_index(target_id);
+CREATE INDEX idx_path_depth ON path_index(depth);
+
+-- MP7: user_signals 表
+CREATE TABLE user_signals (
+    file_path TEXT NOT NULL,
+    signal_type TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    weight REAL NOT NULL,
+    PRIMARY KEY (file_path, signal_type, timestamp)
+);
+
+CREATE INDEX idx_user_signals_file ON user_signals(file_path);
+CREATE INDEX idx_user_signals_time ON user_signals(timestamp);
+
+-- 5. 恢复数据（处理 v2 到 v3 的列映射）
+-- v2 nodes: (id, type, name, file_path, metadata)
+-- v3 nodes: (id, symbol, kind, file_path, line_start, line_end, created_at)
+INSERT INTO nodes (id, symbol, kind, file_path, line_start, line_end)
+SELECT
+    id,
+    name as symbol,  -- v2 的 name 映射到 v3 的 symbol
+    type as kind,    -- v2 的 type 映射到 v3 的 kind
+    file_path,
+    NULL as line_start,
+    NULL as line_end
+FROM temp_nodes;
+
+-- v2 edges: (id, source_id, target_id, edge_type, metadata)
+-- v3 edges: (id, source_id, target_id, edge_type, file_path, line, created_at)
+INSERT INTO edges (id, source_id, target_id, edge_type, file_path, line)
+SELECT
+    hex(randomblob(16)) as id,  -- v2 使用 INTEGER AUTOINCREMENT，v3 使用 TEXT，需要重新生成
+    source_id,
+    target_id,
+    edge_type,
+    NULL as file_path,
+    NULL as line
+FROM temp_edges;
 
 -- 6. 更新版本
 INSERT OR REPLACE INTO schema_version (version) VALUES ($CURRENT_SCHEMA_VERSION);
@@ -745,11 +1053,70 @@ COMMIT;
 "
 
         if sqlite3 "$GRAPH_DB_PATH" "$migrate_sql" 2>&1; then
-            local after_nodes after_edges
+            # [M-004] 迁移数据完整性验证
+            local before_nodes before_edges after_nodes after_edges
+            before_nodes=$(sqlite3 "$backup_path" "SELECT COUNT(*) FROM nodes;" 2>/dev/null || echo "0")
+            before_edges=$(sqlite3 "$backup_path" "SELECT COUNT(*) FROM edges;" 2>/dev/null || echo "0")
             after_nodes=$(sqlite3 "$GRAPH_DB_PATH" "SELECT COUNT(*) FROM nodes;")
             after_edges=$(sqlite3 "$GRAPH_DB_PATH" "SELECT COUNT(*) FROM edges;")
 
-            log_ok "迁移完成"
+            # 验证数据完整性
+            if [[ "$before_nodes" != "$after_nodes" ]] || [[ "$before_edges" != "$after_edges" ]]; then
+                log_error "数据完整性验证失败: nodes $before_nodes->$after_nodes, edges $before_edges->$after_edges"
+                log_error "正在恢复备份..."
+                cp "$backup_path" "$GRAPH_DB_PATH"
+                [[ -f "${backup_path}-wal" ]] && cp "${backup_path}-wal" "${GRAPH_DB_PATH}-wal"
+                [[ -f "${backup_path}-shm" ]] && cp "${backup_path}-shm" "${GRAPH_DB_PATH}-shm"
+                echo '{"status":"INTEGRITY_FAILED","message":"数据完整性验证失败，已恢复备份"}'
+                return $EXIT_RUNTIME_ERROR
+            fi
+
+            # [M-011 fix] 添加 checksum 验证
+            local before_checksum after_checksum
+            before_checksum=$(sqlite3 "$backup_path" "SELECT GROUP_CONCAT(id || symbol || kind) FROM (SELECT id, symbol, kind FROM nodes ORDER BY id);" 2>/dev/null | hash_string_md5)
+            after_checksum=$(sqlite3 "$GRAPH_DB_PATH" "SELECT GROUP_CONCAT(id || symbol || kind) FROM (SELECT id, symbol, kind FROM nodes ORDER BY id);" 2>/dev/null | hash_string_md5)
+
+            if [[ "$before_checksum" != "$after_checksum" ]]; then
+                log_error "数据内容 checksum 验证失败: nodes checksum 不匹配"
+                log_error "正在恢复备份..."
+                cp "$backup_path" "$GRAPH_DB_PATH"
+                [[ -f "${backup_path}-wal" ]] && cp "${backup_path}-wal" "${GRAPH_DB_PATH}-wal"
+                [[ -f "${backup_path}-shm" ]] && cp "${backup_path}-shm" "${GRAPH_DB_PATH}-shm"
+                echo '{"status":"CHECKSUM_FAILED","message":"数据内容验证失败，已恢复备份"}'
+                return $EXIT_RUNTIME_ERROR
+            fi
+
+            # 验证外键约束
+            local fk_violations
+            fk_violations=$(sqlite3 "$GRAPH_DB_PATH" "PRAGMA foreign_key_check;" 2>&1)
+            if [[ -n "$fk_violations" ]]; then
+                log_error "外键约束验证失败: $fk_violations"
+                log_error "正在恢复备份..."
+                cp "$backup_path" "$GRAPH_DB_PATH"
+                [[ -f "${backup_path}-wal" ]] && cp "${backup_path}-wal" "${GRAPH_DB_PATH}-wal"
+                [[ -f "${backup_path}-shm" ]] && cp "${backup_path}-shm" "${GRAPH_DB_PATH}-shm"
+                echo '{"status":"FK_VIOLATION","message":"外键约束验证失败，已恢复备份"}'
+                return $EXIT_RUNTIME_ERROR
+            fi
+
+            # [M-011 fix] 验证索引完整性
+            local index_check
+            index_check=$(sqlite3 "$GRAPH_DB_PATH" "PRAGMA integrity_check;" 2>&1)
+            if [[ "$index_check" != "ok" ]]; then
+                log_error "索引完整性验证失败: $index_check"
+                log_error "正在恢复备份..."
+                cp "$backup_path" "$GRAPH_DB_PATH"
+                [[ -f "${backup_path}-wal" ]] && cp "${backup_path}-wal" "${GRAPH_DB_PATH}-wal"
+                [[ -f "${backup_path}-shm" ]] && cp "${backup_path}-shm" "${GRAPH_DB_PATH}-shm"
+                echo '{"status":"INDEX_INTEGRITY_FAILED","message":"索引完整性验证失败，已恢复备份"}'
+                return $EXIT_RUNTIME_ERROR
+            fi
+
+            if [[ "$skip_precompute" != "true" ]]; then
+                precompute_closure_async
+            fi
+
+            log_ok "迁移完成，数据完整性验证通过"
             echo "{\"status\":\"MIGRATED\",\"backup_path\":\"$backup_path\",\"nodes\":$after_nodes,\"edges\":$after_edges,\"schema_version\":$CURRENT_SCHEMA_VERSION}"
         else
             log_error "迁移失败，正在恢复备份..."
@@ -795,6 +1162,10 @@ cmd_find_path() {
         return 0
     fi
 
+    local from_sql to_sql
+    from_sql="$(escape_sql_string "$from_node")"
+    to_sql="$(escape_sql_string "$to_node")"
+
     # 构建边类型过滤条件
     local edge_filter=""
     if [[ -n "$edge_types" ]]; then
@@ -804,41 +1175,57 @@ cmd_find_path() {
         edge_filter="AND e.edge_type IN ('$types_sql')"
     fi
 
-    # 使用递归 CTE 进行 BFS 最短路径查询
-    # 注意：SQLite 的递归 CTE 天然是 BFS（广度优先），因为它按层级展开
+    # MP4: 优先使用闭包表/路径索引（无边类型过滤时）
+    if [[ -z "$edge_types" ]] && closure_tables_exist "$GRAPH_DB_PATH"; then
+        local closure_count
+        closure_count=$(sqlite3 "$GRAPH_DB_PATH" "SELECT COUNT(*) FROM transitive_closure;" 2>/dev/null || echo "0")
+        if [[ "$closure_count" -gt 0 ]]; then
+            local closure_depth
+            closure_depth=$(sqlite3 "$GRAPH_DB_PATH" "SELECT depth FROM transitive_closure WHERE source_id='$from_sql' AND target_id='$to_sql' AND depth <= $max_depth LIMIT 1;" 2>/dev/null || echo "")
+
+            if [[ -z "$closure_depth" ]]; then
+                echo '{"found":false,"path":[],"edges":[],"length":0}'
+                return 0
+            fi
+
+            local path_row
+            path_row=$(sqlite3 -separator $'\t' "$GRAPH_DB_PATH" "SELECT path, edge_path, depth FROM path_index WHERE source_id='$from_sql' AND target_id='$to_sql' AND depth <= $max_depth LIMIT 1;" 2>/dev/null || true)
+            if [[ -n "$path_row" ]]; then
+                local path_json edge_json depth_val
+                IFS=$'\t' read -r path_json edge_json depth_val <<< "$path_row"
+                [[ -z "$edge_json" ]] && edge_json="[]"
+                [[ -z "$depth_val" ]] && depth_val="$closure_depth"
+                echo "{\"found\":true,\"path\":$path_json,\"edges\":$edge_json,\"length\":$depth_val}"
+                return 0
+            fi
+        fi
+    fi
+
+    # 使用递归 CTE 进行 BFS 最短路径查询（字符串路径，避免 JSON 函数兼容性问题）
     local path_sql="
 WITH RECURSIVE
-    -- 起始点
-    path_cte(node_id, path, edge_path, depth, visited) AS (
+    path_cte(node_id, path, depth) AS (
         SELECT
-            '$from_node',
-            json_array('$from_node'),
-            json_array(),
-            0,
-            ',$from_node,'
-
+            '$from_sql',
+            '$from_sql',
+            0
         UNION ALL
-
-        -- 递归扩展
         SELECT
             e.target_id,
-            json_insert(p.path, '\$[#]', e.target_id),
-            json_insert(p.edge_path, '\$[#]', json_object('from', e.source_id, 'to', e.target_id, 'type', e.edge_type)),
-            p.depth + 1,
-            p.visited || e.target_id || ','
+            p.path || '>' || e.target_id,
+            p.depth + 1
         FROM path_cte p
         JOIN edges e ON e.source_id = p.node_id
         WHERE p.depth < $max_depth
-            AND p.visited NOT LIKE '%,' || e.target_id || ',%'
+            AND instr(p.path, e.target_id) = 0
             $edge_filter
     )
 SELECT
     p.node_id,
     p.path,
-    p.edge_path,
     p.depth
 FROM path_cte p
-WHERE p.node_id = '$to_node'
+WHERE p.node_id = '$to_sql'
 ORDER BY p.depth ASC
 LIMIT 1;
 "
@@ -847,33 +1234,32 @@ LIMIT 1;
     result=$(sqlite3 -separator $'\t' "$GRAPH_DB_PATH" "$path_sql" 2>/dev/null)
 
     if [[ -z "$result" ]]; then
-        # 未找到路径
         echo '{"found":false,"path":[],"edges":[],"length":0}'
         return 0
     fi
 
-    # 解析结果
-    local node_id path edge_path depth
-    IFS=$'\t' read -r node_id path edge_path depth <<< "$result"
+    local node_id path_str depth
+    IFS=$'\t' read -r node_id path_str depth <<< "$result"
 
-    # 构建包含节点详情的完整路径
-    local path_nodes
-    path_nodes=$(sqlite3 -json "$GRAPH_DB_PATH" "
-        SELECT n.id as node_id, n.symbol, n.file_path as file
-        FROM nodes n
-        WHERE n.id IN (SELECT value FROM json_each('$path'))
-        ORDER BY (
-            SELECT key FROM json_each('$path') WHERE value = n.id
-        );
-    " 2>/dev/null)
+    local path_json
+    path_json=$(printf '%s\n' "$path_str" | tr '>' '\n' | jq -R '.' | jq -s '.')
 
-    # 如果节点查询失败，使用简单格式
-    if [[ -z "$path_nodes" || "$path_nodes" == "[]" ]]; then
-        path_nodes="$path"
+    local edges_json='[]'
+    local node_list=()
+    IFS='>' read -r -a node_list <<< "$path_str"
+    if [ "${#node_list[@]}" -gt 1 ]; then
+        local i
+        for ((i=0; i<${#node_list[@]}-1; i++)); do
+            local from_id="${node_list[$i]}"
+            local to_id="${node_list[$((i+1))]}"
+            local edge_type
+            edge_type=$(sqlite3 "$GRAPH_DB_PATH" "SELECT edge_type FROM edges WHERE source_id='$(escape_sql_string "$from_id")' AND target_id='$(escape_sql_string "$to_id")' LIMIT 1;" 2>/dev/null || true)
+            edges_json=$(echo "$edges_json" | jq --arg from "$from_id" --arg to "$to_id" --arg type "$edge_type" \
+              '. + [{from: $from, to: $to, type: $type}]')
+        done
     fi
 
-    # 输出结果
-    echo "{\"found\":true,\"path\":$path_nodes,\"edges\":$edge_path,\"length\":$depth}"
+    echo "{\"found\":true,\"path\":$path_json,\"edges\":$edges_json,\"length\":$depth}"
 }
 
 # ==================== 帮助信息 ====================
@@ -884,6 +1270,7 @@ graph-store.sh - SQLite 图存储管理
 
 用法:
     graph-store.sh <command> [options]
+    graph-store.sh --enable-all-features <command> [options]
 
 命令:
     init                    初始化数据库
@@ -916,6 +1303,9 @@ add-edge 选项:
     --file <path>           文件路径
     --line <n>              行号
 
+init 选项:
+    --skip-precompute       跳过闭包表预计算
+
 query-edges 选项:
     --from <id>             源节点 ID
     --to <id>               目标节点 ID
@@ -926,6 +1316,7 @@ find-orphans 选项:
 
 batch-import 选项:
     --file <path>           JSON 文件路径
+    --skip-precompute       跳过闭包表预计算
 
 find-path 选项:
     --from <id>             源节点 ID（必填）
@@ -937,6 +1328,7 @@ migrate 选项:
     --check                 检查是否需要迁移
     --apply                 执行迁移（自动备份）
     --status                显示当前状态
+    --skip-precompute       跳过闭包表预计算
 
 环境变量:
     GRAPH_DB_PATH           数据库路径（默认: .devbooks/graph.db）
@@ -966,6 +1358,19 @@ EOF
 # ==================== 主入口 ====================
 
 main() {
+    if [[ "${1:-}" == "--enable-all-features" ]]; then
+        DEVBOOKS_ENABLE_ALL_FEATURES=1
+        shift
+    fi
+
+    if declare -f is_feature_enabled &>/dev/null; then
+        if ! is_feature_enabled "graph_store"; then
+            log_warn "图存储功能已禁用 (features.graph_store: false)"
+            echo '{"status":"disabled","message":"graph_store disabled"}'
+            return 0
+        fi
+    fi
+
     local command="${1:-help}"
     shift || true
 

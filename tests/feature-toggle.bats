@@ -1,256 +1,216 @@
 #!/usr/bin/env bats
 # feature-toggle.bats - AC-010 Feature Toggle Acceptance Tests
 #
-# Purpose: Verify feature toggle config can enable/disable new features
-# Depends: bats-core
+# Purpose: Verify config/features.yaml controls new capabilities
+# Depends: bats-core, jq
 # Run: bats tests/feature-toggle.bats
 #
-# Baseline: 2026-01-11
-# Change: enhance-code-intelligence
+# Change: 20260118-2112-enhance-code-intelligence-capabilities
 # Trace: AC-010
 
-# Load shared helpers
 load 'helpers/common'
 
-# Store project root for absolute paths (tests may cd to temp dirs)
 PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
-CONFIG_FILE="${PROJECT_ROOT}/.devbooks/config.yaml"
-HOTSPOT_ANALYZER="${PROJECT_ROOT}/scripts/hotspot-analyzer.sh"
-BOUNDARY_DETECTOR="${PROJECT_ROOT}/scripts/boundary-detector.sh"
-PATTERN_LEARNER="${PROJECT_ROOT}/scripts/pattern-learner.sh"
+FEATURES_CONFIG="${PROJECT_ROOT}/config/features.yaml"
+SEMANTIC_ANOMALY_SCRIPT="${PROJECT_ROOT}/scripts/semantic-anomaly.sh"
+GRAPH_RAG_SCRIPT="${PROJECT_ROOT}/scripts/graph-rag.sh"
+
+require_cmd() {
+    local cmd="$1"
+    command -v "$cmd" >/dev/null 2>&1 || fail "Missing command: $cmd"
+}
 
 setup() {
-    if [ -f "$CONFIG_FILE" ]; then
-        cp "$CONFIG_FILE" "${CONFIG_FILE}.bak"
-    fi
+    setup_temp_dir
+    backup_file "$FEATURES_CONFIG"
+    require_cmd rg
+    require_cmd jq
+    [ -x "$SEMANTIC_ANOMALY_SCRIPT" ] || fail "Missing executable: $SEMANTIC_ANOMALY_SCRIPT"
+    [ -x "$GRAPH_RAG_SCRIPT" ] || fail "Missing executable: $GRAPH_RAG_SCRIPT"
 }
 
 teardown() {
-    if [ -f "${CONFIG_FILE}.bak" ]; then
-        mv "${CONFIG_FILE}.bak" "$CONFIG_FILE"
-    fi
+    restore_file "$FEATURES_CONFIG"
+    cleanup_temp_dir
 }
 
 # ============================================================
-# Default Enabled Tests (FT-001)
+# Config Presence
 # ============================================================
 
-@test "FT-001: all new features enabled by default" {
-    [ -f "$CONFIG_FILE" ] || skip "Config file not found"
-    run grep -A 10 "features:" "$CONFIG_FILE"
-    [[ "$output" == *"enhanced_hotspot"* ]] || skip "features section not found"
-}
-
-@test "FT-001b: without features config uses default values" {
-    mkdir -p .devbooks
-    echo "protocol: openspec" > "$CONFIG_FILE"
-
-    if [ -x "$HOTSPOT_ANALYZER" ]; then
-        run "$HOTSPOT_ANALYZER" --format json 2>&1
-        [ "$status" -eq 0 ] || skip "Hotspot analyzer not yet implemented"
-    else
-        skip "Hotspot analyzer not yet implemented"
-    fi
+@test "T-FT-001: config/features.yaml exists and has features root" {
+    [ -f "$FEATURES_CONFIG" ] || fail "Missing config file: $FEATURES_CONFIG"
+    run rg -n "^features:" "$FEATURES_CONFIG"
+    assert_exit_success "$status"
 }
 
 # ============================================================
-# Disable Hotspot Tests (FT-002)
+# Config Completeness
 # ============================================================
 
-@test "FT-002: disable enhanced_hotspot" {
-    mkdir -p .devbooks
-    cat > "$CONFIG_FILE" << 'EOF'
-protocol: openspec
-features:
-  enhanced_hotspot: false
-  intent_analysis: true
-  subgraph_retrieval: true
-  boundary_detection: true
-  pattern_learning: true
-  data_flow_tracing: true
-  incremental_indexing: true
-EOF
-
-    if [ -x "$HOTSPOT_ANALYZER" ]; then
-        run "$HOTSPOT_ANALYZER" --format json 2>&1
-        [[ "$output" == *"disabled"* ]] || \
-        [[ "$output" == *"fallback"* ]] || \
-        skip "Feature toggle not yet implemented"
-    else
-        skip "Hotspot analyzer not yet implemented"
-    fi
-}
-
-# ============================================================
-# Disable Boundary Detection Tests (FT-003)
-# ============================================================
-
-@test "FT-003: disable boundary_detection" {
-    mkdir -p .devbooks
-    cat > "$CONFIG_FILE" << 'EOF'
-protocol: openspec
-features:
-  enhanced_hotspot: true
-  intent_analysis: true
-  subgraph_retrieval: true
-  boundary_detection: false
-  pattern_learning: true
-  data_flow_tracing: true
-  incremental_indexing: true
-EOF
-
-    if [ -x "$BOUNDARY_DETECTOR" ]; then
-        run "$BOUNDARY_DETECTOR" --path "src/server.ts" --format json 2>&1
-        [[ "$output" == *"disabled"* ]] || \
-        [[ "$output" == *"fallback"* ]] || \
-        skip "Feature toggle not yet implemented"
-    else
-        skip "Boundary detector not yet implemented"
-    fi
-}
-
-# ============================================================
-# Disable All New Features Tests (FT-004)
-# ============================================================
-
-@test "FT-004: disable all new features" {
-    mkdir -p .devbooks
-    cat > "$CONFIG_FILE" << 'EOF'
-protocol: openspec
-features:
-  enhanced_hotspot: false
-  intent_analysis: false
-  subgraph_retrieval: false
-  boundary_detection: false
-  pattern_learning: false
-  data_flow_tracing: false
-  incremental_indexing: false
-EOF
-
-    run grep -c "false" "$CONFIG_FILE"
-    [ "$output" = "7" ] || skip "Config not properly set"
-}
-
-# ============================================================
-# Single Enable Tests
-# ============================================================
-
-@test "FT-SINGLE-001: only enable pattern_learning" {
-    mkdir -p .devbooks
-    cat > "$CONFIG_FILE" << 'EOF'
-protocol: openspec
-features:
-  enhanced_hotspot: false
-  intent_analysis: false
-  subgraph_retrieval: false
-  boundary_detection: false
-  pattern_learning: true
-  data_flow_tracing: false
-  incremental_indexing: false
-EOF
-
-    if [ -x "$PATTERN_LEARNER" ]; then
-        run "$PATTERN_LEARNER" --learn 2>&1
-        [ "$status" -eq 0 ] || skip "Pattern learner not yet implemented"
-    else
-        skip "Pattern learner not yet implemented"
-    fi
-}
-
-# ============================================================
-# Config Loading Tests
-# ============================================================
-
-@test "FT-LOAD-001: script reads features config" {
-    if [ -x "$HOTSPOT_ANALYZER" ]; then
-        run "$HOTSPOT_ANALYZER" --help 2>&1
-        [[ "$output" == *"config"* ]] || \
-        [[ "$output" == *"feature"* ]] || \
-        [[ "$output" == *"enable"* ]] || \
-        skip "Config loading not documented"
-    else
-        skip "Hotspot analyzer not yet implemented"
-    fi
-}
-
-@test "FT-LOAD-002: config file missing uses default values" {
-    rm -f "$CONFIG_FILE"
-
-    if [ -x "$HOTSPOT_ANALYZER" ]; then
-        run "$HOTSPOT_ANALYZER" --format json 2>&1
-        [ "$status" -eq 0 ] || \
-        [[ "$output" == *"default"* ]] || \
-        skip "Default config handling not yet implemented"
-    else
-        skip "Hotspot analyzer not yet implemented"
-    fi
-}
-
-# ============================================================
-# Config Validation Tests
-# ============================================================
-
-@test "FT-VALIDATE-001: invalid config value warns" {
-    mkdir -p .devbooks
-    cat > "$CONFIG_FILE" << 'EOF'
-protocol: openspec
-features:
-  enhanced_hotspot: "invalid"
-EOF
-
-    if [ -x "$HOTSPOT_ANALYZER" ]; then
-        run "$HOTSPOT_ANALYZER" --format json 2>&1
-        [[ "$output" == *"invalid"* ]] || \
-        [[ "$output" == *"warning"* ]] || \
-        [[ "$output" == *"error"* ]] || \
-        [ "$status" -eq 0 ] || \
-        skip "Config validation not yet implemented"
-    else
-        skip "Hotspot analyzer not yet implemented"
-    fi
-}
-
-# ============================================================
-# Runtime Toggle Tests
-# ============================================================
-
-@test "FT-RUNTIME-001: environment variable overrides config" {
-    mkdir -p .devbooks
-    cat > "$CONFIG_FILE" << 'EOF'
-protocol: openspec
-features:
-  enhanced_hotspot: false
-EOF
-
-    if [ -x "$HOTSPOT_ANALYZER" ]; then
-        export CI_FEATURE_ENHANCED_HOTSPOT=true
-        run "$HOTSPOT_ANALYZER" --format json 2>&1
-        unset CI_FEATURE_ENHANCED_HOTSPOT
-        skip "Environment variable override not yet implemented"
-    else
-        skip "Hotspot analyzer not yet implemented"
-    fi
-}
-
-# ============================================================
-# Feature List Completeness Tests
-# ============================================================
-
-@test "FT-LIST-001: all new features have toggles" {
-    [ -f "$CONFIG_FILE" ] || skip "Config file not found"
+@test "T-FT-002: config declares toggles for all new capabilities" {
+    [ -f "$FEATURES_CONFIG" ] || fail "Missing config file: $FEATURES_CONFIG"
 
     features=(
-        "enhanced_hotspot"
-        "intent_analysis"
-        "subgraph_retrieval"
-        "boundary_detection"
-        "pattern_learning"
+        "context_compressor"
+        "drift_detector"
         "data_flow_tracing"
-        "incremental_indexing"
+        "graph_store"
+        "hybrid_retrieval"
+        "llm_rerank"
+        "context_signals"
+        "semantic_anomaly"
+        "benchmark"
+        "performance_regression"
+    )
+
+    missing=()
+    for feature in "${features[@]}"; do
+        if ! rg -n "^[[:space:]]+${feature}:" "$FEATURES_CONFIG" >/dev/null 2>&1; then
+            missing+=("$feature")
+        fi
+    done
+
+    if [ "${#missing[@]}" -gt 0 ]; then
+        fail "Missing feature toggles: ${missing[*]}"
+    fi
+}
+
+# ============================================================
+# Toggle Enforcement
+# ============================================================
+
+@test "T-FT-003: semantic-anomaly disabled via config/features.yaml" {
+    local temp_config="$TEST_TEMP_DIR/features-disabled.yaml"
+    cat > "$temp_config" << 'EOF'
+features:
+  semantic_anomaly:
+    enabled: false
+EOF
+
+    cat > "$TEST_TEMP_DIR/sample.ts" << 'EOF'
+async function fetchData() { await fetch('/api'); }
+EOF
+
+    DEVBOOKS_FEATURE_CONFIG="$temp_config" run "$SEMANTIC_ANOMALY_SCRIPT" "$TEST_TEMP_DIR/sample.ts"
+    assert_exit_success "$status"
+    echo "$output" | jq -e '.metadata.status == "disabled"'
+}
+
+@test "T-FT-006: llm-rerank disabled via config/features.yaml" {
+    local temp_config="$TEST_TEMP_DIR/features-disabled.yaml"
+    cat > "$temp_config" << 'EOF'
+features:
+  llm_rerank:
+    enabled: false
+EOF
+
+    DEVBOOKS_FEATURE_CONFIG="$temp_config" run "$GRAPH_RAG_SCRIPT" --query "test query" --rerank --format json --mock-embedding --cwd "$TEST_TEMP_DIR" 2>&1
+    assert_exit_success "$status"
+    echo "$output" | jq -e '.metadata.reranked == false' >/dev/null || fail "reranked should be false"
+    echo "$output" | jq -e '.metadata.fallback_reason == "disabled"' >/dev/null || fail "missing disabled fallback"
+}
+
+@test "T-FT-007: hybrid-retrieval disabled disables graph candidates" {
+    local temp_config="$TEST_TEMP_DIR/features-disabled.yaml"
+    cat > "$temp_config" << 'EOF'
+features:
+  hybrid_retrieval:
+    enabled: false
+EOF
+
+    DEVBOOKS_FEATURE_CONFIG="$temp_config" run "$GRAPH_RAG_SCRIPT" --query "graph store" --fusion-depth 1 --format json --mock-embedding --cwd "$TEST_TEMP_DIR" 2>&1
+    assert_exit_success "$status"
+    echo "$output" | jq -e '.metadata.graph_candidates == 0' >/dev/null || fail "graph_candidates should be 0 when disabled"
+}
+
+@test "T-FT-008: all feature toggles can be disabled via config" {
+    cat > "$TEST_TEMP_DIR/all-disabled.yaml" << 'EOF'
+features:
+  context_compressor:
+    enabled: false
+  drift_detector:
+    enabled: false
+  data_flow_tracing:
+    enabled: false
+  graph_store:
+    enabled: false
+  hybrid_retrieval:
+    enabled: false
+  llm_rerank:
+    enabled: false
+  context_signals:
+    enabled: false
+  semantic_anomaly:
+    enabled: false
+  benchmark:
+    enabled: false
+  performance_regression:
+    enabled: false
+EOF
+
+    features=(
+        "context_compressor"
+        "drift_detector"
+        "data_flow_tracing"
+        "graph_store"
+        "hybrid_retrieval"
+        "llm_rerank"
+        "context_signals"
+        "semantic_anomaly"
+        "benchmark"
+        "performance_regression"
     )
 
     for feature in "${features[@]}"; do
-        run grep "$feature" "$CONFIG_FILE"
-        [ "$status" -eq 0 ] || skip "$feature flag not found"
+        DEVBOOKS_FEATURE_CONFIG="$TEST_TEMP_DIR/all-disabled.yaml" \
+          run bash -c "source \"$PROJECT_ROOT/scripts/common.sh\"; is_feature_enabled \"$feature\""
+        if [ "$status" -eq 0 ]; then
+            fail "Feature $feature should be disabled"
+        fi
     done
+}
+
+@test "T-FT-009: missing config defaults new capabilities to disabled" {
+    rm -f "$FEATURES_CONFIG"
+    unset DEVBOOKS_FEATURE_CONFIG
+    unset FEATURES_CONFIG
+
+    features=(
+        "context_compressor"
+        "drift_detector"
+        "data_flow_tracing"
+        "graph_store"
+        "hybrid_retrieval"
+        "llm_rerank"
+        "context_signals"
+        "semantic_anomaly"
+        "benchmark"
+        "performance_regression"
+    )
+
+    for feature in "${features[@]}"; do
+        run bash -c "source \"$PROJECT_ROOT/scripts/common.sh\"; is_feature_enabled \"$feature\""
+        if [ "$status" -eq 0 ]; then
+            fail "Feature $feature should be disabled by default"
+        fi
+    done
+}
+
+@test "T-FT-004: --enable-all-features is documented" {
+    run "$GRAPH_RAG_SCRIPT" --help
+    assert_exit_success "$status"
+    assert_contains "$output" "--enable-all-features"
+}
+
+@test "T-FT-005: missing features config does not break scripts" {
+    rm -f "$FEATURES_CONFIG"
+
+    cat > "$TEST_TEMP_DIR/clean.ts" << 'EOF'
+const value = 1;
+EOF
+
+    run "$SEMANTIC_ANOMALY_SCRIPT" "$TEST_TEMP_DIR/clean.ts"
+    assert_exit_success "$status"
+    echo "$output" | jq -e 'has("summary")'
 }

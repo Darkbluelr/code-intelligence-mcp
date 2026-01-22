@@ -3,8 +3,11 @@
 > **Change ID**: `augment-parity`
 > **Capability**: graph-store
 > **Version**: 1.0.0
-> **Status**: Draft
+> **Status**: Active
 > **Created**: 2026-01-15
+> **Last Referenced By**: 20260118-2112-enhance-code-intelligence-capabilities
+> **Last Verified**: 2026-01-22
+> **Health**: active
 
 ---
 

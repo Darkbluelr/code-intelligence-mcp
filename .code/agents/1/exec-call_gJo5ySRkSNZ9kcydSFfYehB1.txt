@@ -1,0 +1,260 @@
+#!/bin/bash
+# federation-lite.sh - Lightweight Federation Index (Cross-repo Contract Tracking)
+#
+# Version: 1.0.0
+# Purpose: Discover and index API contracts across multiple repositories
+# Depends: jq, git (optional)
+#
+# Usage:
+#   federation-lite.sh --status
+#   federation-lite.sh --update [--config config/federation.yaml]
+#   federation-lite.sh --search "<symbol>" [--format json]
+#   federation-lite.sh --list-contracts [--repo "<name>"]
+#   federation-lite.sh --help
+#
+# Environment Variables:
+#   FEDERATION_CONFIG   - Config file path (default: config/federation.yaml)
+#   FEDERATION_INDEX    - Index file path (default: .devbooks/federation-index.json)
+#   DEBUG               - Enable debug output (default: false)
+#
+# Trace: AC-011
+# Change: augment-upgrade-phase2
+
+set -euo pipefail
+
+# ==================== CT-VE-005: Fast Path for generate-virtual-edges ====================
+# Performance optimization: handle virtual edge generation without loading common.sh
+# Target: 100 symbols in <200ms
+if [[ "${1:-}" == "generate-virtual-edges" ]] && [[ "${2:-}" != "--help" ]]; then
+  _fast_local_repo="."
+  _fast_db_path=""
+  _fast_min_confidence="0.5"
+  _fast_config=""
+  _fast_index=""
+  _fast_sync_mode="false"
+  shift  # Remove "generate-virtual-edges"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --local-repo) _fast_local_repo="$2"; shift 2 ;;
+      --db) _fast_db_path="$2"; shift 2 ;;
+      --min-confidence) _fast_min_confidence="$2"; shift 2 ;;
+      --config) _fast_config="$2"; shift 2 ;;
+      --sync) _fast_sync_mode="true"; shift ;;
+      *) shift ;;
+    esac
+  done
+
+  # Resolve paths - index is relative to local repo or uses FEDERATION_INDEX env var
+  _fast_local_repo=$(cd "$_fast_local_repo" && pwd)
+  [[ -z "$_fast_db_path" ]] && _fast_db_path="$_fast_local_repo/.devbooks/graph.db"
+  [[ -z "$_fast_index" ]] && _fast_index="${FEDERATION_INDEX:-$_fast_local_repo/.devbooks/federation-index.json}"
+
+  # Check federation index exists
+  if [[ ! -f "$_fast_index" ]]; then
+    echo "{\"error\": \"Federation index not found at $_fast_index\"}" >&2
+    exit 1
+  fi
+
+  # Ensure database directory exists
+  mkdir -p "$(dirname "$_fast_db_path")" 2>/dev/null || true
+
+  # Create virtual_edges table if needed
+  sqlite3 "$_fast_db_path" 'CREATE TABLE IF NOT EXISTS virtual_edges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source_repo TEXT NOT NULL,
+    source_symbol TEXT NOT NULL,
+    target_repo TEXT NOT NULL,
+    target_symbol TEXT NOT NULL,
+    edge_type TEXT DEFAULT '"'"'VIRTUAL_CALLS'"'"',
+    confidence REAL NOT NULL DEFAULT 1.0,
+    confidence_level TEXT DEFAULT '"'"'medium'"'"',
+    contract_type TEXT DEFAULT '"'"'unknown'"'"',
+    contract_bonus REAL DEFAULT 0.0,
+    exact_match REAL DEFAULT 0.0,
+    signature_similarity REAL DEFAULT 0.5,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_ve_source ON virtual_edges(source_repo, source_symbol);
+  CREATE INDEX IF NOT EXISTS idx_ve_target ON virtual_edges(target_repo, target_symbol);' 2>/dev/null || true
+
+  # Fast symbol extraction using grep + single jq transform
+  _fast_local_repo_name=$(basename "$_fast_local_repo")
+  _fast_symbols=$(grep -rhoE '(export\s+)?(async\s+)?function\s+[A-Za-z_][A-Za-z0-9_]*' "$_fast_local_repo" \
+    --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null | \
+    grep -oE '[A-Za-z_][A-Za-z0-9_]*$' | sort -u | jq -R -s 'split("\n") | map(select(length > 0))' 2>/dev/null || echo '[]')
+
+  # Load index and process all matching in single jq call
+  # Uses startswith() instead of test() to avoid regex issues with special characters
+  _fast_result=$(jq -c \
+    --argjson local_symbols "$_fast_symbols" \
+    --arg local_repo "$_fast_local_repo_name" \
+    --argjson min_conf "$_fast_min_confidence" \
+    '
+    # Helper function to extract verb category using startswith (no regex)
+    def get_verb:
+      if startswith("get") or startswith("fetch") or startswith("find") or startswith("load") or startswith("read") then "get"
+      elif startswith("create") or startswith("add") or startswith("new") or startswith("insert") or startswith("post") then "create"
+      elif startswith("update") or startswith("edit") or startswith("modify") or startswith("patch") or startswith("put") then "update"
+      elif startswith("delete") or startswith("remove") or startswith("destroy") then "delete"
+      else "" end;
+
+    # Helper to strip common verb prefixes
+    def strip_verb:
+      if startswith("get") then .[3:] elif startswith("fetch") then .[5:] elif startswith("find") then .[4:]
+      elif startswith("load") then .[4:] elif startswith("read") then .[4:] elif startswith("create") then .[6:]
+      elif startswith("add") then .[3:] elif startswith("new") then .[3:] elif startswith("insert") then .[6:]
+      elif startswith("post") then .[4:] elif startswith("update") then .[6:] elif startswith("edit") then .[4:]
+      elif startswith("modify") then .[6:] elif startswith("patch") then .[5:] elif startswith("put") then .[3:]
+      elif startswith("delete") then .[6:] elif startswith("remove") then .[6:] elif startswith("destroy") then .[7:]
+      else . end;
+
+    # Extract all remote symbols with metadata
+    [.repositories[]? | select(.name != null) | select((.name | tostring) != $local_repo) |
+      .name as $repo_name |
+      .contracts[]? |
+      .type as $contract_type |
+      (.symbols // [])[]? |
+      select(type == "string") |
+      {
+        repo: $repo_name,
+        symbol: .,
+        contract_type: $contract_type,
+        contract_bonus: (if $contract_type == "proto" then 0.2 elif $contract_type == "openapi" then 0.15 else 0.1 end)
+      }
+    ] as $remote_list |
+
+    # For each local symbol, find matching remote symbols
+    [
+      $local_symbols[]? | select(type == "string" and length > 0) | . as $local |
+      ($local | ascii_downcase) as $local_lower |
+      $remote_list[]? | . as $remote |
+      ($remote.symbol | ascii_downcase) as $remote_lower |
+
+      # Calculate exact match score (simplified - no regex)
+      (if $local_lower == $remote_lower then 1.0
+       elif ($local_lower | startswith($remote_lower)) or ($remote_lower | startswith($local_lower)) then 0.7
+       elif (($local_lower | strip_verb) as $local_base | ($remote_lower | strip_verb) as $remote_base |
+             ($local_base | length > 0) and ($remote_base | length > 0) and
+             ($local_base == $remote_base or ($local_base | startswith($remote_base)) or ($remote_base | startswith($local_base)))) then 0.7
+       else 0 end) as $exact_match |
+
+      # Skip non-matches
+      select($exact_match > 0) |
+
+      # Calculate signature similarity (verb matching - no regex)
+      (($local_lower | get_verb) as $local_verb |
+       ($remote_lower | get_verb) as $remote_verb |
+       if ($local_verb | length > 0) and $local_verb == $remote_verb then 0.6 else 0.5 end
+      ) as $sig_sim |
+
+      # Calculate confidence: exact*0.6 + sig*0.3 + contract*0.1
+      (($exact_match * 0.6) + ($sig_sim * 0.3) + ($remote.contract_bonus * 0.1)) as $confidence |
+
+      # Filter by minimum confidence
+      select($confidence >= $min_conf) |
+
+      {
+        source_repo: $local_repo,
+        source_symbol: $local,
+        target_repo: $remote.repo,
+        target_symbol: $remote.symbol,
+        edge_type: "VIRTUAL_CALLS",
+        contract_type: $remote.contract_type,
+        confidence: ($confidence * 100 | floor / 100),
+        confidence_level: (if $confidence >= 0.8 then "high" elif $confidence < 0.5 then "low" else "medium" end),
+        exact_match: $exact_match,
+        signature_similarity: $sig_sim,
+        contract_bonus: $remote.contract_bonus
+      }
+    ] | unique_by([.source_symbol, .target_symbol])
+    ' "$_fast_index")
+
+  # Generate batch SQL and execute
+  _fast_edge_count=$(echo "$_fast_result" | jq 'length')
+  if [[ "$_fast_edge_count" -gt 0 ]]; then
+    _fast_sql=$(echo "$_fast_result" | jq -r '
+      "BEGIN TRANSACTION;\n" +
+      (map("INSERT OR REPLACE INTO virtual_edges (source_repo, source_symbol, target_repo, target_symbol, edge_type, contract_type, confidence, confidence_level, exact_match, signature_similarity, contract_bonus) VALUES (" +
+        "'"'"'\(.source_repo)'"'"', " +
+        "'"'"'\(.source_symbol)'"'"', " +
+        "'"'"'\(.target_repo)'"'"', " +
+        "'"'"'\(.target_symbol)'"'"', " +
+        "'"'"'\(.edge_type)'"'"', " +
+        "'"'"'\(.contract_type)'"'"', " +
+        "\(.confidence), " +
+        "'"'"'\(.confidence_level)'"'"', " +
+        "\(.exact_match), " +
+        "\(.signature_similarity), " +
+        "\(.contract_bonus));") | join("\n")) +
+      "\nCOMMIT;"
+    ')
+    echo "$_fast_sql" | sqlite3 "$_fast_db_path" 2>/dev/null || true
+  fi
+
+  # Output summary
+  _fast_total=$(sqlite3 "$_fast_db_path" "SELECT COUNT(*) FROM virtual_edges" 2>/dev/null || echo "0")
+  jq -n --argjson created "$_fast_edge_count" --argjson total "$_fast_total" --arg db "$_fast_db_path" \
+    '{status:"ok", edges_created:$created, edges_updated:0, edges_skipped:0, total_edges:$total, db_path:$db}'
+  exit 0
+fi
+
+# ==================== End Fast Path ====================
+
+# Source common utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/common.sh" ]]; then
+    # shellcheck source=common.sh
+    source "$SCRIPT_DIR/common.sh"
+fi
+
+# ============================================================
+# Configuration
+# ============================================================
+
+SCHEMA_VERSION="1.0.0"
+: "${FEDERATION_CONFIG:=config/federation.yaml}"
+: "${FEDERATION_INDEX:=.devbooks/federation-index.json}"
+: "${DEBUG:=false}"
+
+# ============================================================
+# Utility Functions
+# ============================================================
+
+log_debug() {
+    if [[ "$DEBUG" == "true" ]]; then
+        echo "[DEBUG] $1" >&2
+    fi
+}
+
+log_info() {
+    echo "[INFO] $1" >&2
+}
+
+log_warn() {
+    echo "[WARN] $1" >&2
+}
+
+log_error() {
+    echo "[ERROR] $1" >&2
+}
+
+show_help() {
+    cat << 'EOF'
+federation-lite.sh - Lightweight Federation Index (Cross-repo Contract Tracking)
+
+Usage:
+  federation-lite.sh --status
+  federation-lite.sh --update [--config config/federation.yaml]
+  federation-lite.sh --search "<symbol>" [--format json]
+  federation-lite.sh --list-contracts [--repo "<name>"]
+  federation-lite.sh generate-virtual-edges [--repo <name>] [--min-confidence <n>]
+  federation-lite.sh query-virtual <symbol> [--virtual-edges] [--confidence <n>]
+  federation-lite.sh --help
+
+Options:
+  --status            Show index status
+  --update            Update the federation index
+  --config <file>     Configuration file (default: config/federation.yaml)
+  --search <symbol>   Search for a symbol across repositories

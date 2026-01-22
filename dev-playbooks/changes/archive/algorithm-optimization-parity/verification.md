@@ -1,19 +1,92 @@
 ---
 status: Archived
-archived-at: 2026-01-17T16:00:00Z
+archived-at: 2026-01-17T19:17:00Z
 archived-by: devbooks-archiver
 ---
 
 # 验证追溯矩阵 (Verification Traceability Matrix)
 
 > **Change ID**: algorithm-optimization-parity
-> **版本**: 1.1
+> **版本**: 1.2
 > **创建日期**: 2025-01-17
 > **Red 基线日期**: 2026-01-17
 > **状态**: ✅ Archived
+> **Review-By**: Reviewer (2026-01-17)
 > **Green 验证日期**: 2026-01-17
 > **Verified-By**: Test Owner (Phase 2)
 > **Archived-At**: 2026-01-17
+
+---
+
+## 0. Proposal AC 追溯矩阵
+
+本章节建立 Proposal AC (AC-A01~AC-A12) → Design AC (AC-001~AC-024) → Contract Tests 的完整追溯链。
+
+### 0.1 追溯映射表
+
+| Proposal AC | 描述 | 对应 Design AC | 对应 ALG 模块 | Contract Tests | 覆盖状态 |
+|-------------|------|---------------|--------------|----------------|----------|
+| AC-A01 | 背包算法利用率 > 90% | AC-003, AC-004 | ALG-002 贪婪选择 | CT-GS-001~005 | ✅ 覆盖 |
+| AC-A02 | TF-IDF 驼峰分解 | - | (graph-rag 内部) | - | ⚠️ 无显式 Design AC |
+| AC-A03 | 候选去重 + 得分融合 | AC-001, AC-002 | ALG-001 优先级排序 | CT-PS-001~004 | ✅ 覆盖 |
+| AC-A04 | 多维距离度量 | AC-001, AC-005 | ALG-001, ALG-003 | CT-PS-001, CT-IA-001~004 | ✅ 覆盖 |
+| AC-A05 | 内存 BFS 性能 (<1s/1000节点) | AC-005, AC-006 | ALG-003 影响分析 | CT-IA-001~005 | ✅ 覆盖 |
+| AC-A06 | 动态衰减系数 | AC-005, AC-006 | ALG-003 置信度衰减 | CT-IA-001~003 | ✅ 覆盖 |
+| AC-A07 | 半衰期指数模型 (30天>0.3) | AC-007, AC-015 | ALG-004, ALG-007 | CT-PF-001~005, CT-PD-001~005 | ✅ 覆盖 |
+| AC-A08 | IGNORE 负权重惩罚 | AC-008 | ALG-004 操作权重 | CT-PF-003~004 | ✅ 覆盖 |
+| AC-A09 | 乘法加权 (上限 3x) | AC-009~AC-012 | ALG-005 连续性加权 | CT-CW-001~006 | ✅ 覆盖 |
+| AC-A10 | 智能 Token 估算 (误差<20%) | AC-004 | ALG-002 Token 估算 | CT-GS-004~005 | ✅ 覆盖 |
+| AC-A11 | LLM 重排序可配置开关 | AC-002 | ALG-001 权重可配置 | CT-PS-004 | ✅ 覆盖 |
+| AC-A12 | 向后兼容 (npm test 全绿) | CON-COMPAT-001~003 | 设计约束 | 全量回归测试 | ✅ 覆盖 |
+
+### 0.2 覆盖统计
+
+| 指标 | 值 |
+|------|-----|
+| Proposal AC 总数 | 12 |
+| 有 Design AC 覆盖 | 11 |
+| 无显式 Design AC | 1 (AC-A02) |
+| **追溯覆盖率** | **92%** |
+
+### 0.3 缺口分析
+
+#### AC-A02: TF-IDF 驼峰分解
+
+**状态**: ⚠️ 无显式 Design AC
+
+**分析**:
+- Proposal 中要求 `handleAuth` → `[handle, auth]` 驼峰分解
+- Design 文档未创建独立的 AC 来描述此功能
+- 测试文件 `tests/graph-rag.bats::test_tfidf_camel_case` 已存在
+
+**风险评估**: 低
+- 功能已在 graph-rag.sh 中作为 ALG-001/002 的实现细节
+- 有对应的验证测试用例
+
+**建议**:
+- 可选：在后续迭代中补充 Design AC
+- 当前状态：功能覆盖，追溯断裂程度低
+
+### 0.4 验证锚点映射
+
+下表展示 Proposal 中定义的具体验证方法与实际测试的对应关系：
+
+| Proposal AC | Proposal 定义的验证方法 | 实际测试文件 | 映射状态 |
+|-------------|------------------------|-------------|----------|
+| AC-A01 | `tests/graph-rag.bats::test_knapsack_utilization` | tests/graph-rag.bats | ✅ |
+| AC-A02 | `tests/graph-rag.bats::test_tfidf_camel_case` | tests/graph-rag.bats | ✅ |
+| AC-A03 | `tests/graph-rag.bats::test_candidate_fusion` | tests/graph-rag.bats | ✅ |
+| AC-A04 | `tests/graph-rag.bats::test_multidim_distance` | tests/graph-rag.bats | ✅ |
+| AC-A05 | `tests/impact-analyzer.bats::test_bfs_performance` | tests/impact-analyzer.bats | ✅ |
+| AC-A06 | `tests/impact-analyzer.bats::test_dynamic_decay` | tests/impact-analyzer.bats | ✅ |
+| AC-A07 | `tests/intent-learner.bats::test_halflife_weight` | tests/intent-learner.bats | ✅ |
+| AC-A08 | `tests/intent-learner.bats::test_ignore_penalty` | tests/intent-learner.bats | ✅ |
+| AC-A09 | `tests/intent-learner.bats::test_multiplicative_boost` | tests/intent-learner.bats | ✅ |
+| AC-A10 | `tests/common.bats::test_smart_token_estimate` | tests/graph-rag.bats (CT-GS-005) | ✅ |
+| AC-A11 | `tests/graph-rag.bats::test_llm_rerank_config` | tests/graph-rag.bats | ✅ |
+| AC-A12 | CI 全量测试 | npm test (回归) | ✅ |
+
+---
 
 ## 1. 追溯矩阵
 

@@ -1,0 +1,36 @@
+Command failed: 2026-01-22T09:26:59.303084Z ERROR code_core::codex::streaming: MCP client for `ckb` failed to start: failed to spawn MCP server `ckb` using command `/usr/local/bin/ckb` with args ["mcp"]: MCP server reported protocol version 2024-11-05, but this client expects 2025-06-18. Update either side so both speak the same schema.
+2026-01-22T09:27:10.253581Z ERROR code_core::codex::streaming: stream disconnected - retries exhausted retries=5 max_retries=5 auto_compact_attempted=false error=Authentication expired. Token data is not available.
+[2026-01-22T09:26:59] OpenAI Codex v0.0.0 (research preview)
+[2026-01-22T09:26:59] binary: /Users/ozbombor/.cli-versions/codex/just-every/node_modules/@just-every/code-darwin-arm64/bin/code-aarch64-apple-darwin
+--------
+workdir: /Users/ozbombor/Projects/code-intelligence-mcp
+model: gpt-5.2-codex
+provider: custom
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: auto
+--------
+[2026-01-22T09:26:59] User instructions:
+Context: 仓库: /Users/ozbombor/Projects/code-intelligence-mcp。关注 scripts/*.sh、hooks/*.sh、bin/*、config/*.yaml。忽略 dev-playbooks/、node_modules/、dist/。
+
+Agent: 配置项全量审计：提取所有外部输入依赖（环境变量、.devbooks/config.yaml、config/*.yaml、CLI 参数），逐一核对 README.md 是否说明。输出缺失清单与一份“配置清单表格草案”（参数名/是否必填/默认值/作用）。不改代码。
+
+Desired output: 配置审计报告 + 配置清单表格草案
+
+Files to consider: /Users/ozbombor/Projects/code-intelligence-mcp/README.md, /Users/ozbombor/Projects/code-intelligence-mcp/scripts, /Users/ozbombor/Projects/code-intelligence-mcp/hooks, /Users/ozbombor/Projects/code-intelligence-mcp/bin, /Users/ozbombor/Projects/code-intelligence-mcp/config, /Users/ozbombor/Projects/code-intelligence-mcp/.devbooks/config.yaml
+
+[Running in read-only mode - no modifications allowed]
+[2026-01-22T09:26:59] ERROR: MCP client for `ckb` failed to start: failed to spawn MCP server `ckb` using command `/usr/local/bin/ckb` with args ["mcp"]: MCP server reported protocol version 2024-11-05, but this client expects 2025-06-18. Update either side so both speak the same schema.
+[2026-01-22T09:27:00] ERROR: [transport] failed to start stream: Authentication expired. Token data is not available.
+[2026-01-22T09:27:00] ERROR: stream error: Authentication expired. Token data is not available.; retrying in 204ms…
+[2026-01-22T09:27:01] ERROR: [transport] failed to start stream: Authentication expired. Token data is not available.
+[2026-01-22T09:27:01] ERROR: stream error: Authentication expired. Token data is not available.; retrying in 418ms…
+[2026-01-22T09:27:03] ERROR: [transport] failed to start stream: Authentication expired. Token data is not available.
+[2026-01-22T09:27:03] ERROR: stream error: Authentication expired. Token data is not available.; retrying in 875ms…
+[2026-01-22T09:27:04] ERROR: [transport] failed to start stream: Authentication expired. Token data is not available.
+[2026-01-22T09:27:04] ERROR: stream error: Authentication expired. Token data is not available.; retrying in 1.632s…
+[2026-01-22T09:27:06] ERROR: [transport] failed to start stream: Authentication expired. Token data is not available.
+[2026-01-22T09:27:06] ERROR: stream error: Authentication expired. Token data is not available.; retrying in 3.09s…
+[2026-01-22T09:27:10] ERROR: [transport] failed to start stream: Authentication expired. Token data is not available.
+[2026-01-22T09:27:10] ERROR: Authentication expired. Token data is not available.

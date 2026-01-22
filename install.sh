@@ -215,7 +215,7 @@ install_hook() {
     local claude_dir="$HOME/.claude"
     local hooks_dir="$claude_dir/hooks"
     local settings_file="$claude_dir/settings.json"
-    local hook_source="${SCRIPT_DIR}/hooks/augment-context-global.sh"
+    local hook_source="${SCRIPT_DIR}/hooks/context-inject-global.sh"
     local hook_dest="${hooks_dir}/context-inject-global.sh"
 
     # Check if hook source exists

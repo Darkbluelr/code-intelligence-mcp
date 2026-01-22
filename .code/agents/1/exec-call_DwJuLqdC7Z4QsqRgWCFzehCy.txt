@@ -1,0 +1,255 @@
+total 1440
+drwxr-xr-x  12 ozbombor  staff     384 Jan 18 08:08 .
+drwxr-xr-x@ 35 ozbombor  staff    1120 Jan 18 09:53 ..
+-rw-r--r--   1 ozbombor  staff     497 Jan 18 03:21 config.yaml
+-rw-r--r--   1 ozbombor  staff   39054 Jan 14 14:32 context-index.json
+-rw-r--r--   1 ozbombor  staff     374 Jan 16 19:11 conversation-context.json
+-rw-r--r--   1 ozbombor  staff     189 Jan 14 14:51 federation-index.json
+-rw-r--r--   1 ozbombor  staff  311296 Jan 18 08:08 graph.db
+-rw-r--r--   1 ozbombor  staff   32768 Jan 18 06:35 graph.db-shm
+-rw-r--r--   1 ozbombor  staff       0 Jan 18 06:35 graph.db-wal
+-rw-r--r--   1 ozbombor  staff  311296 Jan 18 06:35 graph.db.backup.20260118_063508
+-rw-r--r--   1 ozbombor  staff       1 Jan 18 03:40 learned-patterns.json
+-rw-r--r--   1 ozbombor  staff   24576 Jan 17 01:46 subgraph-cache.db
+total 88
+drwxr-xr-x  11 ozbombor  staff    352 Jan 17 17:08 .
+drwxr-xr-x@ 35 ozbombor  staff   1120 Jan 18 09:53 ..
+-rw-r--r--@  1 ozbombor  staff   6148 Jan 18 06:09 .DS_Store
+-rw-r--r--   1 ozbombor  staff  18874 Jan 13 21:11 README.md
+drwxr-xr-x   3 ozbombor  staff     96 Jan 15 01:26 _meta
+drwxr-xr-x   5 ozbombor  staff    160 Jan 18 08:09 changes
+-rw-r--r--   1 ozbombor  staff   2855 Jan 13 20:15 constitution.md
+drwxr-xr-x   4 ozbombor  staff    128 Jan 17 01:29 docs
+-rw-r--r--   1 ozbombor  staff  11398 Jan 13 20:16 project.md
+drwxr-xr-x   2 ozbombor  staff     64 Jan 13 19:19 scripts
+drwxr-xr-x  57 ozbombor  staff   1824 Jan 18 05:51 specs
+# 项目上下文
+
+## 目的
+
+为 AI 编程助手（如 Claude Code）提供代码智能能力的 MCP Server。通过语义搜索、调用链追踪、Bug 定位等功能，增强 AI 对代码库的理解和导航能力。
+
+## 技术栈
+
+- **运行时**：Node.js >= 18.0.0
+- **语言**：TypeScript 5.x（服务器薄壳）+ Bash（核心功能脚本）
+- **协议**：MCP (Model Context Protocol) via @modelcontextprotocol/sdk
+- **外部工具**：ripgrep (rg)、jq
+- **可选服务**：Ollama / OpenAI（Embedding）、CKB MCP Server（图分析）
+
+## 项目约定
+
+### 代码风格
+
+- **TypeScript**：严格模式（`strict: true`），ES 模块（`NodeNext`）
+- **Shell 脚本**：`set -euo pipefail`，ShellCheck 检查
+- **命名规范**：
+  - MCP 工具名：`ci_*` 前缀（snake_case）
+  - 脚本文件：`*.sh`（kebab-case）
+  - TypeScript：camelCase 变量，PascalCase 类型
+
+### 架构模式
+
+**薄壳架构（Thin Shell）**：
+- `server.ts` 仅处理 MCP 协议和工具调度
+- 核心功能由 `scripts/*.sh` 实现
+- 约束：`CON-TECH-002: MCP Server 使用 Node.js 薄壳调用 Shell 脚本`
+
+```
+[Claude Code] → [MCP Protocol] → [server.ts] → [scripts/*.sh] → [外部工具]
+```
+
+### 测试策略
+
+- **框架**：Bats (Bash Automated Testing System)
+- **位置**：`tests/*.bats`
+- **当前状态**：功能测试基础框架已建立
+- **运行命令**：`npm test`（需安装 bats）
+
+### Git 工作流
+
+- **主分支**：`master`
+- **提交规范**：常规提交（feat/fix/docs/refactor）
+- **变更流程**：通过 DevBooks 变更包管理
+
+## 领域上下文
+
+### 核心概念
+
+| 概念 | 说明 |
+|------|------|
+| MCP | Anthropic 开发的 AI 与工具通信协议 |
+| Embedding | 代码语义向量化，用于相似度搜索 |
+| Graph-RAG | 图检索增强生成，结合调用图和向量搜索 |
+| Call Chain | 函数调用关系链（callers/callees） |
+| Hotspot | 高频变更 + 高复杂度文件，Bug 密集区 |
+| CKB | Code Knowledge Base，图基代码分析服务 |
+
+### 提供的工具
+
+| 工具 | 功能 | 实现 |
+|------|------|------|
+| `ci_search` | 语义代码搜索 | embedding.sh |
+| `ci_call_chain` | 调用链追踪 | call-chain.sh |
+| `ci_bug_locate` | Bug 位置定位 | bug-locator.sh |
+| `ci_complexity` | 复杂度分析 | complexity.sh |
+| `ci_graph_rag` | 图基上下文检索 | graph-rag.sh |
+| `ci_index_status` | 索引状态查询 | indexer.sh |
+
+## 重要约束
+
+| 约束 ID | 描述 |
+|---------|------|
+| CON-TECH-002 | MCP Server 使用 Node.js 薄壳调用 Shell 脚本 |
+| CON-PUB-003 | 安装方式统一为 git clone + ./install.sh |
+
+### 依赖方向
+
+```
+server.ts → scripts/*.sh → common.sh
+                        → cache-utils.sh
+                        → 外部工具 (rg, jq, CKB MCP)
+```
+
+禁止：
+- scripts/*.sh → src/*.ts（脚本不得依赖 TypeScript）
+- common.sh → 功能脚本（共享模块不得依赖功能模块）
+- 循环依赖
+
+## 外部依赖
+
+| 依赖 | 类型 | 必需 | 用途 |
+|------|------|------|------|
+| @modelcontextprotocol/sdk | npm | 是 | MCP 协议实现 |
+| ripgrep (rg) | CLI | 推荐 | 高性能文本搜索 |
+| jq | CLI | 推荐 | JSON 处理 |
+| Ollama | 服务 | 可选 | 本地 Embedding 生成 |
+| OpenAI API | 服务 | 可选 | 云端 Embedding 生成 |
+| CKB MCP Server | MCP | 可选 | 图基代码分析 |
+
+---
+
+## DevBooks 集成规则
+
+### Directory Roots（目录根）
+
+- `dev-playbooks/specs/`（当前真理源）
+- `dev-playbooks/changes/`（变更包）
+
+### Project Profile（项目画像入口，强烈建议）
+
+- 项目画像（技术栈/命令/约定/闸门）：`dev-playbooks/specs/_meta/project-profile.md`
+- 统一语言表（术语）：`dev-playbooks/specs/_meta/glossary.md`
+- 架构地图（C4）：`dev-playbooks/specs/architecture/c4.md`
+
+### Truth Sources（真理源优先级）
+
+1. `dev-playbooks/specs/`：当前系统真理（最高优先级）
+2. `dev-playbooks/changes/<change-id>/`：本次变更包（proposal/design/tasks/verification/spec deltas）
+3. 代码与测试：以仓库事实为准（测试/构建输出是确定性锚点）
+4. 聊天记录：非权威，必要时需回写到上述文件
+
+### Agent Roles（角色隔离）
+
+- Design Owner：只写 What/Constraints + AC-xxx（禁止写实现步骤）
+- Spec Owner：只写规格 delta（Requirements/Scenarios）
+- Planner：只从设计推导 tasks（不得参考 tests/）
+- Test Owner：只从设计/规格推导测试（不得参考 tasks/）；**必须独立对话/独立实例**
+- Proposal Author：只写 `proposal.md`（含 Debate Packet）
+- Proposal Challenger：只出质疑报告（必须给结论）
+- Proposal Judge：只出裁决报告（必须明确 Approved/Revise/Rejected）
+- Coder：按 tasks 实现并跑闸门（不得反向改写设计意图）；**必须独立对话/独立实例；禁止修改 tests/**，如需调整测试只能交还 Test Owner
+- Reviewer：只做可读性/依赖/风格审查；不改 tests/，不改设计
+- Impact Analyst：跨模块改动先做影响分析再写代码
+
+### Test Integrity（测试完整性与红绿循环）
+
+- 允许并行，但**测试与实现必须是独立对话**；禁止在同一会话内既写 tests 又写实现。
+- Test Owner 先产出 tests/verification，并运行以确认 **Red** 基线；记录失败证据到 `dev-playbooks/changes/<id>/evidence/`（若无证据目录可新建）。
+- Coder 仅以 `dev-playbooks/changes/<id>/tasks.md` + 测试报错 + 代码库为输入，目标是让测试 **Green**；严禁修改 tests。
+
+### Structural Quality Guardrails（结构质量守门）
+
+- 若出现"代理指标驱动"的要求（行数/文件数/机械拆分/命名格式），必须评估其对内聚/耦合/可测试性的影响。
+- 触发风险信号时必须停线：记录为决策问题并回到 proposal/design 处理，不得直接执行。
+- 质量闸门优先级：复杂度、耦合度、依赖方向、变更频率、测试质量 > 代理指标。
+
+### Definition of Done（DoD，MECE）
+
+每次变更至少声明覆盖到哪些闸门；缺失项必须写原因与补救计划（建议写入 `dev-playbooks/changes/<id>/verification.md`）：
+- 行为（Behavior）：unit/integration/e2e（按项目类型最小集）
+- 契约（Contract）：OpenAPI/Proto/Schema/事件 envelope + contract tests
+- 结构（Structure）：架构适配函数（依赖方向/分层/禁止循环）
+- 静态与安全（Static/Security）：lint/typecheck/build + SAST/secret scan
+- 证据（Evidence，按需）：截图/录像/报告
+
+### DevBooks Skills（开发作战手册 Skills）
+
+本项目使用 DevBooks 的 `devbooks-*` Skills（全局安装后在所有项目可用）：
+
+**角色类：**
+- Router（下一步路由）：`devbooks-router` → 给出阶段判断 + 下一步该用哪个 Skill + 产物落点（支持 Prototype 模式）
+- Design（设计文档）：`devbooks-design-doc` → `dev-playbooks/changes/<id>/design.md`
+- Spec & Contract（规格与契约）：`devbooks-spec-contract` → `dev-playbooks/changes/<id>/specs/<capability>/spec.md` + 契约计划
+- Plan（编码计划）：`devbooks-implementation-plan` → `dev-playbooks/changes/<id>/tasks.md`
+- Test（测试与追溯）：`devbooks-test-owner` → `dev-playbooks/changes/<id>/verification.md` + `tests/**`
+- Proposal Author（提案撰写）：`devbooks-proposal-author` → `dev-playbooks/changes/<id>/proposal.md`
+- Proposal Challenger（提案质疑）：`devbooks-proposal-challenger` → 质疑报告（不写入变更包）
+- Proposal Judge（提案裁决）：`devbooks-proposal-judge` → 裁决报告（写回 `proposal.md`）
+- Coder（实现）：`devbooks-coder` → 实现与验证（不改 tests）
+- Reviewer（代码评审）：`devbooks-code-review` → Review Notes（不写入变更包）
+- Garden（规格园丁）：`devbooks-spec-gardener` → 归档前修剪 `dev-playbooks/specs/`
+- Impact（影响分析）：`devbooks-impact-analysis` → 写入 `dev-playbooks/changes/<id>/proposal.md` 的 Impact 部分
+- C4 map（架构地图）：`devbooks-c4-map` → `dev-playbooks/specs/architecture/c4.md`
+- Backport（回写设计）：`devbooks-design-backport` → 回写 `dev-playbooks/changes/<id>/design.md`
+
+**工作流类：**
+- Workflow（交付验收骨架）：`devbooks-delivery-workflow` → 变更闭环 + 确定性脚本
+- Proposal Debate（提案对辩工作流）：`devbooks-proposal-debate-workflow` → Author/Challenger/Judge 三角对辩
+- Brownfield Bootstrap（存量初始化）：`devbooks-brownfield-bootstrap` → 当 `dev-playbooks/specs/` 为空时生成项目画像与基线
+
+**度量类：**
+- Entropy Monitor（熵度量）：`devbooks-entropy-monitor` → 系统熵度量 → `dev-playbooks/specs/_meta/entropy/`
+
+### OpenSpec 三阶段与 DevBooks 角色映射
+
+> OpenSpec 有 proposal/apply/archive 三阶段命令。DevBooks 为每个阶段提供角色隔离与质量闸门。
+
+#### 阶段一：Proposal（禁止写实现代码）
+
+**命令**：`/openspec:proposal <描述>` 或 `/devbooks-openspec-proposal`
+
+**可用角色与 Skills**：
+| 角色 | Skill | 产物 |
+|------|-------|------|
+| Router | `devbooks-router` | 阶段判断 + 下一步建议 |
+# DevBooks Configuration
+# Generated by migrate-from-openspec.sh
+
+root: dev-playbooks/
+constitution: constitution.md
+project: project.md
+
+paths:
+  specs: specs/
+  changes: changes/
+  staged: specs/_staged/
+  archive: changes/archive/
+
+constraints:
+  require_constitution: true
+  allow_legacy_protocol: false
+
+fitness:
+  mode: warn
+  rules_file: specs/architecture/fitness-rules.md
+
+tracing:
+  coverage_threshold: 80
+  evidence_dir: evidence/
+
+ai_tools:
+  - claude
+  - codex
+
+install_scope: global

@@ -1,0 +1,16 @@
+{
+    "timestamp": "__TIMESTAMP__",
+    "version": "1.0.0",
+    "metrics": {
+        "modules": 10,
+        "total_coupling": "__COUPLING__",
+        "dependency_violations": "__VIOLATIONS__",
+        "boundary_clarity": 0.85
+    },
+    "module_metrics": [
+        {"name": "core", "coupling_in": 5, "coupling_out": 3},
+        {"name": "api", "coupling_in": 8, "coupling_out": 2},
+        {"name": "db", "coupling_in": 3, "coupling_out": 6}
+    ],
+    "violations": []
+}

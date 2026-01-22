@@ -1,0 +1,529 @@
+docs/Augment.md:418:关键配置项（`config/features.yaml`）：
+docs/Augment.md:442:| `.devbooks/adr-index.json` | ADR 索引 |
+src/server.ts:9:import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+src/server.ts:42:    description: "Semantic code search using embeddings or keywords. Use this for natural language queries like 'find authentication code' or 'where is error handling'. Supports both semantic (AI-powered) and keyword search modes. Best for: discovering code by concept, finding related implementations, exploring unfamiliar codebases.",
+src/server.ts:102:    name: "ci_graph_rag",
+src/server.ts:115:    name: "ci_index_status",
+src/server.ts:116:    description: "Check or manage the semantic search embedding index. Use 'status' to check index health, 'build' to rebuild after major code changes, 'clear' to reset. Best for: troubleshooting search issues, maintaining search quality.",
+src/server.ts:123:          description: "Action to perform: status (check index status), build (rebuild embedding index), clear (clean embedding cache). Default: status",
+src/server.ts:202:    description: "Query the code intelligence graph database directly with SQL. Use this for custom queries on symbols, references, and relationships. Best for: advanced analysis, custom reports, debugging index issues.",
+src/server.ts:225:    description: "AST-based incremental indexing using tree-sitter. Use this to update the code index after file changes without full rebuild. Best for: keeping index fresh, fast incremental updates, CI/CD integration.",
+src/server.ts:415:  - Semantic code search (embeddings)
+src/server.ts:422:  - AST delta incremental indexing
+scripts/call-chain-dataflow.sh:69:_df_is_symbol_index_ready() {
+scripts/call-chain-dataflow.sh:73:_df_set_symbol_index_ready() {
+scripts/call-chain-dataflow.sh:77:_df_get_symbol_from_index() {
+scripts/call-chain-dataflow.sh:82:_df_add_symbol_to_index() {
+scripts/call-chain-dataflow.sh:192:    local index_candidate
+scripts/call-chain-dataflow.sh:193:    for index_candidate in \
+scripts/call-chain-dataflow.sh:194:      "${resolved}/index.ts" \
+scripts/call-chain-dataflow.sh:195:      "${resolved}/index.tsx" \
+scripts/call-chain-dataflow.sh:196:      "${resolved}/index.js" \
+scripts/call-chain-dataflow.sh:197:      "${resolved}/index.jsx" \
+scripts/call-chain-dataflow.sh:198:      "${resolved}/index.mjs" \
+scripts/call-chain-dataflow.sh:199:      "${resolved}/index.cjs"; do
+scripts/call-chain-dataflow.sh:200:      if [ -f "$index_candidate" ]; then
+scripts/call-chain-dataflow.sh:201:        echo "$index_candidate"
+scripts/call-chain-dataflow.sh:411:build_symbol_index() {
+scripts/call-chain-dataflow.sh:666:  build_symbol_index
+docs/augment-gap-report.md:41:| 通用代码图谱（UCG） | 已具备 | `scripts/graph-store.sh`, `scripts/scip-to-graph.sh`, `index.scip` | SQLite 图存储 + SCIP 解析。跨语言统一程度取决于 SCIP 覆盖。 |
+docs/augment-gap-report.md:50:| 意图解析+多信号聚合 | 部分 | `hooks/augment-context-global.sh`, `scripts/intent-learner.sh`, `scripts/embedding.sh` | 有对话/信号加权；IDE 光标/编辑流实时信号接入的证据不足。 |
+docs/augment-gap-report.md:52:| 重排序（Rerank/Judge） | 部分 | `scripts/graph-rag-fusion.sh`, `config/features.yaml` | 支持 rerank 但默认可能关闭；LLM rerank 稳定性与门禁策略仍偏弱。 |
+src/context-signal-manager.ts:208:    return data.map((item, index) => {
+src/context-signal-manager.ts:211:        throw new Error(`Invalid signal at index ${index}: missing required fields`);
+src/context-signal-manager.ts:217:        throw new Error(`Invalid signal at index ${index}: filePath must be a string`);
+src/context-signal-manager.ts:222:        throw new Error(`Invalid signal at index ${index}: invalid signalType`);
+src/context-signal-manager.ts:226:        throw new Error(`Invalid signal at index ${index}: timestamp must be an integer`);
+src/context-signal-manager.ts:230:        throw new Error(`Invalid signal at index ${index}: weight must be a number`);
+src/ast-delta.ts:288:    const lineNum = code.substring(0, match.index).split('\n').length;
+src/ast-delta.ts:301:    const lineNum = code.substring(0, match.index).split('\n').length;
+src/ast-delta.ts:314:    const lineNum = code.substring(0, match.index).split('\n').length;
+src/ast-delta.ts:327:    const lineNum = code.substring(0, match.index).split('\n').length;
+src/ast-delta.ts:340:    const lineNum = code.substring(0, match.index).split('\n').length;
+src/tool-handlers.ts:51:  return value.map((item, index) => {
+src/tool-handlers.ts:53:      throw new Error(`Invalid ${name}[${index}]: expected string, got ${typeof item}`);
+src/tool-handlers.ts:73:  // Note: embedding.sh uses --top-k, not --limit, and doesn't have --mode
+src/tool-handlers.ts:74:  const { stdout, stderr } = await runScript("embedding.sh", [
+src/tool-handlers.ts:142:  const embeddingAction = action === "clear" ? "clean" : action;
+src/tool-handlers.ts:143:  const { stdout, stderr } = await runScript("embedding.sh", [embeddingAction]);
+src/tool-handlers.ts:460:  ci_graph_rag: handleCiGraphRag,
+src/tool-handlers.ts:461:  ci_index_status: handleCiIndexStatus,
+scripts/scip-to-graph.sh:10:#   SCIP_INDEX_PATH - SCIP 索引路径，默认 index.scip
+scripts/scip-to-graph.sh:26:: "${SCIP_INDEX_PATH:=index.scip}"
+scripts/scip-to-graph.sh:61:# 从 features.yaml 读取离线 proto 配置
+scripts/scip-to-graph.sh:65:    local config_file="${CONFIG_DIR:-$SCRIPT_DIR/../config}/features.yaml"
+scripts/scip-to-graph.sh:75:        BEGIN { in_indexer = 0 }
+scripts/scip-to-graph.sh:76:        /^[[:space:]]*indexer:/ { in_indexer = 1; next }
+scripts/scip-to-graph.sh:77:        /^[[:space:]]*[a-z]/ && !/^[[:space:]]*indexer:/ && in_indexer { in_indexer = 0 }
+scripts/scip-to-graph.sh:78:        in_indexer && $1 ~ key {
+scripts/scip-to-graph.sh:287:        const index = Index.decode(buffer);
+scripts/scip-to-graph.sh:303:        if (index.documents) {
+scripts/scip-to-graph.sh:304:            result.stats.documents = index.documents.length;
+scripts/scip-to-graph.sh:306:            index.documents.forEach(doc => {
+scripts/scip-to-graph.sh:666:        log_error "SCIP index not found: $SCIP_INDEX_PATH"
+scripts/scip-to-graph.sh:667:        log_info "Generate with: npx scip-typescript index"
+scripts/scip-to-graph.sh:686:        log_info "Incremental update: SCIP index is newer than database"
+scripts/scip-to-graph.sh:723:        log_error "Failed to parse SCIP index"
+scripts/scip-to-graph.sh:746:        log_ok "Parsed SCIP index: $node_count nodes, $edge_count edges"
+scripts/scip-to-graph.sh:758:        echo '{"error":"SCIP index not found"}'
+scripts/scip-to-graph.sh:771:        echo '{"error":"Failed to parse SCIP index"}'
+scripts/scip-to-graph.sh:867:    SCIP_INDEX_PATH     SCIP 索引路径（默认: index.scip）
+scripts/ast-diff.sh:55:  if ! is_feature_enabled "incremental_indexing"; then
+scripts/ast-diff.sh:56:    log_warn "增量索引功能已禁用 (features.incremental_indexing: false)"
+scripts/ast-diff.sh:63:SCIP_INDEX="$CWD/index.scip"
+scripts/ast-diff.sh:65:LAST_INDEX_TIME_FILE="$CACHE_DIR/last-index-time"
+scripts/ast-diff.sh:106:  - no_index:    SCIP 索引不存在
+scripts/ast-diff.sh:143:        SCIP_INDEX="$CWD/index.scip"
+scripts/ast-diff.sh:145:        LAST_INDEX_TIME_FILE="$CACHE_DIR/last-index-time"
+scripts/ast-diff.sh:173:check_scip_index() {
+scripts/ast-diff.sh:181:get_index_mtime() {
+scripts/ast-diff.sh:190:get_last_index_time() {
+scripts/ast-diff.sh:199:update_index_time() {
+scripts/ast-diff.sh:242:# 未来实现路径：scip-typescript index --incremental --files <changed-files>
+scripts/ast-diff.sh:266:  update_index_time
+scripts/ast-diff.sh:273:perform_full_index() {
+scripts/ast-diff.sh:279:  local index_status="ok"
+scripts/ast-diff.sh:282:  # 例如：scip-typescript index .
+scripts/ast-diff.sh:286:    (cd "$CWD" && scip-typescript index . 2>/dev/null) || true
+scripts/ast-diff.sh:289:    index_status="skipped"
+scripts/ast-diff.sh:298:  update_index_time
+scripts/ast-diff.sh:301:  echo "${elapsed}:${index_status}"
+scripts/ast-diff.sh:310:  if ! check_scip_index && [ "$FORCE_FULL" = false ]; then
+scripts/ast-diff.sh:314:      --arg status "no_index" \
+scripts/ast-diff.sh:315:      --arg message "SCIP 索引不存在，请先运行索引生成工具（如 scip-typescript index .）" \
+scripts/ast-diff.sh:327:    local full_result elapsed index_status
+scripts/ast-diff.sh:328:    full_result=$(perform_full_index)
+scripts/ast-diff.sh:330:    index_status=$(echo "$full_result" | cut -d: -f2)
+scripts/ast-diff.sh:333:    if [ "$index_status" = "skipped" ]; then
+scripts/ast-diff.sh:366:  last_time=$(get_last_index_time)
+scripts/ast-diff.sh:434:  local index_exists=false
+scripts/ast-diff.sh:435:  local index_mtime=0
+scripts/ast-diff.sh:438:  if check_scip_index; then
+scripts/ast-diff.sh:439:    index_exists=true
+scripts/ast-diff.sh:440:    index_mtime=$(get_index_mtime)
+scripts/ast-diff.sh:443:  last_update=$(get_last_index_time)
+scripts/ast-diff.sh:447:  if [ "$index_exists" = true ]; then
+scripts/ast-diff.sh:461:    --argjson index_exists "$index_exists" \
+scripts/ast-diff.sh:462:    --argjson index_mtime "$index_mtime" \
+scripts/ast-diff.sh:468:      index_exists: $index_exists,
+scripts/ast-diff.sh:469:      index_mtime: $index_mtime,
+scripts/ast-diff.sh:482:  last_time=$(get_last_index_time)
+scripts/ast-diff.sh:534:      no_index)
+scripts/ast-diff.sh:541:        local index_exists pending_count
+scripts/ast-diff.sh:542:        index_exists=$(echo "$result" | jq -r '.index_exists // false')
+scripts/ast-diff.sh:547:        echo "  索引存在: $index_exists"
+scripts/show-context.sh:21:EMBEDDING_INDEX="$PROJECT_ROOT/.devbooks/embeddings/index.tsv"
+scripts/show-context.sh:25:elif [ -f "$PROJECT_ROOT/index.scip" ]; then
+scripts/show-context.sh:30:  echo "  ⚠️  无索引（可运行 /devbooks-index-bootstrap 生成）"
+scripts/show-context.sh:52:echo "  - ci_graph_rag: 图RAG上下文检索"
+scripts/vuln-tracker.sh:13:#   FEATURES_CONFIG - 功能开关配置文件路径
+scripts/vuln-tracker.sh:34:: "${FEATURES_CONFIG:=config/features.yaml}"
+scripts/vuln-tracker.sh:56:get_severity_index() {
+scripts/vuln-tracker.sh:58:    local index=0
+scripts/vuln-tracker.sh:61:            echo "$index"
+scripts/vuln-tracker.sh:64:        ((index++))
+scripts/vuln-tracker.sh:76:    local sev_index thr_index
+scripts/vuln-tracker.sh:77:    sev_index=$(get_severity_index "$severity")
+scripts/vuln-tracker.sh:78:    thr_index=$(get_severity_index "$threshold")
+scripts/vuln-tracker.sh:80:    if [[ "$sev_index" -ge "$thr_index" ]]; then
+scripts/vuln-tracker.sh:122:        def severity_index(s):
+scripts/vuln-tracker.sh:127:            severity_index(sev) >= severity_index(thr);
+scripts/vuln-tracker.sh:175:        def severity_index(s):
+scripts/vuln-tracker.sh:180:            severity_index(sev) >= severity_index(thr);
+scripts/indexer.sh:5:# optimize-indexing-pipeline: AC-001, AC-002, AC-006, AC-007, AC-008
+scripts/indexer.sh:19:export LOG_PREFIX="indexer"
+scripts/indexer.sh:24:CONFIG_FILE="${CONFIG_DIR:-$SCRIPT_DIR/../config}/features.yaml"
+scripts/indexer.sh:27:read_indexer_config() {
+scripts/indexer.sh:46:                value=$(awk '/^[[:space:]]*indexer:/{found=1} found && /debounce_seconds:/{gsub(/.*:/,""); gsub(/[[:space:]]/,""); print; exit}' "$CONFIG_FILE" 2>/dev/null)
+scripts/indexer.sh:62:DEBOUNCE_SECONDS=$(read_indexer_config "debounce_seconds" "2")
+scripts/indexer.sh:63:AST_DELTA_ENABLED=$(read_indexer_config "ast_delta_enabled" "true")
+scripts/indexer.sh:64:FILE_THRESHOLD=$(read_indexer_config "file_threshold" "10")
+scripts/indexer.sh:127:dispatch_index() {
+scripts/indexer.sh:255:    cmd=$(get_index_command "$lang")
+scripts/indexer.sh:343:    dispatch_index "${PENDING_FILES[@]}"
+scripts/indexer.sh:381:get_index_command() {
+scripts/indexer.sh:386:                echo "scip-typescript index --output index.scip"
+scripts/indexer.sh:393:                echo "scip-python index . --output index.scip"
+scripts/indexer.sh:400:                echo "scip-go --output index.scip"
+scripts/indexer.sh:412:do_index() {
+scripts/indexer.sh:433:    local last_index=0
+scripts/indexer.sh:443:        local since_last=$((now - last_index))
+scripts/indexer.sh:455:            last_index=$(date +%s)
+scripts/indexer.sh:463:    local last_index=0
+scripts/indexer.sh:478:        local since_last=$((now - last_index))
+scripts/indexer.sh:489:            last_index=$(date +%s)
+scripts/indexer.sh:502:        local index_file="$dir/index.scip"
+scripts/indexer.sh:504:        if [[ ! -f "$index_file" ]]; then
+scripts/indexer.sh:511:                -newer "$index_file" \
+scripts/indexer.sh:525:                dispatch_index "${files_array[@]}"
+scripts/indexer.sh:562:    if launchctl list 2>/dev/null | grep -q "com.devbooks.indexer"; then
+scripts/indexer.sh:600:        echo "    indexer.debounce_seconds: $DEBOUNCE_SECONDS"
+scripts/indexer.sh:626:    dispatch_index "${files[@]}"
+scripts/indexer.sh:645:    dispatch_index "${files[@]}"
+scripts/indexer.sh:680:    if [[ ! -f "$project_dir/index.scip" ]]; then
+scripts/indexer.sh:711:  indexer.sh [项目目录]                      启动守护进程
+scripts/indexer.sh:712:  indexer.sh --status [--format json]        检查状态
+scripts/indexer.sh:713:  indexer.sh --dry-run --files <files>       模拟调度决策（不执行）
+scripts/indexer.sh:714:  indexer.sh --once --files <files>          一次性执行索引
+scripts/indexer.sh:715:  indexer.sh --install [项目目录]            安装为 LaunchAgent (macOS)
+scripts/indexer.sh:716:  indexer.sh --uninstall                     卸载 LaunchAgent
+scripts/indexer.sh:717:  indexer.sh --help                          显示帮助
+scripts/indexer.sh:732:  config/features.yaml   功能开关和参数配置
+scripts/indexer.sh:744:    local plist_path="$HOME/Library/LaunchAgents/com.devbooks.indexer.plist"
+scripts/indexer.sh:755:    <string>com.devbooks.indexer</string>
+scripts/indexer.sh:766:    <string>/tmp/devbooks-indexer.log</string>
+scripts/indexer.sh:768:    <string>/tmp/devbooks-indexer.log</string>
+scripts/indexer.sh:775:    log_info "日志: /tmp/devbooks-indexer.log"
+scripts/indexer.sh:831:            launchctl unload "$HOME/Library/LaunchAgents/com.devbooks.indexer.plist" 2>/dev/null || true
+scripts/indexer.sh:832:            rm -f "$HOME/Library/LaunchAgents/com.devbooks.indexer.plist"
+scripts/graph-rag.sh:16:#   AC-007: graph_rag.enabled: false 时跳过
+scripts/graph-rag.sh:98:  --mock-embedding      使用模拟 Embedding 数据（测试用）
+scripts/graph-rag.sh:220:        if [[ -z "${FEATURES_CONFIG:-}" ]]; then
+scripts/graph-rag.sh:221:          FEATURES_CONFIG="$CWD/config/features.yaml"
+scripts/graph-rag.sh:224:          DEVBOOKS_FEATURE_CONFIG="$CWD/config/features.yaml"
+scripts/graph-rag.sh:256:      --mock-embedding)
+scripts/boundary-detector.sh:53:  boundary-detector.sh src/index.ts
+scripts/boundary-detector.sh:54:  boundary-detector.sh --path node_modules/lodash/index.js --format json
+scripts/graph-rag-query.sh:263:  vector_candidates=$(embedding_search "$query" "$TOP_K")
+scripts/federation-lite-virtual.sh:237:    # Ensure federation index exists
+scripts/federation-lite-virtual.sh:239:        log_error "Federation index not found. Run --update first."
+scripts/federation-lite-virtual.sh:278:    # Load federation index
+scripts/federation-lite-virtual.sh:279:    local index
+scripts/federation-lite-virtual.sh:280:    index=$(cat "$FEDERATION_INDEX")
+scripts/federation-lite-virtual.sh:317:        repo_count=$(echo "$index" | jq '.repositories | length')
+scripts/federation-lite-virtual.sh:321:            remote_repo_name=$(echo "$index" | jq -r ".repositories[$i].name")
+scripts/federation-lite-virtual.sh:322:            remote_repo_path=$(echo "$index" | jq -r ".repositories[$i].path")
+scripts/federation-lite-virtual.sh:328:            contract_count=$(echo "$index" | jq ".repositories[$i].contracts | length")
+scripts/federation-lite-virtual.sh:332:                contract_type=$(echo "$index" | jq -r ".repositories[$i].contracts[$j].type")
+scripts/federation-lite-virtual.sh:333:                contract_path=$(echo "$index" | jq -r ".repositories[$i].contracts[$j].path")
+scripts/federation-lite-virtual.sh:334:                remote_symbols=$(echo "$index" | jq ".repositories[$i].contracts[$j].symbols")
+scripts/graph-rag-fusion.sh:55:  local config_file="${FEATURES_CONFIG:-${DEVBOOKS_FEATURE_CONFIG:-}}"
+scripts/graph-rag-fusion.sh:110:- index: original index (0-based)
+scripts/graph-rag-fusion.sh:120:[{"index": 0, "score": 8, "reason": "directly related"}, {"index": 1, "score": 5, "reason": "partially related"}]
+scripts/graph-rag-fusion.sh:153:    idx=$(echo "$rankings" | jq -r ".[$i].index // -1")
+scripts/reranker.sh:11:#   reranker.sh --query "查询内容" [选项] < candidates.json
+scripts/reranker.sh:12:#   echo '{"candidates":[...]}' | reranker.sh --query "查询"
+scripts/reranker.sh:17:#   AC-003: reranker.sh 成功执行，输出包含 ranked_results 字段
+scripts/reranker.sh:18:#   AC-007: reranker.enabled: false（默认）时跳过
+scripts/reranker.sh:73:  reranker.sh --query "查询内容" [选项] < candidates.json
+scripts/reranker.sh:74:  echo '{"candidates":[...]}' | reranker.sh --query "查询"
+scripts/reranker.sh:124:    reranker.sh --query "认证函数"
+scripts/reranker.sh:127:  reranker.sh --query "test" --provider openai < candidates.json
+scripts/reranker.sh:130:  reranker.sh --query "test" --mock-llm < candidates.json
+scripts/reranker.sh:136:  echo "reranker.sh version 2.0.0 (with LLM Provider abstraction)"
+scripts/reranker.sh:223:      log_error "示例: echo '{\"candidates\":[]}' | reranker.sh --query \"查询\""
+scripts/reranker.sh:417:            # 转换格式：index/score/reason -> file_path/rank/rerank_score
+scripts/reranker.sh:424:              local row orig_index score file_path rerank_score
+scripts/reranker.sh:426:              orig_index=$(echo "$row" | jq -r '.index // 0')
+scripts/reranker.sh:429:              file_path=$(echo "$candidates" | jq -r ".[$orig_index].file_path // .[$orig_index].file // \"file_$orig_index\"")
+scripts/cod-visualizer.sh:45:    local config_file="${FEATURES_CONFIG:-config/features.yaml}"
+scripts/federation-lite.sh:5:# Purpose: Discover and index API contracts across multiple repositories
+scripts/federation-lite.sh:17:#   FEDERATION_INDEX    - Index file path (default: .devbooks/federation-index.json)
+scripts/federation-lite.sh:33:  _fast_index=""
+scripts/federation-lite.sh:48:  # Resolve paths - index is relative to local repo or uses FEDERATION_INDEX env var
+scripts/federation-lite.sh:51:  [[ -z "$_fast_index" ]] && _fast_index="${FEDERATION_INDEX:-$_fast_local_repo/.devbooks/federation-index.json}"
+scripts/federation-lite.sh:53:  # Check federation index exists
+scripts/federation-lite.sh:54:  if [[ ! -f "$_fast_index" ]]; then
+scripts/federation-lite.sh:55:    echo "{\"error\": \"Federation index not found at $_fast_index\"}" >&2
+scripts/federation-lite.sh:88:  # Load index and process all matching in single jq call
+scripts/federation-lite.sh:172:    ' "$_fast_index")
+scripts/federation-lite.sh:217:# shellcheck source=federation-lite-index.sh
+scripts/federation-lite.sh:218:source "$SCRIPT_DIR/federation-lite-index.sh"
+scripts/federation-lite.sh:337:            update_index "$config_file"
+scripts/bug-locator.sh:746:    "$root/.git/index"
+scripts/llm-providers/README.md:37:  {"index": 0, "score": 9, "reason": "直接匹配"},
+scripts/llm-providers/README.md:38:  {"index": 2, "score": 7, "reason": "相关"}
+scripts/performance-regression.sh:15:FEATURES_CONFIG_FILE="${FEATURES_CONFIG:-$PROJECT_ROOT/config/features.yaml}"
+scripts/performance-regression.sh:28:  if [[ ! -f "$FEATURES_CONFIG_FILE" ]]; then
+scripts/performance-regression.sh:47:  ' "$FEATURES_CONFIG_FILE" 2>/dev/null)
+scripts/ast-delta.sh:204:    if [[ -f "index.scip" ]]; then
+scripts/ast-delta.sh:205:        scip_mtime=$(stat -c %Y "index.scip" 2>/dev/null || stat -f %m "index.scip" 2>/dev/null || echo "")
+scripts/ast-delta.sh:800:    ast-delta.sh update src/index.ts
+scripts/call-chain-trace.sh:54:  echo "$VISITED_NODES" | jq -e --arg n "$node" 'index($n)' >/dev/null 2>&1
+scripts/context-layer.sh:12:#   context-layer.sh --index [--days 90]
+scripts/context-layer.sh:17:#   CONTEXT_INDEX_PATH    - Index file path (default: .devbooks/context-index.json)
+scripts/context-layer.sh:32:: "${CONTEXT_INDEX_PATH:=.devbooks/context-index.json}"
+scripts/context-layer.sh:84:  context-layer.sh --index [--days 90]
+scripts/context-layer.sh:93:  --index               Generate context index
+scripts/context-layer.sh:101:  CONTEXT_INDEX_PATH    Index file path (default: .devbooks/context-index.json)
+scripts/context-layer.sh:114:  # Generate context index
+scripts/context-layer.sh:115:  context-layer.sh --index --days 90
+scripts/context-layer.sh:123:# Classification rules with priority (higher index = higher priority)
+scripts/context-layer.sh:342:# Generate context index for all files
+scripts/context-layer.sh:343:# REQ-CTX-004: Context index format
+scripts/context-layer.sh:345:generate_context_index() {
+scripts/context-layer.sh:348:    log_info "Generating context index (last $days days)..."
+scripts/context-layer.sh:351:    local indexed_at
+scripts/context-layer.sh:352:    indexed_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+scripts/context-layer.sh:425:    # Generate index JSON
+scripts/context-layer.sh:426:    local index_json
+scripts/context-layer.sh:427:    index_json=$(jq -n \
+scripts/context-layer.sh:429:        --arg indexed_at "$indexed_at" \
+scripts/context-layer.sh:434:            indexed_at: $indexed_at,
+scripts/context-layer.sh:440:    local index_dir
+scripts/context-layer.sh:441:    index_dir=$(dirname "$CONTEXT_INDEX_PATH")
+scripts/context-layer.sh:442:    mkdir -p "$index_dir" 2>/dev/null
+scripts/context-layer.sh:444:    echo "$index_json" > "$CONTEXT_INDEX_PATH"
+scripts/context-layer.sh:445:    log_info "Context index written to: $CONTEXT_INDEX_PATH"
+scripts/context-layer.sh:448:    echo "$index_json"
+scripts/context-layer.sh:519:            --index)
+scripts/context-layer.sh:520:                action="index"
+scripts/context-layer.sh:593:        index)
+scripts/context-layer.sh:594:            generate_context_index "$days"
+scripts/cache-manager.sh:139:-- Create index on access_time for LRU eviction (REQ-SLC-003)
+scripts/cache-manager.sh:142:-- Create index on ttl_expires for TTL expiration (MP8.3)
+scripts/federation-lite-index.sh:2:# federation-lite-index.sh - Index operations
+scripts/federation-lite-index.sh:5:# Purpose: Update, query, and manage federation index
+scripts/federation-lite-index.sh:17:# Update federation index
+scripts/federation-lite-index.sh:19:update_index() {
+scripts/federation-lite-index.sh:27:    local indexed_at
+scripts/federation-lite-index.sh:28:    indexed_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+scripts/federation-lite-index.sh:152:                local already_indexed
+scripts/federation-lite-index.sh:153:                already_indexed=$(echo "$repositories" | jq --arg name "$discovered_name" \
+scripts/federation-lite-index.sh:155:                [[ "$already_indexed" == "true" ]] && continue
+scripts/federation-lite-index.sh:161:                # Find and index contract files
+scripts/federation-lite-index.sh:198:    # Generate index JSON
+scripts/federation-lite-index.sh:199:    local index_json
+scripts/federation-lite-index.sh:200:    index_json=$(jq -n \
+scripts/federation-lite-index.sh:202:        --arg indexed_at "$indexed_at" \
+scripts/federation-lite-index.sh:206:            indexed_at: $indexed_at,
+scripts/federation-lite-index.sh:210:    # Write index file
+scripts/federation-lite-index.sh:211:    local index_dir
+scripts/federation-lite-index.sh:212:    index_dir=$(dirname "$FEDERATION_INDEX")
+scripts/federation-lite-index.sh:213:    mkdir -p "$index_dir" 2>/dev/null
+scripts/federation-lite-index.sh:215:    echo "$index_json" > "$FEDERATION_INDEX"
+scripts/federation-lite-index.sh:216:    log_info "Federation index written to: $FEDERATION_INDEX"
+scripts/federation-lite-index.sh:220:    total_repos=$(echo "$index_json" | jq '.repositories | length')
+scripts/federation-lite-index.sh:222:    total_contracts=$(echo "$index_json" | jq '[.repositories[].contracts | length] | add // 0')
+scripts/federation-lite-index.sh:224:    total_symbols=$(echo "$index_json" | jq '[.repositories[].contracts[].symbols | length] | add // 0')
+scripts/federation-lite-index.sh:228:    echo "$index_json"
+scripts/federation-lite-index.sh:231:# Show index status
+scripts/federation-lite-index.sh:238:            jq -n '{"status": "not_indexed", "message": "Federation index not found"}'
+scripts/federation-lite-index.sh:241:            echo "No federation index found at: $FEDERATION_INDEX"
+scripts/federation-lite-index.sh:246:    local index
+scripts/federation-lite-index.sh:247:    index=$(cat "$FEDERATION_INDEX")
+scripts/federation-lite-index.sh:249:    local indexed_at
+scripts/federation-lite-index.sh:250:    indexed_at=$(echo "$index" | jq -r '.indexed_at')
+scripts/federation-lite-index.sh:252:    repo_count=$(echo "$index" | jq '.repositories | length')
+scripts/federation-lite-index.sh:254:    contract_count=$(echo "$index" | jq '[.repositories[].contracts | length] | add // 0')
+scripts/federation-lite-index.sh:256:    symbol_count=$(echo "$index" | jq '[.repositories[].contracts[].symbols | length] | add // 0')
+scripts/federation-lite-index.sh:260:            --arg status "indexed" \
+scripts/federation-lite-index.sh:261:            --arg indexed_at "$indexed_at" \
+scripts/federation-lite-index.sh:265:            --arg index_path "$FEDERATION_INDEX" \
+scripts/federation-lite-index.sh:268:                indexed_at: $indexed_at,
+scripts/federation-lite-index.sh:272:                index_path: $index_path
+scripts/federation-lite-index.sh:276:        echo "Indexed At: $indexed_at"
+scripts/federation-lite-index.sh:291:        log_error "Federation index not found. Run --update first."
+scripts/federation-lite-index.sh:295:    local index
+scripts/federation-lite-index.sh:296:    index=$(cat "$FEDERATION_INDEX")
+scripts/federation-lite-index.sh:302:    repo_count=$(echo "$index" | jq '.repositories | length')
+scripts/federation-lite-index.sh:306:        repo_name=$(echo "$index" | jq -r ".repositories[$i].name")
+scripts/federation-lite-index.sh:307:        repo_path=$(echo "$index" | jq -r ".repositories[$i].path")
+scripts/federation-lite-index.sh:310:        contract_count=$(echo "$index" | jq ".repositories[$i].contracts | length")
+scripts/federation-lite-index.sh:314:            contract_path=$(echo "$index" | jq -r ".repositories[$i].contracts[$j].path")
+scripts/federation-lite-index.sh:315:            contract_type=$(echo "$index" | jq -r ".repositories[$i].contracts[$j].type")
+scripts/federation-lite-index.sh:316:            symbols=$(echo "$index" | jq ".repositories[$i].contracts[$j].symbols")
+scripts/federation-lite-index.sh:369:        log_error "Federation index not found. Run --update first."
+scripts/federation-lite-index.sh:373:    local index
+scripts/federation-lite-index.sh:374:    index=$(cat "$FEDERATION_INDEX")
+scripts/federation-lite-index.sh:377:        index=$(echo "$index" | jq --arg name "$repo_filter" '.repositories |= map(select(.name == $name))')
+scripts/federation-lite-index.sh:381:        echo "$index" | jq '{repositories: [.repositories[] | {name, path, contracts: [.contracts[] | {path, type, symbol_count: (.symbols | length)}]}]}'
+scripts/federation-lite-index.sh:383:        echo "$index" | jq -r '.repositories[] | "Repository: \(.name) (\(.path))\n" + (.contracts[] | "  - \(.path) [\(.type)] (\(.symbols | length) symbols)")'
+scripts/llm-providers/ollama.sh:99:[{\"index\": 0, \"score\": 9, \"reason\": \"...\"}, ...]
+scripts/llm-providers/anthropic.sh:99:[{\"index\": 0, \"score\": 9, \"reason\": \"...\"}, ...]
+scripts/impact-analyzer.sh:37:FEATURES_CONFIG="${FEATURES_CONFIG:-config/features.yaml}"
+scripts/impact-analyzer.sh:38:if [[ -f "$FEATURES_CONFIG" ]]; then
+scripts/impact-analyzer.sh:40:    _config_depth=$(awk '/impact_analyzer:/,/^[^ ]/ { if (/max_depth:/) { gsub(/.*:[ ]*/, ""); gsub(/[[:space:]]/, ""); print; exit } }' "$FEATURES_CONFIG" 2>/dev/null)
+scripts/impact-analyzer.sh:41:    _config_decay=$(awk '/impact_analyzer:/,/^[^ ]/ { if (/decay_factor:/) { gsub(/.*:[ ]*/, ""); gsub(/[[:space:]]/, ""); print; exit } }' "$FEATURES_CONFIG" 2>/dev/null)
+scripts/impact-analyzer.sh:42:    _config_threshold=$(awk '/impact_analyzer:/,/^[^ ]/ { if (/threshold:/) { gsub(/.*:[ ]*/, ""); gsub(/[[:space:]]/, ""); print; exit } }' "$FEATURES_CONFIG" 2>/dev/null)
+scripts/test-embedding.sh:8:EMBEDDING_SCRIPT="$PROJECT_ROOT/tools/devbooks-embedding.sh"
+scripts/test-embedding.sh:81:run_test "检查配置文件" "[ -f '$PROJECT_ROOT/.devbooks/embedding.yaml' ]"
+scripts/test-embedding.sh:104:  TEST_DIR="$PROJECT_ROOT/.devbooks/embeddings-test"
+scripts/test-embedding.sh:152:HOOK_SCRIPT="$PROJECT_ROOT/.claude/hooks/augment-context-with-embedding.sh"
+scripts/graph-store.sh.bak:179:-- MP4: path_index 表（路径索引）
+scripts/graph-store.sh.bak:180:CREATE TABLE IF NOT EXISTS path_index (
+scripts/graph-store.sh.bak:192:CREATE INDEX IF NOT EXISTS idx_path_source ON path_index(source_id);
+scripts/graph-store.sh.bak:193:CREATE INDEX IF NOT EXISTS idx_path_target ON path_index(target_id);
+scripts/graph-store.sh.bak:194:CREATE INDEX IF NOT EXISTS idx_path_depth ON path_index(depth);
+scripts/graph-store.sh.bak:265:    has_pi=$(sqlite3 "$db_path" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='path_index';" 2>/dev/null || echo "0")
+scripts/graph-store.sh.bak:289:DELETE FROM path_index;
+scripts/graph-store.sh.bak:290:INSERT OR REPLACE INTO path_index (source_id, target_id, path, edge_path, depth)
+scripts/graph-store.sh.bak:324:INSERT OR REPLACE INTO path_index (source_id, target_id, path, edge_path, depth)
+scripts/graph-store.sh.bak:978:CREATE TABLE path_index (
+scripts/graph-store.sh.bak:990:CREATE INDEX idx_path_source ON path_index(source_id);
+scripts/graph-store.sh.bak:991:CREATE INDEX idx_path_target ON path_index(target_id);
+scripts/graph-store.sh.bak:992:CREATE INDEX idx_path_depth ON path_index(depth);
+scripts/graph-store.sh.bak:1089:            local index_check
+scripts/graph-store.sh.bak:1090:            index_check=$(sqlite3 "$GRAPH_DB_PATH" "PRAGMA integrity_check;" 2>&1)
+scripts/graph-store.sh.bak:1091:            if [[ "$index_check" != "ok" ]]; then
+scripts/graph-store.sh.bak:1092:                log_error "索引完整性验证失败: $index_check"
+scripts/graph-store.sh.bak:1178:            path_row=$(sqlite3 -separator $'\t' "$GRAPH_DB_PATH" "SELECT path, edge_path, depth FROM path_index WHERE source_id='$from_sql' AND target_id='$to_sql' AND depth <= $max_depth LIMIT 1;" 2>/dev/null || true)
+scripts/graph-store.sh.bak:1328:    graph-store.sh add-node --id "sym:func:main" --symbol "main" --kind "function" --file "src/index.ts"
+scripts/benchmark.sh:28:FEATURES_CONFIG_FILE="${FEATURES_CONFIG:-$PROJECT_ROOT/config/features.yaml}"
+scripts/benchmark.sh:53:    if [[ ! -f "$FEATURES_CONFIG_FILE" ]]; then
+scripts/benchmark.sh:72:    ' "$FEATURES_CONFIG_FILE" 2>/dev/null)
+scripts/benchmark.sh:138:    # P95 index
+scripts/benchmark.sh:139:    local p95_index
+scripts/benchmark.sh:140:    p95_index=$(awk -v n="$count" 'BEGIN { idx = int(0.95 * n); if (0.95 * n > idx) idx++; print idx }')
+scripts/benchmark.sh:142:    [[ $p95_index -lt 1 ]] && p95_index=1
+scripts/benchmark.sh:143:    [[ $p95_index -gt $count ]] && p95_index=$count
+scripts/benchmark.sh:145:    echo "$sorted" | awk -v idx="$p95_index" 'NR == idx { print; exit }'
+scripts/graph-rag-retrieval.sh:7:embedding_search() {
+scripts/graph-rag-retrieval.sh:10:  local embedding_tool="${SCRIPT_DIR}/devbooks-embedding.sh"
+scripts/graph-rag-retrieval.sh:11:  local index_path="$CWD/.devbooks/embeddings/index.tsv"
+scripts/graph-rag-retrieval.sh:18:  if [ ! -f "$index_path" ]; then
+scripts/graph-rag-retrieval.sh:19:    log_warn "Embedding 索引不存在: $index_path"
+scripts/graph-rag-retrieval.sh:23:  if [ -x "$embedding_tool" ]; then
+scripts/graph-rag-retrieval.sh:25:    result=$(cd "$CWD" && PROJECT_ROOT="$CWD" "$embedding_tool" search "$query" --top-k "$top_k" 2>/dev/null)
+scripts/graph-rag-retrieval.sh:236:    if echo "$visited" | jq -e --arg p "$file_path" 'index($p)' >/dev/null 2>&1; then
+scripts/embedding.sh:22:TEMP_DIR="/tmp/devbooks-embedding-$$"
+scripts/embedding.sh:76:FEATURES_CONFIG_FILE="${FEATURES_CONFIG:-$PROJECT_ROOT/config/features.yaml}"
+scripts/embedding.sh:83:  if [[ ! -f "$FEATURES_CONFIG_FILE" ]]; then
+scripts/embedding.sh:101:  ' "$FEATURES_CONFIG_FILE" 2>/dev/null)
+scripts/embedding.sh:297:  log_debug "调用 Ollama API: $endpoint/api/embeddings (model: $model)"
+scripts/embedding.sh:309:  response=$(curl -s -w "\n%{http_code}" -X POST "${endpoint}/api/embeddings" \
+scripts/embedding.sh:338:  echo "$response" | jq -r '.embedding | @json' > "$output_file"
+scripts/embedding.sh:434:  API_MODEL="text-embedding-3-small"
+scripts/embedding.sh:439:  VECTOR_DB_DIR="$PROJECT_ROOT/.devbooks/embeddings"
+scripts/embedding.sh:468:  # 提取 embedding 配置
+scripts/embedding.sh:519:  VECTOR_DB_DIR="$PROJECT_ROOT/${storage_path:-.devbooks/embeddings}"
+scripts/embedding.sh:525:  local index_type_val
+scripts/embedding.sh:526:  index_type_val=$(echo "$config" | grep -E "^\s*index_type:" | awk '{print $2}' || true)
+scripts/embedding.sh:527:  INDEX_TYPE="${index_type_val:-$INDEX_TYPE}"
+scripts/embedding.sh:553:call_embedding_api() {
+scripts/embedding.sh:570:  local api_endpoint="${API_BASE_URL}/embeddings"
+scripts/embedding.sh:595:  echo "$response" | jq -r '.data[0].embedding | @json' > "$output_file"
+scripts/embedding.sh:640:# 使用 Ollama 逐条生成向量（Ollama 不支持批量 embedding）
+scripts/embedding.sh:662:      echo -e "$file_path\t$hash" >> "$output_dir/index.tsv"
+scripts/embedding.sh:704:      local response=$(curl -s -X POST "${API_BASE_URL}/embeddings" \
+scripts/embedding.sh:721:        local vector=$(echo "$response" | jq -r ".data[$idx].embedding | @json")
+scripts/embedding.sh:734:        echo -e "$file_path\t$hash" >> "$output_dir/index.tsv"
+scripts/embedding.sh:808:  "index_type": "$INDEX_TYPE",
+scripts/embedding.sh:814:  > "$VECTOR_DB_DIR/index.tsv"
+scripts/embedding.sh:820:build_index() {
+scripts/embedding.sh:844:  local file_count=$(wc -l < "$VECTOR_DB_DIR/index.tsv")
+scripts/embedding.sh:857:update_index() {
+scripts/embedding.sh:860:  if [ ! -f "$VECTOR_DB_DIR/index.tsv" ]; then
+scripts/embedding.sh:862:    build_index
+scripts/embedding.sh:871:  local index_mtime=$(stat -f %m "$VECTOR_DB_DIR/index.tsv" 2>/dev/null || stat -c %Y "$VECTOR_DB_DIR/index.tsv" 2>/dev/null)
+scripts/embedding.sh:880:      if [ "$file_mtime" -gt "$index_mtime" ]; then
+scripts/embedding.sh:898:  done < <(grep -Ff <(cut -f1 "$modified_files") "$VECTOR_DB_DIR/index.tsv" 2>/dev/null || true)
+scripts/embedding.sh:971:      if _semantic_search_with_embedding "ollama" "$query" "$top_k"; then
+scripts/embedding.sh:977:        if _detect_openai_api && _semantic_search_with_embedding "openai" "$query" "$top_k"; then
+scripts/embedding.sh:990:      if _semantic_search_with_embedding "openai" "$query" "$top_k"; then
+scripts/embedding.sh:1039:_semantic_search_with_embedding() {
+scripts/embedding.sh:1045:  local using_mock_index=false
+scripts/embedding.sh:1047:    if [ ! -f "$VECTOR_DB_DIR/index.tsv" ]; then
+scripts/embedding.sh:1056:        echo -e "${file}\t${hash}" >> "$VECTOR_DB_DIR/index.tsv"
+scripts/embedding.sh:1061:      using_mock_index=true
+scripts/embedding.sh:1065:  if [ ! -f "$VECTOR_DB_DIR/index.tsv" ]; then
+scripts/embedding.sh:1080:      if ! call_embedding_api "$query" "$query_vector_file"; then
+scripts/embedding.sh:1115:  done < "$VECTOR_DB_DIR/index.tsv"
+scripts/embedding.sh:1306:  embedding:
+scripts/embedding.sh:1337:  echo "  索引类型: $(echo "$metadata" | jq -r '.index_type')"
+scripts/embedding.sh:1417:      build_index "$@"
+scripts/embedding.sh:1420:      update_index "$@"
+scripts/llm-providers/openai.sh:99:[{\"index\": 0, \"score\": 9, \"reason\": \"...\"}, ...]
+scripts/llm-providers/mock.sh:89:      --argjson index "$i" \
+scripts/llm-providers/mock.sh:92:      '. + [{index: $index, score: $score, reason: $reason}]')
+scripts/llm-providers/mock.sh:178:      --argjson index "$i" \
+scripts/llm-providers/mock.sh:181:      '. + [{index: $index, score: $score, reason: $reason}]')
+scripts/drift-detector.sh:351:    local index_candidate
+scripts/drift-detector.sh:352:    for index_candidate in \
+scripts/drift-detector.sh:353:      "${resolved}/index.ts" \
+scripts/drift-detector.sh:354:      "${resolved}/index.tsx" \
+scripts/drift-detector.sh:355:      "${resolved}/index.js" \
+scripts/drift-detector.sh:356:      "${resolved}/index.jsx" \
+scripts/drift-detector.sh:357:      "${resolved}/index.mjs" \
+scripts/drift-detector.sh:358:      "${resolved}/index.cjs"; do
+scripts/drift-detector.sh:359:      if [ -f "$index_candidate" ]; then
+scripts/drift-detector.sh:360:        echo "$index_candidate"
+scripts/drift-detector.sh:491:    '$code | map(select(. as $item | ($c4 | index($item) | not)))')
+scripts/drift-detector.sh:493:    '$c4 | map(select(. as $item | ($code | index($item) | not)))')
+scripts/drift-detector.sh:541:    | map(select(.base != "" and (.base as $b | ($code | map(select(.base == $b)) | length) > 0) and (.path as $p | ($code | map(select(.base == $b) | .path) | index($p) | not))))
+scripts/drift-detector.sh:579:    '$code | map(select(. as $item | ($c4 | index($item) | not)))')
+scripts/pattern-learner.sh:433:  local features_config="${FEATURES_CONFIG:-}"
+scripts/dependency-guard-extract.sh:167:    # Try index files if it's a directory
+scripts/dependency-guard-extract.sh:169:        for idx in "index.ts" "index.tsx" "index.js" "index.jsx"; do
+scripts/graph-rag-core.sh:162:  if [[ -n "${FEATURES_CONFIG:-}" && -f "$FEATURES_CONFIG" ]]; then
+scripts/graph-rag-core.sh:163:    echo "$FEATURES_CONFIG"
+scripts/graph-rag-core.sh:172:  if [[ -f "$CWD/config/features.yaml" ]]; then
+scripts/graph-rag-core.sh:173:    echo "$CWD/config/features.yaml"
+scripts/graph-rag-core.sh:177:  if [[ -f "$PROJECT_ROOT/config/features.yaml" ]]; then
+scripts/graph-rag-core.sh:178:    echo "$PROJECT_ROOT/config/features.yaml"
+scripts/graph-rag-core.sh:334:resolve_graph_rag_cache_anchor() {
+scripts/graph-rag-core.sh:337:    "$root/.git/index"
+scripts/graph-rag-core.sh:361:    cache_anchor=$(resolve_graph_rag_cache_anchor "$CWD") || cache_anchor=""
+scripts/graph-rag-core.sh:400:    cache_anchor=$(resolve_graph_rag_cache_anchor "$CWD") || cache_anchor=""
+scripts/dependency-guard-check.sh:222:    min_index = min(range(len(cycle_nodes)), key=lambda i: cycle_nodes[i])
+scripts/dependency-guard-check.sh:223:    rotated = cycle_nodes[min_index:] + cycle_nodes[:min_index]
+scripts/dependency-guard-check.sh:232:                idx = path.index(neighbor)
+scripts/common.sh:237:    "embedding.provider") echo "auto" ;;
+scripts/common.sh:238:    "embedding.enabled") echo "true" ;;
+scripts/common.sh:239:    "embedding.auto_build") echo "true" ;;
+scripts/common.sh:240:    "embedding.fallback_to_keyword") echo "true" ;;
+scripts/common.sh:241:    "embedding.ollama.model") echo "nomic-embed-text" ;;
+scripts/common.sh:242:    "embedding.ollama.endpoint") echo "http://localhost:11434" ;;
+scripts/common.sh:243:    "embedding.ollama.timeout") echo "30" ;;
+scripts/common.sh:244:    "graph_rag.enabled") echo "true" ;;
+scripts/common.sh:245:    "graph_rag.max_depth") echo "2" ;;
+scripts/common.sh:246:    "graph_rag.token_budget") echo "8000" ;;
+scripts/common.sh:247:    "graph_rag.top_k") echo "10" ;;
+scripts/common.sh:248:    "graph_rag.ckb.enabled") echo "true" ;;
+scripts/common.sh:249:    "graph_rag.ckb.fallback_to_import") echo "true" ;;
+scripts/common.sh:269:  # 例如 "embedding.provider" -> 查找 embedding: 下的 provider:
+scripts/common.sh:344:# 参数: $1 - 配置路径（如 "embedding.provider"）
+scripts/common.sh:405:# 默认配置文件路径（统一使用 config/features.yaml）
+scripts/common.sh:408:  DEVBOOKS_FEATURE_CONFIG="$feature_root/config/features.yaml"
+scripts/common.sh:505:  local config_file="${FEATURES_CONFIG:-${DEVBOOKS_FEATURE_CONFIG}}"
+scripts/graph-store.sh:179:-- MP4: path_index 表（路径索引）
+scripts/graph-store.sh:180:CREATE TABLE IF NOT EXISTS path_index (
+scripts/graph-store.sh:192:CREATE INDEX IF NOT EXISTS idx_path_source ON path_index(source_id);
+scripts/graph-store.sh:193:CREATE INDEX IF NOT EXISTS idx_path_target ON path_index(target_id);
+scripts/graph-store.sh:194:CREATE INDEX IF NOT EXISTS idx_path_depth ON path_index(depth);
+scripts/graph-store.sh:265:    has_pi=$(sqlite3 "$db_path" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='path_index';" 2>/dev/null || echo "0")
+scripts/graph-store.sh:295:DELETE FROM path_index;
+scripts/graph-store.sh:296:INSERT OR REPLACE INTO path_index (source_id, target_id, path, edge_path, depth)
+scripts/graph-store.sh:310:        pi_count=$(sqlite3 "$GRAPH_DB_PATH" "SELECT COUNT(*) FROM path_index;" 2>/dev/null || echo "0")
+scripts/graph-store.sh:311:        log_info "闭包表预计算完成 (transitive_closure=$tc_count, path_index=$pi_count)"
+scripts/graph-store.sh:337:INSERT OR REPLACE INTO path_index (source_id, target_id, path, edge_path, depth)
+scripts/graph-store.sh:992:CREATE TABLE path_index (
+scripts/graph-store.sh:1004:CREATE INDEX idx_path_source ON path_index(source_id);
+scripts/graph-store.sh:1005:CREATE INDEX idx_path_target ON path_index(target_id);
+scripts/graph-store.sh:1006:CREATE INDEX idx_path_depth ON path_index(depth);
+scripts/graph-store.sh:1103:            local index_check
+scripts/graph-store.sh:1104:            index_check=$(sqlite3 "$GRAPH_DB_PATH" "PRAGMA integrity_check;" 2>&1)
+scripts/graph-store.sh:1105:            if [[ "$index_check" != "ok" ]]; then
+scripts/graph-store.sh:1106:                log_error "索引完整性验证失败: $index_check"
+scripts/graph-store.sh:1192:            path_row=$(sqlite3 -separator $'\t' "$GRAPH_DB_PATH" "SELECT path, edge_path, depth FROM path_index WHERE source_id='$from_sql' AND target_id='$to_sql' AND depth <= $max_depth LIMIT 1;" 2>/dev/null || true)
+scripts/graph-store.sh:1342:    graph-store.sh add-node --id "sym:func:main" --symbol "main" --kind "function" --file "src/index.ts"
+scripts/federation-lite-core.sh:19:: "${FEDERATION_INDEX:=.devbooks/federation-index.json}"
+scripts/federation-lite-core.sh:231:  --status            Show index status
+scripts/federation-lite-core.sh:232:  --update            Update the federation index
+scripts/federation-lite-core.sh:235:  --list-contracts    List all indexed contracts
+scripts/federation-lite-core.sh:254:  FEDERATION_INDEX    Index file path (default: .devbooks/federation-index.json)
+scripts/federation-lite-core.sh:267:  # Check index status
+scripts/federation-lite-core.sh:270:  # Update index from config
+scripts/adr-parser.sh:12:#   ADR_INDEX_PATH - ADR 索引文件路径，默认 .devbooks/adr-index.json
+scripts/adr-parser.sh:27:: "${ADR_INDEX_PATH:=$DEVBOOKS_DIR/adr-index.json}"
+scripts/adr-parser.sh:612:        update_adr_index "$result"
+scripts/adr-parser.sh:627:    local index_exists=false
+scripts/adr-parser.sh:628:    local index_mtime=""
+scripts/adr-parser.sh:636:        index_exists=true
+scripts/adr-parser.sh:637:        index_mtime=$(stat -f "%m" "$ADR_INDEX_PATH" 2>/dev/null || stat -c "%Y" "$ADR_INDEX_PATH" 2>/dev/null || echo "0")
+scripts/adr-parser.sh:647:        --argjson index_exists "$index_exists" \
+scripts/adr-parser.sh:648:        --arg index_mtime "$index_mtime" \
+scripts/adr-parser.sh:653:            index_exists: $index_exists,
+scripts/adr-parser.sh:654:            index_last_updated: $index_mtime,
+scripts/adr-parser.sh:663:update_adr_index() {
+scripts/adr-parser.sh:673:    local index_content
+scripts/adr-parser.sh:674:    index_content=$(echo "$scan_result" | jq \
+scripts/adr-parser.sh:678:    echo "$index_content" > "$ADR_INDEX_PATH"
+scripts/adr-parser.sh:721:    ADR_INDEX_PATH      索引文件路径（默认: .devbooks/adr-index.json）
+scripts/dependency-guard-orphan.sh:16:ENTRY_POINT_PATTERNS="main|index|entry|app|server"
+scripts/dependency-guard-orphan.sh:62:    if [[ -n "${FEATURES_CONFIG:-}" && -f "$FEATURES_CONFIG" ]]; then
+scripts/dependency-guard-orphan.sh:64:        enabled=$(grep -A1 "orphan_detection:" "$FEATURES_CONFIG" 2>/dev/null | grep "enabled:" | grep -o "false" || true)
+scripts/intent-learner.sh:438:            .accumulated_focus = ($ctx.accumulated_focus | map(select(. as $s | $top_symbols | index($s))))
+scripts/intent-learner.sh:518:            (if ($accumulated | index($sym)) then $w_acc else 0 end) as $acc_boost |
+scripts/intent-learner.sh:519:            (if ($recent | index($sym)) then $w_recent else 0 end) as $recent_boost |
+scripts/intent-learner.sh:520:            (if ($recent_files | index($file)) then $w_file else 0 end) as $file_boost |

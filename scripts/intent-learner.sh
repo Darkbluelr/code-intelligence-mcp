@@ -21,7 +21,7 @@
 #   其中:
 #     - frequency = 该符号被查询的次数
 #     - recency_weight = 1 / (1 + days_since_last_query)
-#     - click_weight = 用户操作权重 (view=1.0, edit=2.0, ignore=0.5)
+#     - click_weight = 用户操作权重 (view=1.5, edit=2.0, ignore=-0.5)
 #
 # 对话连续性加权规则:
 #   - 符号在 accumulated_focus 中: +0.2
@@ -49,7 +49,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 # 设置日志前缀
-LOG_PREFIX="IntentLearner"
+export LOG_PREFIX="IntentLearner"
 
 # ==================== 配置 ====================
 
@@ -73,9 +73,9 @@ LOG_PREFIX="IntentLearner"
 : "${CONVERSATION_WEIGHT_MAX_RATIO:=0.5}"     # 最大加权比例（不超过原分数 50%）
 
 # 操作权重
-ACTION_WEIGHT_VIEW=1.0
+ACTION_WEIGHT_VIEW=1.5
 ACTION_WEIGHT_EDIT=2.0
-ACTION_WEIGHT_IGNORE=0.5
+ACTION_WEIGHT_IGNORE=-0.5
 
 # ==================== 辅助函数 ====================
 
@@ -814,15 +814,16 @@ cmd_get_preferences() {
     now=$(get_current_timestamp)
 
     # 计算偏好分数
-    # 公式: Preference = sum(frequency * recency_weight * click_weight)
+    # 公式: Preference = sum(frequency * recency_weight * click_weight) + correction_bonus
     # 其中 recency_weight = 1 / (1 + days_since_last_query)
+    # 修正权重: 当一个符号先被 ignore 后又被 edit 时，给予额外 +1.5 的修正加分
     local preferences
     preferences=$(echo "$history" | jq --argjson now "$now" --arg prefix "$prefix" --argjson top "$top" '
         # 定义操作权重
         def action_weight:
             if . == "edit" then 2.0
-            elif . == "ignore" then 0.5
-            else 1.0
+            elif . == "ignore" then -0.5
+            else 1.5
             end;
 
         # 计算天数差
@@ -833,19 +834,31 @@ cmd_get_preferences() {
         def recency_weight($ts):
             1 / (1 + days_since($ts));
 
+        # 检测修正模式: ignore 后有 edit（同一秒或之后）
+        # 返回修正加分 (如果存在修正模式则返回 1.5，否则返回 0)
+        def correction_bonus(entries):
+            (entries | map(select(.action == "ignore")) | min_by(.timestamp) // null) as $first_ignore |
+            if $first_ignore == null then 0
+            else
+                # 使用 >= 检测同一秒或之后的 edit（允许相同时间戳）
+                (entries | map(select(.action == "edit" and .timestamp >= $first_ignore.timestamp)) | length) as $edits_after_ignore |
+                if $edits_after_ignore > 0 then 1.5 else 0 end
+            end;
+
         # 按 symbol_id 分组并计算分数
         .entries
         | if $prefix != "" then [.[] | select(.symbol_id | startswith($prefix))] else . end
         | group_by(.symbol_id)
-        | map({
+        | map(. as $entries | {
             symbol: .[0].symbol,
             symbol_id: .[0].symbol_id,
             frequency: length,
             last_query: (map(.timestamp) | max),
-            weighted_sum: (map((.action | action_weight) * recency_weight(.timestamp)) | add)
+            weighted_sum: (map((.action | action_weight) * recency_weight(.timestamp)) | add),
+            correction: correction_bonus($entries)
         })
         | map(. + {
-            score: (.weighted_sum * .frequency / .frequency)  # 简化: 直接使用加权和作为分数
+            score: (.weighted_sum + .correction)  # 加权和 + 修正加分
         })
         | map({symbol, symbol_id, frequency, score})
         | sort_by(-.score)
@@ -927,7 +940,7 @@ show_help() {
       symbol      符号名称
       symbol_id   符号完整 ID (如 src/server.ts::handleToolCall)
       --action    用户操作类型 (默认: view)
-                  view=1.0, edit=2.0, ignore=0.5
+                  view=1.5, edit=2.0, ignore=-0.5
 
   get-preferences [--top <n>] [--prefix <path>]
     查询偏好分数
@@ -990,7 +1003,7 @@ show_help() {
   其中:
     - frequency = 该符号被查询的次数
     - recency_weight = 1 / (1 + days_since_last_query)
-    - click_weight = 用户操作权重 (view=1.0, edit=2.0, ignore=0.5)
+    - click_weight = 用户操作权重 (view=1.5, edit=2.0, ignore=-0.5)
 
 对话连续性加权规则:
   - 符号在 accumulated_focus 中: +0.2
@@ -1039,6 +1052,19 @@ main() {
         log_error "缺少依赖: jq"
         log_info "请安装: brew install jq 或 apt install jq"
         exit $EXIT_DEPS_MISSING
+    fi
+
+    if [[ "${1:-}" == "--enable-all-features" ]]; then
+        DEVBOOKS_ENABLE_ALL_FEATURES=1
+        shift
+    fi
+
+    if declare -f is_feature_enabled &>/dev/null; then
+        if ! is_feature_enabled "context_signals"; then
+            # T-CS-008: 功能禁用时静默返回空数组，不输出警告（避免污染 stdout/stderr 混合输出）
+            echo '[]'
+            exit 0
+        fi
     fi
 
     if [[ $# -lt 1 ]]; then

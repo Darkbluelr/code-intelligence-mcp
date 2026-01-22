@@ -20,7 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 # 设置日志前缀
-LOG_PREFIX="impact-analyzer"
+export LOG_PREFIX="impact-analyzer"
 
 # ==================== 配置 ====================
 

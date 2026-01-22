@@ -1,7 +1,7 @@
 #!/bin/bash
 # DevBooks Embedding - 测试与演示脚本
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -149,7 +149,7 @@ fi
 echo ""
 echo_info "=== Hook 集成测试 ==="
 
-HOOK_SCRIPT="$PROJECT_ROOT/.claude/hooks/augment-context-with-embedding.sh"
+HOOK_SCRIPT="$PROJECT_ROOT/.claude/hooks/context-inject-global.sh"
 
 if [ -f "$HOOK_SCRIPT" ]; then
   run_test "Hook 脚本存在" "[ -f '$HOOK_SCRIPT' ]"

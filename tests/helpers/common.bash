@@ -323,7 +323,13 @@ skip_if_not_ready() {
 
     if [ "$status" -ne 0 ]; then
         if [ "${EXPECT_RED:-true}" = "true" ]; then
-            skip "$feature not yet implemented"
+            local first_line=""
+            first_line=$(echo "$output" | head -n 1 | tr -d '\r')
+            if [ -n "$first_line" ]; then
+                skip "$feature not yet implemented (status=$status): $first_line"
+            else
+                skip "$feature not yet implemented (status=$status)"
+            fi
         else
             echo "FAIL: $feature should pass but returned status $status" >&2
             echo "Output: $output" >&2
@@ -480,7 +486,7 @@ assert_confidence_lt() {
 # Percentile Calculation Helpers
 # ============================================================
 
-# Calculate P95 from an array of values
+# Calculate P95 from an array of values (nearest-rank, 1-based index)
 # Usage: calculate_p95 "${latencies[@]}"
 # Returns: P95 value via stdout
 calculate_p95() {
@@ -492,12 +498,12 @@ calculate_p95() {
         return 1
     fi
 
-    # Sort values numerically
+    # Sort values numerically to apply percentile index on ordered data.
     local sorted
     sorted=$(printf '%s\n' "${values[@]}" | sort -n)
 
-    # Calculate P95 index (95th percentile)
-    # For N samples, P95 is at index ceil(0.95 * N)
+    # Calculate P95 index using nearest-rank (ceil(0.95 * N)).
+    # Keeps index within [1, N] to avoid empty selection.
     local p95_index
     p95_index=$(awk -v n="$count" 'BEGIN { idx = int(0.95 * n); if (0.95 * n > idx) idx++; print idx }')
 
@@ -509,7 +515,7 @@ calculate_p95() {
         p95_index=$count
     fi
 
-    # Get the value at P95 index using awk (more portable than sed -n 'Np')
+    # Extract the indexed value with awk for portable 1-based lookup.
     echo "$sorted" | awk -v idx="$p95_index" 'NR == idx { print; exit }'
 }
 
@@ -538,7 +544,8 @@ assert_p95_below() {
 # JSON Extraction Helpers
 # ============================================================
 
-# Extract JSON from mixed output (stdout + stderr merged by BATS run)
+# Extract JSON from mixed output (stdout + stderr merged by BATS run).
+# Strategy: try single-line object/array → multiline object by brace depth → marker line → whole input.
 # Usage: extract_json "$output"
 # Returns: Pure JSON string via stdout
 # Handles: JSON objects {}, arrays [], multiline JSON, mixed stderr/stdout

@@ -173,12 +173,7 @@ set_env_with_cleanup() {
     [[ "$output" == *"features"* ]] || skip "features field not yet added"
 }
 
-@test "CT-006b: enhanced_hotspot toggle defined" {
-    CONFIG_FILE=".devbooks/config.yaml"
-    [ -f "$CONFIG_FILE" ] || skip "Config file not found"
-    run grep "enhanced_hotspot" "$CONFIG_FILE"
-    [ "$status" -eq 0 ] || skip "enhanced_hotspot flag not yet defined"
-}
+# CT-006b removed: enhanced_hotspot feature does not exist
 
 # ============================================================
 # CLI Parameter Compatibility Tests

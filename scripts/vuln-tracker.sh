@@ -21,7 +21,7 @@ source "$SCRIPT_DIR/common.sh"
 
 # 设置日志前缀（被 common.sh 的日志函数使用）
 # shellcheck disable=SC2034
-LOG_PREFIX="vuln-tracker"
+export LOG_PREFIX="vuln-tracker"
 
 # ==================== 配置 ====================
 

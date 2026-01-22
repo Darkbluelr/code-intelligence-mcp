@@ -16,6 +16,7 @@ import { execFile } from "child_process";
 import { promisify } from "util";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { TOOL_HANDLERS } from "./tool-handlers.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -38,7 +39,7 @@ interface ExecError extends Error {
 const TOOLS = [
   {
     name: "ci_search",
-    description: "Semantic code search using embeddings or keywords",
+    description: "Semantic code search using embeddings or keywords. Use this for natural language queries like 'find authentication code' or 'where is error handling'. Supports both semantic (AI-powered) and keyword search modes. Best for: discovering code by concept, finding related implementations, exploring unfamiliar codebases.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -55,7 +56,7 @@ const TOOLS = [
   },
   {
     name: "ci_call_chain",
-    description: "Trace function call chains",
+    description: "Trace function call chains to understand code flow. Use this to find who calls a function (callers) or what a function calls (callees). Best for: understanding dependencies, impact analysis before refactoring, debugging call paths, finding entry points.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -72,7 +73,7 @@ const TOOLS = [
   },
   {
     name: "ci_bug_locate",
-    description: "Locate potential bug locations based on error description",
+    description: "Locate potential bug locations based on error description. Paste an error message or stack trace to find relevant code. Best for: debugging errors, finding root causes, locating exception sources.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -83,7 +84,7 @@ const TOOLS = [
   },
   {
     name: "ci_complexity",
-    description: "Analyze code complexity metrics",
+    description: "Analyze code complexity metrics (cyclomatic complexity, lines of code, etc.). Use this to identify complex code that may need refactoring. Best for: code quality assessment, finding technical debt, prioritizing refactoring.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -99,7 +100,7 @@ const TOOLS = [
   },
   {
     name: "ci_graph_rag",
-    description: "Get Graph-RAG context for a query",
+    description: "Get Graph-RAG context for a query. Combines semantic search with code graph traversal to provide rich context. Use this when you need comprehensive context about a topic including related code, dependencies, and call relationships. Best for: understanding complex features, gathering context for code changes, exploring interconnected code.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -112,21 +113,21 @@ const TOOLS = [
   },
   {
     name: "ci_index_status",
-    description: "Check or manage embedding index status",
+    description: "Check or manage the semantic search embedding index. Use 'status' to check index health, 'build' to rebuild after major code changes, 'clear' to reset. Best for: troubleshooting search issues, maintaining search quality.",
     inputSchema: {
       type: "object" as const,
       properties: {
         action: {
           type: "string",
           enum: ["status", "build", "clear"],
-          description: "Action to perform (default: status)",
+          description: "Action to perform: status (check index status), build (rebuild embedding index), clear (clean embedding cache). Default: status",
         },
       },
     },
   },
   {
     name: "ci_hotspot",
-    description: "Analyze code hotspots based on change frequency and complexity",
+    description: "Find code hotspots - files that change frequently and have high complexity. These are often sources of bugs and good refactoring candidates. Best for: identifying risky code, prioritizing code review, finding technical debt.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -143,7 +144,7 @@ const TOOLS = [
   },
   {
     name: "ci_boundary",
-    description: "Detect code boundary type (user/library/generated/vendor)",
+    description: "Detect code boundary type (user code, library, generated, vendor). Use this to understand code ownership and filter analysis. Best for: excluding vendor code from analysis, identifying generated files.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -159,11 +160,11 @@ const TOOLS = [
   },
   {
     name: "ci_arch_check",
-    description: "Check architecture rules and detect circular dependencies",
+    description: "Check architecture rules and detect circular dependencies. Use this to enforce module boundaries and find dependency cycles. Best for: maintaining clean architecture, preventing spaghetti code, enforcing layering rules.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        path: { type: "string", description: "Path to analyze (default: current directory)" },
+        path: { type: "string", description: "Path to analyze (default: src/)" },
         format: {
           type: "string",
           enum: ["text", "json"],
@@ -175,7 +176,7 @@ const TOOLS = [
   },
   {
     name: "ci_federation",
-    description: "Cross-repo API contract tracking, symbol search, and virtual edges",
+    description: "Cross-repo API contract tracking and symbol search. Use this to find how external APIs are used across repositories, track breaking changes, and discover virtual edges between repos. Best for: microservices architecture, API versioning, cross-repo refactoring.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -198,7 +199,7 @@ const TOOLS = [
   },
   {
     name: "ci_graph_store",
-    description: "图存储操作（初始化、查询、统计）",
+    description: "Query the code intelligence graph database directly with SQL. Use this for custom queries on symbols, references, and relationships. Best for: advanced analysis, custom reports, debugging index issues.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -221,7 +222,7 @@ const TOOLS = [
   // MP8.1: AST Delta 增量索引工具
   {
     name: "ci_ast_delta",
-    description: "AST 增量索引操作（基于 tree-sitter 的快速代码变更检测）",
+    description: "AST-based incremental indexing using tree-sitter. Use this to update the code index after file changes without full rebuild. Best for: keeping index fresh, fast incremental updates, CI/CD integration.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -238,7 +239,7 @@ const TOOLS = [
   // MP8.2: 影响分析工具
   {
     name: "ci_impact",
-    description: "符号变更的传递性影响分析（多跳图遍历 + 置信度衰减）",
+    description: "Analyze the impact of changing a symbol or file. Uses multi-hop graph traversal with confidence decay to find all affected code. Best for: safe refactoring, understanding change risk, planning migrations, pre-commit impact check.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -258,7 +259,7 @@ const TOOLS = [
   // MP8.3: COD 架构可视化工具
   {
     name: "ci_cod",
-    description: "代码库架构可视化（生成 Mermaid 或 D3.js JSON 格式的架构图）",
+    description: "Generate codebase architecture diagrams (Mermaid or D3.js). Visualize module dependencies, file relationships, and system structure. Best for: documentation, onboarding, architecture review, identifying coupling.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -286,14 +287,14 @@ const TOOLS = [
   // MP8.4: 意图偏好学习工具
   {
     name: "ci_intent",
-    description: "用户查询意图历史记录和偏好学习",
+    description: "Track user query history and learn preferences. Records which code users frequently access to improve future search relevance. Best for: personalized search, learning codebase patterns, improving recommendations.",
     inputSchema: {
       type: "object" as const,
       properties: {
         action: {
           type: "string",
-          enum: ["record", "get-preferences", "cleanup", "stats"],
-          description: "Action: record (add query), get-preferences, cleanup, stats",
+          enum: ["record", "get-preferences", "cleanup"],
+          description: "Action: record (add query), get-preferences, cleanup",
         },
         query: { type: "string", description: "Query text for record action" },
         symbols: {
@@ -315,7 +316,7 @@ const TOOLS = [
   // MP8.5: 安全漏洞追踪工具
   {
     name: "ci_vuln",
-    description: "依赖安全漏洞扫描与追踪（集成 npm audit）",
+    description: "Scan for security vulnerabilities in dependencies using npm audit. Trace how vulnerable packages are used in your code. Best for: security audits, dependency updates, compliance checks.",
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -336,6 +337,134 @@ const TOOLS = [
           description: "Output format (default: json)",
         },
         include_dev: { type: "boolean", description: "Include dev dependencies (default: false)" },
+      },
+    },
+  },
+  {
+    name: "ci_adr",
+    description: "Parse Architecture Decision Records (ADRs) and optionally link them to the code graph. Use this to scan ADRs, extract keywords, and keep an ADR index up to date.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        action: {
+          type: "string",
+          enum: ["scan", "status", "parse", "keywords"],
+          description: "Action to perform: scan (scan all ADRs), status (index status), parse (parse one ADR file), keywords (extract keywords from one ADR file)",
+        },
+        file: { type: "string", description: "ADR file path for parse/keywords" },
+        adr_dir: { type: "string", description: "ADR directory for scan (overrides auto discovery)" },
+        link: { type: "boolean", description: "Whether to link ADR keywords into graph (scan only)" },
+        format: {
+          type: "string",
+          enum: ["json", "text"],
+          description: "Output format (default: json)",
+        },
+      },
+    },
+  },
+  {
+    name: "ci_warmup",
+    description: "Pre-warm daemon caches for hot subgraphs. Uses daemon warmup pipeline to reduce cold-start latency.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        timeout: { type: "number", description: "Warmup timeout in seconds (default: 30)" },
+        hotspot_limit: { type: "number", description: "Number of hotspot files to cache (default: 10)" },
+        queries: { type: "string", description: "Comma-separated warmup query list" },
+        format: {
+          type: "string",
+          enum: ["json", "text"],
+          description: "Output format (default: json)",
+        },
+        async: { type: "boolean", description: "Run warmup in background" },
+      },
+    },
+  },
+  {
+    name: "ci_context_compress",
+    description: "Compress code context into a compact skeleton for efficient prompting. Useful for large files or directories where only signatures matter.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        paths: {
+          type: "array",
+          items: { type: "string" },
+          description: "Input files or directories to compress",
+        },
+        mode: { type: "string", enum: ["skeleton"], description: "Compression mode (default: skeleton)" },
+        compress: {
+          type: "string",
+          enum: ["low", "medium", "high"],
+          description: "Compression level (default: medium)",
+        },
+        budget: { type: "number", description: "Token budget (line-based)" },
+        hotspot: { type: "string", description: "Hotspot directory for prioritization" },
+        cache: { type: "boolean", description: "Enable cache" },
+      },
+      required: ["paths"],
+    },
+  },
+  {
+    name: "ci_drift_detect",
+    description: "Detect architecture drift and compare snapshots. Supports snapshot/compare/report and C4/code scans.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        action: {
+          type: "string",
+          enum: ["compare", "diff", "snapshot", "rules", "report", "c4", "parse-c4", "scan-code"],
+          description: "Action to perform (default: compare)",
+        },
+        baseline: { type: "string", description: "Baseline snapshot path" },
+        current: { type: "string", description: "Current snapshot path" },
+        project_dir: { type: "string", description: "Project directory for snapshot/rules/scan-code" },
+        output: { type: "string", description: "Output snapshot path (snapshot action)" },
+        rules: { type: "string", description: "Architecture rules file path" },
+        period: { type: "string", description: "Report period (weekly|daily|monthly)" },
+        snapshots_dir: { type: "string", description: "Snapshots directory for report" },
+        c4: { type: "string", description: "C4 model file path" },
+        code: { type: "string", description: "Code directory for C4 compare" },
+      },
+    },
+  },
+  {
+    name: "ci_semantic_anomaly",
+    description: "Detect semantic anomalies based on learned patterns. Useful for finding inconsistent API usage, missing error handling, and other latent issues.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        path: { type: "string", description: "File or directory to scan" },
+        pattern: { type: "string", description: "Custom pattern file" },
+        output: {
+          type: "string",
+          description: "Output format (json|text) or output file path",
+        },
+        threshold: { type: "number", description: "Confidence threshold (default: 0.8)" },
+        report: { type: "boolean", description: "Generate report to evidence/semantic-anomaly-report.md" },
+        enable_all_features: { type: "boolean", description: "Force enable all features" },
+      },
+      required: ["path"],
+    },
+  },
+  {
+    name: "ci_benchmark",
+    description: "Run performance benchmarks or compare benchmark reports.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        action: {
+          type: "string",
+          enum: ["dataset", "compare", "cache", "full", "precommit", "all"],
+          description: "Action to perform: dataset/compare or legacy cache/full/precommit/all",
+        },
+        dataset: { type: "string", enum: ["self", "public"], description: "Dataset type" },
+        queries: { type: "string", description: "Queries file (JSONL)" },
+        output: { type: "string", description: "Output report path (required for dataset action)" },
+        baseline: { type: "string", description: "Baseline report path (optional for dataset action)" },
+        compare_base: { type: "string", description: "Compare baseline path" },
+        compare_current: { type: "string", description: "Compare current path" },
+        iterations: { type: "number", description: "Iterations for legacy modes" },
+        enable_all_features: { type: "boolean", description: "Force enable all features" },
       },
     },
   },
@@ -365,362 +494,29 @@ async function runScript(
   }
 }
 
+/**
+ * Handle MCP tool calls using strategy pattern
+ *
+ * Fixes:
+ * - C-001: Added parameter validation via tool handlers
+ * - C-002: Refactored from 374-line switch statement to strategy pattern
+ */
 async function handleToolCall(
   name: string,
   args: Record<string, unknown>
 ): Promise<string> {
-  switch (name) {
-    case "ci_search": {
-      const query = args.query as string;
-      const limit = (args.limit as number) || 10;
-      const mode = (args.mode as string) || "semantic";
-      const { stdout, stderr } = await runScript("embedding.sh", [
-        "search",
-        query,
-        "--limit",
-        String(limit),
-        "--mode",
-        mode,
-      ]);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
+  const handler = TOOL_HANDLERS[name];
+  if (!handler) {
+    return `Unknown tool: ${name}`;
+  }
+
+  try {
+    return await handler(args, runScript);
+  } catch (error) {
+    if (error instanceof Error) {
+      return `Error: ${error.message}`;
     }
-
-    case "ci_call_chain": {
-      const symbol = args.symbol as string;
-      const direction = (args.direction as string) || "both";
-      const depth = (args.depth as number) || 3;
-      const { stdout, stderr } = await runScript("call-chain.sh", [
-        symbol,
-        "--direction",
-        direction,
-        "--depth",
-        String(depth),
-      ]);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    case "ci_bug_locate": {
-      const error = args.error as string;
-      const { stdout, stderr } = await runScript("bug-locator.sh", [
-        "--error",
-        error,
-      ]);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    case "ci_complexity": {
-      const path = args.path as string;
-      const format = (args.format as string) || "text";
-      const { stdout, stderr } = await runScript("complexity.sh", [
-        path,
-        "--format",
-        format,
-      ]);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    case "ci_graph_rag": {
-      const query = args.query as string;
-      const depth = (args.depth as number) || 2;
-      const budget = (args.budget as number) || 8000;
-      const { stdout, stderr } = await runScript("graph-rag.sh", [
-        query,
-        "--depth",
-        String(depth),
-        "--budget",
-        String(budget),
-      ]);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    case "ci_index_status": {
-      const action = (args.action as string) || "status";
-      const { stdout, stderr } = await runScript("indexer.sh", [action]);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    case "ci_hotspot": {
-      const top = (args.top as number) || 20;
-      const days = (args.days as number) || 30;
-      const format = (args.format as string) || "json";
-      const path = (args.path as string) || ".";
-      const { stdout, stderr } = await runScript("hotspot-analyzer.sh", [
-        "--top",
-        String(top),
-        "--days",
-        String(days),
-        "--format",
-        format,
-        "--path",
-        path,
-      ]);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    case "ci_boundary": {
-      const file = args.file as string;
-      const format = (args.format as string) || "json";
-      const { stdout, stderr } = await runScript("boundary-detector.sh", [
-        "--format",
-        format,
-        file,
-      ]);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    case "ci_arch_check": {
-      const path = (args.path as string) || ".";
-      const format = (args.format as string) || "json";
-      const rules = (args.rules as string) || "";
-      const scriptArgs = ["--all", "--scope", path, "--format", format];
-      if (rules) {
-        scriptArgs.push("--rules", rules);
-      }
-      const { stdout, stderr } = await runScript("dependency-guard.sh", scriptArgs);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    case "ci_federation": {
-      const action = (args.action as string) || "status";
-      const query = (args.query as string) || "";
-      const format = (args.format as string) || "json";
-      const minConfidence = args.min_confidence as number | undefined;
-      const localRepo = args.local_repo as string | undefined;
-      const sync = args.sync === true;
-
-      const scriptArgs: string[] = [];
-      switch (action) {
-        case "status":
-          scriptArgs.push("--status");
-          break;
-        case "update":
-          scriptArgs.push("--update");
-          break;
-        case "search":
-          scriptArgs.push("--search", query);
-          break;
-        case "generate-virtual-edges":
-          scriptArgs.push("generate-virtual-edges");
-          if (localRepo) {
-            scriptArgs.push("--local-repo", localRepo);
-          }
-          if (minConfidence !== undefined) {
-            scriptArgs.push("--min-confidence", String(minConfidence));
-          }
-          if (sync) {
-            scriptArgs.push("--sync");
-          }
-          break;
-        case "query-virtual":
-          if (!query) {
-            return "Error: query-virtual action requires query parameter";
-          }
-          scriptArgs.push("query-virtual", query);
-          if (minConfidence !== undefined) {
-            scriptArgs.push("--confidence", String(minConfidence));
-          }
-          break;
-        default:
-          return `Unknown action: ${action}`;
-      }
-      scriptArgs.push("--format", format);
-      const { stdout, stderr } = await runScript("federation-lite.sh", scriptArgs);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    case "ci_graph_store": {
-      const action = args.action as string;
-      const payload = args.payload as Record<string, unknown> | undefined;
-      let scriptArgs: string[] = [];
-      switch (action) {
-        case "init":
-          scriptArgs = ["init"];
-          break;
-        case "stats":
-          scriptArgs = ["stats"];
-          break;
-        case "query":
-          if (payload && typeof payload.sql === "string") {
-            scriptArgs = ["query", payload.sql];
-          } else {
-            return "Error: query action requires payload.sql";
-          }
-          break;
-        default:
-          return `Unknown action: ${action}`;
-      }
-      const { stdout, stderr } = await runScript("graph-store.sh", scriptArgs);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    // MP8.1: AST Delta 增量索引
-    case "ci_ast_delta": {
-      const action = (args.action as string) || "status";
-      const file = args.file as string | undefined;
-      const since = args.since as string | undefined;
-      const scriptArgs: string[] = [];
-      switch (action) {
-        case "update":
-          if (file) {
-            scriptArgs.push("update", file);
-          } else {
-            return "Error: update action requires file parameter";
-          }
-          break;
-        case "batch":
-          scriptArgs.push("batch");
-          if (since) {
-            scriptArgs.push("--since", since);
-          }
-          break;
-        case "status":
-          scriptArgs.push("status");
-          break;
-        case "clear-cache":
-          scriptArgs.push("clear-cache");
-          break;
-        default:
-          return `Unknown action: ${action}`;
-      }
-      const { stdout, stderr } = await runScript("ast-delta.sh", scriptArgs);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    // MP8.2: 影响分析
-    case "ci_impact": {
-      const symbol = args.symbol as string | undefined;
-      const file = args.file as string | undefined;
-      const depth = (args.depth as number) || 3;
-      const decay = args.decay as number | undefined;
-      const threshold = args.threshold as number | undefined;
-      const format = (args.format as string) || "json";
-
-      const scriptArgs: string[] = [];
-      if (symbol) {
-        scriptArgs.push("analyze", symbol);
-      } else if (file) {
-        scriptArgs.push("file", file);
-      } else {
-        return "Error: either symbol or file parameter is required";
-      }
-      scriptArgs.push("--depth", String(depth));
-      if (decay !== undefined) {
-        scriptArgs.push("--decay", String(decay));
-      }
-      if (threshold !== undefined) {
-        scriptArgs.push("--threshold", String(threshold));
-      }
-      scriptArgs.push("--format", format);
-      const { stdout, stderr } = await runScript("impact-analyzer.sh", scriptArgs);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    // MP8.3: COD 架构可视化
-    case "ci_cod": {
-      const action = (args.action as string) || "generate";
-      const level = (args.level as number) || 2;
-      const module = args.module as string | undefined;
-      const format = (args.format as string) || "mermaid";
-      const includeHotspots = args.include_hotspots !== false; // 默认 true
-      const includeComplexity = args.include_complexity === true; // 默认 false
-
-      const scriptArgs: string[] = [];
-      if (action === "module" && module) {
-        scriptArgs.push("module", module);
-      } else {
-        scriptArgs.push("generate", "--level", String(level));
-      }
-      scriptArgs.push("--format", format);
-      if (includeHotspots) {
-        scriptArgs.push("--include-hotspots");
-      }
-      if (includeComplexity) {
-        scriptArgs.push("--include-complexity");
-      }
-      const { stdout, stderr } = await runScript("cod-visualizer.sh", scriptArgs);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    // MP8.4: 意图偏好学习
-    case "ci_intent": {
-      const action = (args.action as string) || "stats";
-      const query = args.query as string | undefined;
-      const symbols = args.symbols as string[] | undefined;
-      const userAction = (args.user_action as string) || "view";
-      const top = args.top as number | undefined;
-      const prefix = args.prefix as string | undefined;
-      const days = args.days as number | undefined;
-
-      const scriptArgs: string[] = [];
-      switch (action) {
-        case "record":
-          if (!query) {
-            return "Error: record action requires query parameter";
-          }
-          scriptArgs.push("record", query);
-          if (symbols && symbols.length > 0) {
-            scriptArgs.push("--symbols", symbols.join(","));
-          }
-          scriptArgs.push("--action", userAction);
-          break;
-        case "get-preferences":
-          scriptArgs.push("get-preferences");
-          if (top !== undefined) {
-            scriptArgs.push("--top", String(top));
-          }
-          if (prefix) {
-            scriptArgs.push("--prefix", prefix);
-          }
-          break;
-        case "cleanup":
-          scriptArgs.push("cleanup");
-          if (days !== undefined) {
-            scriptArgs.push("--days", String(days));
-          }
-          break;
-        case "stats":
-          scriptArgs.push("stats");
-          break;
-        default:
-          return `Unknown action: ${action}`;
-      }
-      const { stdout, stderr } = await runScript("intent-learner.sh", scriptArgs);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    // MP8.5: 安全漏洞追踪
-    case "ci_vuln": {
-      const action = (args.action as string) || "scan";
-      const pkg = args.package as string | undefined;
-      const severity = (args.severity as string) || "moderate";
-      const format = (args.format as string) || "json";
-      const includeDev = args.include_dev === true;
-
-      const scriptArgs: string[] = [];
-      switch (action) {
-        case "scan":
-          scriptArgs.push("scan");
-          scriptArgs.push("--severity", severity);
-          scriptArgs.push("--format", format);
-          if (includeDev) {
-            scriptArgs.push("--include-dev");
-          }
-          break;
-        case "trace":
-          if (!pkg) {
-            return "Error: trace action requires package parameter";
-          }
-          scriptArgs.push("trace", pkg);
-          break;
-        default:
-          return `Unknown action: ${action}`;
-      }
-      const { stdout, stderr } = await runScript("vuln-tracker.sh", scriptArgs);
-      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
-    }
-
-    default:
-      return `Unknown tool: ${name}`;
+    return `Error: Unknown error occurred`;
   }
 }
 

@@ -1,28 +1,28 @@
 <!-- DEVBOOKS:START -->
-# DevBooks 使用说明
+# DevBooks Usage Guide
 
-这些说明适用于 Claude Code。
+These instructions apply to Claude Code.
 
-## 语言偏好
+## Language Preference
 
-**默认使用中文**：除非明确要求使用其他语言，否则所有输出都应使用中文，包括：
-- 文档内容
-- 代码注释
-- 提交信息
-- 规格说明
+**Chinese by default**: Unless explicitly requested otherwise, all outputs should be in Chinese, including:
+- Documentation content
+- Code comments
+- Commit messages
+- Specifications
 
-## 工作流
+## Workflow
 
-当请求满足以下条件时，始终打开 `@/AGENTS.md`：
-- 提及规划或提案（如 proposal、spec、change、plan 等词语）
-- 引入新功能、破坏性变更、架构变更或重大性能/安全工作
-- 请求不明确，需要在编码前了解权威规格
+Always open `@/AGENTS.md` when the request meets any of the following:
+- Mentions planning or proposals (e.g., proposal, spec, change, plan)
+- Introduces new features, breaking changes, architecture changes, or major performance/security work
+- The request is unclear and you need an authoritative specification before coding
 
-使用 `@/AGENTS.md` 了解：
-- 如何创建和应用变更提案
-- 规格格式和约定
-- 项目结构和指南
+Use `@/AGENTS.md` to understand:
+- How to create and apply change proposals
+- Spec formats and conventions
+- Project structure and guidelines
 
-保持此托管块，以便 'devbooks update' 可以刷新说明。
+Keep this managed block so `devbooks update` can refresh the instructions.
 
 <!-- DEVBOOKS:END -->

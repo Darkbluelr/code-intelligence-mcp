@@ -1,7 +1,7 @@
 #!/bin/bash
 # DevBooks 共享缓存工具函数库
 # 版本: 3.0
-# 用途: 为 augment-context-global.sh 和 augment-context.sh 提供统一的缓存机制
+# 用途: 为 context-inject-global.sh 和 context-inject.sh 提供统一的缓存机制
 
 # ==================== 缓存配置 ====================
 # 这些变量可以在 source 之前被覆盖

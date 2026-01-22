@@ -393,6 +393,16 @@ ci_daemon_start() {
     done
 
     echo "Daemon started (pid=$daemon_pid)" >&2
+
+    # MP5.1: 自动触发预热 (AC-U06, AC-U19)
+    if [[ "$DAEMON_WARMUP_ENABLED" == "true" ]]; then
+        log_info "Auto-triggering warmup..."
+        # [C-003] 记录预热失败日志
+        if ! ci_daemon_warmup --async --format json >/dev/null 2>&1; then
+            log_error "Warmup failed during daemon startup"
+        fi
+    fi
+
     return 0
 }
 

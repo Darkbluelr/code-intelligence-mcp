@@ -1,0 +1,393 @@
+// Vendored SCIP proto for offline use
+// Version: 0.4.0
+// Source: https://github.com/sourcegraph/scip/blob/main/scip.proto
+// Vendored: 2026-01-18
+// Compatible with: scip-typescript 0.x
+//
+// This file is vendored to enable offline SCIP parsing without network access.
+// To upgrade: scripts/vendor-proto.sh --upgrade
+
+syntax = "proto3";
+
+package scip;
+
+option java_multiple_files = true;
+option java_package = "com.sourcegraph.scip";
+option go_package = "github.com/sourcegraph/scip";
+
+// Index represents a complete SCIP index for a project.
+message Index {
+    // Metadata about the index.
+    Metadata metadata = 1;
+    // List of documents in the index.
+    repeated Document documents = 2;
+    // Symbols that are defined outside of this index but are referenced by documents in this index.
+    // External symbols should be linked to the same Package as Occurrence.symbol.
+    repeated SymbolInformation external_symbols = 3;
+}
+
+// Metadata about an index.
+message Metadata {
+    // Version of the SCIP protocol used to encode this index.
+    // This is currently 0.
+    ProtocolVersion version = 1;
+    // Information about the tool that produced this index.
+    ToolInfo tool_info = 2;
+    // URI-encoded absolute path to the project root.
+    // e.g. file:///home/user/project
+    string project_root = 3;
+    // Text encoding used for document.text field.
+    TextEncoding text_document_encoding = 4;
+}
+
+// ProtocolVersion represents the version of the SCIP protocol.
+enum ProtocolVersion {
+    // Should not be used.
+    UnspecifiedProtocolVersion = 0;
+}
+
+// TextEncoding represents the text encoding for document text.
+enum TextEncoding {
+    // Default is UTF-8.
+    UnspecifiedTextEncoding = 0;
+    UTF8 = 1;
+    UTF16 = 2;
+}
+
+// ToolInfo provides information about the tool that created the index.
+message ToolInfo {
+    // Name of the tool.
+    string name = 1;
+    // Version of the tool.
+    string version = 2;
+    // Additional command-line arguments used to invoke this tool.
+    repeated string arguments = 3;
+}
+
+// Document represents a source file.
+message Document {
+    // Relative path to the file from the project root.
+    // Should be Unix-style forward slashes.
+    string relative_path = 4;
+    // Language identifier for this document (e.g., "typescript", "python").
+    string language = 1;
+    // Occurrences of symbols in this document, sorted by starting position.
+    repeated Occurrence occurrences = 2;
+    // Symbols defined in this document.
+    repeated SymbolInformation symbols = 3;
+    // Full text content of the document (optional).
+    string text = 5;
+    // Position encoding used for ranges in this document.
+    PositionEncoding position_encoding = 6;
+}
+
+// PositionEncoding determines how positions are encoded.
+enum PositionEncoding {
+    // Unspecified defaults to UTF-16.
+    UnspecifiedPositionEncoding = 0;
+    // UTF-8 code units.
+    UTF8CodeUnitOffsetFromLineStart = 1;
+    // UTF-16 code units.
+    UTF16CodeUnitOffsetFromLineStart = 2;
+    // UTF-32 code units (same as Unicode code points).
+    UTF32CodeUnitOffsetFromLineStart = 3;
+}
+
+// Occurrence represents a reference to a symbol.
+message Occurrence {
+    // Encodes the source position as [start_line, start_character, end_line, end_character].
+    // For single-line ranges: [start_line, start_character, end_character].
+    // All values are 0-indexed.
+    repeated int32 range = 1;
+    // Identifier of the symbol, following the SCIP symbol format.
+    string symbol = 2;
+    // Roles of this occurrence (bitmask).
+    int32 symbol_roles = 3;
+    // Override documentation for this occurrence.
+    repeated string override_documentation = 4;
+    // Syntax kind (highlighting).
+    SyntaxKind syntax_kind = 5;
+    // Diagnostics associated with this occurrence.
+    repeated Diagnostic diagnostics = 6;
+    // Enclosing range for this occurrence (useful for hover).
+    repeated int32 enclosing_range = 7;
+}
+
+// SymbolRole is a bit flag indicating the role of a symbol occurrence.
+enum SymbolRole {
+    // Symbol has no special role.
+    UnspecifiedSymbolRole = 0;
+    // Symbol is a definition (value: 1).
+    Definition = 0x1;
+    // Symbol is an import (value: 2).
+    Import = 0x2;
+    // Symbol is written to (value: 4).
+    WriteAccess = 0x4;
+    // Symbol is read from (value: 8).
+    ReadAccess = 0x8;
+    // Symbol is generated code (value: 16).
+    Generated = 0x10;
+    // Symbol is a test (value: 32).
+    Test = 0x20;
+    // Symbol is forwarded from another location (value: 64).
+    ForwardDefinition = 0x40;
+}
+
+// SyntaxKind describes the syntax highlighting category.
+enum SyntaxKind {
+    UnspecifiedSyntaxKind = 0;
+    // Comment tokens.
+    Comment = 1;
+    // Punctuation like `{`, `}`, `[`, `]`.
+    PunctuationBracket = 2;
+    // Punctuation like `;` or `,`.
+    PunctuationDelimiter = 3;
+    // Identifier names (variables, functions, etc.).
+    Identifier = 4;
+    // Keyword tokens like `if`, `while`, `class`.
+    IdentifierKeyword = 5;
+    // Operator tokens like `+`, `-`, `*`.
+    IdentifierOperator = 6;
+    // Built-in identifiers like `self`, `this`.
+    IdentifierBuiltin = 7;
+    // Identifiers representing null values.
+    IdentifierNull = 8;
+    // Constant identifiers (usually uppercase).
+    IdentifierConstant = 9;
+    // Mutable variable identifiers.
+    IdentifierMutableGlobal = 10;
+    // Parameter identifiers.
+    IdentifierParameter = 11;
+    // Local variable identifiers.
+    IdentifierLocal = 12;
+    // Shadowed identifiers.
+    IdentifierShadowed = 13;
+    // Namespace identifiers.
+    IdentifierNamespace = 14;
+    // Function identifiers.
+    IdentifierFunction = 15;
+    // Function definition identifiers.
+    IdentifierFunctionDefinition = 16;
+    // Macro identifiers.
+    IdentifierMacro = 17;
+    // Macro definition identifiers.
+    IdentifierMacroDefinition = 18;
+    // Type identifiers.
+    IdentifierType = 19;
+    // Built-in type identifiers.
+    IdentifierBuiltinType = 20;
+    // Attribute identifiers.
+    IdentifierAttribute = 21;
+    // Regex literal tokens.
+    RegexEscape = 22;
+    RegexRepeated = 23;
+    RegexWildcard = 24;
+    RegexDelimiter = 25;
+    RegexJoin = 26;
+    // String literal tokens.
+    StringLiteral = 27;
+    StringLiteralEscape = 28;
+    StringLiteralSpecial = 29;
+    StringLiteralKey = 30;
+    // Character literal tokens.
+    CharacterLiteral = 31;
+    // Numeric literal tokens.
+    NumericLiteral = 32;
+    // Boolean literal tokens.
+    BooleanLiteral = 33;
+    // Tag tokens (like HTML/XML tags).
+    Tag = 34;
+    // Tag attribute tokens.
+    TagAttribute = 35;
+    // Tag delimiter tokens.
+    TagDelimiter = 36;
+}
+
+// SymbolInformation provides metadata about a symbol.
+message SymbolInformation {
+    // Globally unique identifier for this symbol.
+    string symbol = 1;
+    // Documentation strings for this symbol.
+    repeated string documentation = 3;
+    // Relationships to other symbols.
+    repeated Relationship relationships = 4;
+    // Kind of symbol.
+    Kind kind = 5;
+    // Display name (for UI).
+    string display_name = 6;
+    // Signature documentation (for hover).
+    SignatureDocumentation signature_documentation = 7;
+    // Enclosing symbol (e.g., method's class).
+    string enclosing_symbol = 8;
+}
+
+// Relationship describes a relationship between symbols.
+message Relationship {
+    // Target symbol identifier.
+    string symbol = 1;
+    // True if this is an implementation relationship.
+    bool is_implementation = 2;
+    // True if this is a reference relationship.
+    bool is_reference = 3;
+    // True if this is a type definition relationship.
+    bool is_type_definition = 4;
+    // True if this is a definition relationship.
+    bool is_definition = 5;
+}
+
+// Kind represents the kind of a symbol.
+enum Kind {
+    UnspecifiedKind = 0;
+    AbstractMethod = 1;
+    Accessor = 2;
+    Array = 3;
+    Assertion = 4;
+    AssociatedType = 5;
+    Attribute = 6;
+    Axiom = 7;
+    Boolean = 8;
+    Class = 9;
+    Constant = 10;
+    Constructor = 11;
+    Contract = 12;
+    DataFamily = 13;
+    Delegate = 14;
+    Enum = 15;
+    EnumMember = 16;
+    Error = 17;
+    Event = 18;
+    Fact = 19;
+    Field = 20;
+    File = 21;
+    Function = 22;
+    Getter = 23;
+    Grammar = 24;
+    Instance = 25;
+    Interface = 26;
+    Key = 27;
+    Lang = 28;
+    Lemma = 29;
+    Library = 30;
+    Macro = 31;
+    Method = 32;
+    MethodAlias = 33;
+    MethodReceiver = 34;
+    MethodSpecification = 35;
+    Message = 36;
+    Modifier = 37;
+    Module = 38;
+    Namespace = 39;
+    Null = 40;
+    Number = 41;
+    Object = 42;
+    Operator = 43;
+    Package = 44;
+    PackageObject = 45;
+    Parameter = 46;
+    ParameterLabel = 47;
+    Pattern = 48;
+    Predicate = 49;
+    Property = 50;
+    Protocol = 51;
+    ProtocolMethod = 52;
+    PureVirtualMethod = 53;
+    Quasiquoter = 54;
+    SelfParameter = 55;
+    Setter = 56;
+    Signature = 57;
+    SingletonClass = 58;
+    SingletonMethod = 59;
+    StaticDataMember = 60;
+    StaticEvent = 61;
+    StaticField = 62;
+    StaticMethod = 63;
+    StaticProperty = 64;
+    StaticVariable = 65;
+    String = 66;
+    Struct = 67;
+    Subscript = 68;
+    Tactic = 69;
+    Theorem = 70;
+    ThisParameter = 71;
+    Trait = 72;
+    TraitMethod = 73;
+    Type = 74;
+    TypeAlias = 75;
+    TypeClass = 76;
+    TypeClassMethod = 77;
+    TypeFamily = 78;
+    TypeParameter = 79;
+    Union = 80;
+    Value = 81;
+    Variable = 82;
+}
+
+// Diagnostic represents a compiler diagnostic.
+message Diagnostic {
+    // Severity of the diagnostic.
+    Severity severity = 1;
+    // Error code (if applicable).
+    string code = 2;
+    // Human-readable message.
+    string message = 3;
+    // Source of the diagnostic.
+    string source = 4;
+    // Related tags.
+    repeated DiagnosticTag tags = 5;
+}
+
+// Severity of a diagnostic.
+enum Severity {
+    UnspecifiedSeverity = 0;
+    Error = 1;
+    Warning = 2;
+    Information = 3;
+    Hint = 4;
+}
+
+// DiagnosticTag provides additional metadata about a diagnostic.
+enum DiagnosticTag {
+    UnspecifiedDiagnosticTag = 0;
+    // Indicates unused or unnecessary code.
+    Unnecessary = 1;
+    // Indicates deprecated code.
+    Deprecated = 2;
+}
+
+// SignatureDocumentation provides signature documentation for a symbol.
+message SignatureDocumentation {
+    // The text of the signature.
+    string text = 1;
+    // Value parameters in the signature.
+    repeated ValueSignature value_parameters = 2;
+    // Type parameters in the signature.
+    repeated TypeSignature type_parameters = 3;
+}
+
+// ValueSignature describes a value parameter in a signature.
+message ValueSignature {
+    // Parameters in this value signature.
+    repeated ValueSignatureParameter parameters = 1;
+}
+
+// ValueSignatureParameter describes a parameter in a value signature.
+message ValueSignatureParameter {
+    // Name of the parameter.
+    string name = 1;
+    // Signature of the parameter type.
+    string signature = 2;
+}
+
+// TypeSignature describes a type parameter in a signature.
+message TypeSignature {
+    // Parameters in this type signature.
+    repeated TypeSignatureParameter parameters = 1;
+}
+
+// TypeSignatureParameter describes a parameter in a type signature.
+message TypeSignatureParameter {
+    // Name of the type parameter.
+    string name = 1;
+    // Bounds on the type parameter.
+    repeated string bounds = 2;
+}

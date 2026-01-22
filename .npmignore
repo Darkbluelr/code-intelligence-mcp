@@ -12,6 +12,8 @@ dev-playbooks/
 .opencode/
 .continue/
 .qoder/
+.code/
+.codex/
 .github/instructions/
 .github/copilot-instructions.md
 
@@ -20,3 +22,47 @@ CLAUDE.md
 AGENTS.md
 GEMINI.md
 # End DevBooks managed
+
+# Development files (not needed in npm package)
+docs/
+demo/
+tests/
+*.bats
+
+# Source files (only ship compiled dist/)
+src/
+tsconfig.json
+
+# Build and development tools
+.ckb/
+.ci-cache/
+.npm-cache/
+*.scip
+.migrate.lock
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Git files
+.git/
+.gitignore
+.github/
+
+# CI/CD
+.gitlab-ci.yml*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Development scripts (not needed in runtime)
+parse-scip.js

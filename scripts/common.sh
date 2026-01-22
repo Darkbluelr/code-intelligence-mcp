@@ -130,23 +130,23 @@ is_bug_fix_message() {
 # 2 = 依赖缺失
 # 3 = 运行时错误
 
-EXIT_SUCCESS=0
-EXIT_ARGS_ERROR=1
-EXIT_DEPS_MISSING=2
-EXIT_RUNTIME_ERROR=3
+export EXIT_SUCCESS=0
+export EXIT_ARGS_ERROR=1
+export EXIT_DEPS_MISSING=2
+export EXIT_RUNTIME_ERROR=3
 
 # ==================== 意图检测（共享正则） ====================
 # 代码相关意图的正则模式
-CODE_INTENT_PATTERN='修复|fix|bug|错误|重构|refactor|优化|添加|新增|实现|implement|删除|remove|修改|update|change|分析|analyze|影响|impact|引用|reference|调用|call|依赖|depend|函数|function|方法|method|类|class|模块|module|\.ts|\.tsx|\.js|\.py|\.go|src/|lib/'
+export CODE_INTENT_PATTERN='修复|fix|bug|错误|重构|refactor|优化|添加|新增|实现|implement|删除|remove|修改|update|change|分析|analyze|影响|impact|引用|reference|调用|call|依赖|depend|函数|function|方法|method|类|class|模块|module|\.ts|\.tsx|\.js|\.py|\.go|src/|lib/'
 
 # 非代码意图的正则模式
-NON_CODE_PATTERN='^(天气|weather|翻译|translate|写邮件|email|闲聊|chat|你好|hello|hi)'
+export NON_CODE_PATTERN='^(天气|weather|翻译|translate|写邮件|email|闲聊|chat|你好|hello|hi)'
 
 # 四分类意图关键词模式（按优先级排序）
 # 优先级: debug > refactor > docs > feature (default)
-INTENT_DEBUG_PATTERN='fix|debug|bug|crash|fail|error|issue|resolve|problem|broken'
-INTENT_REFACTOR_PATTERN='refactor|optimize|improve|clean|simplify|quality|performance|restructure'
-INTENT_DOCS_PATTERN='doc|comment|readme|explain|guide|write.*guide|注释|文档'
+export INTENT_DEBUG_PATTERN='fix|debug|bug|crash|fail|error|issue|resolve|problem|broken'
+export INTENT_REFACTOR_PATTERN='refactor|optimize|improve|clean|simplify|quality|performance|restructure'
+export INTENT_DOCS_PATTERN='doc|comment|readme|explain|guide|write.*guide|注释|文档'
 
 # 检测是否为代码相关意图
 # 参数: $1 - 用户输入
@@ -402,8 +402,14 @@ get_hotspot_files() {
 # ==================== 功能开关 ====================
 # Trace: AC-010
 
-# 默认配置文件路径
-DEVBOOKS_FEATURE_CONFIG="${DEVBOOKS_FEATURE_CONFIG:-.devbooks/config.yaml}"
+# 默认配置文件路径（统一使用 config/features.yaml）
+if [[ -z "${DEVBOOKS_FEATURE_CONFIG:-}" ]]; then
+  feature_root="${PROJECT_ROOT:-$(pwd)}"
+  DEVBOOKS_FEATURE_CONFIG="$feature_root/config/features.yaml"
+fi
+
+# 一键启用所有功能开关（CLI --enable-all-features 可设置）
+: "${DEVBOOKS_ENABLE_ALL_FEATURES:=}"
 
 # 检查功能是否启用
 # 参数: $1 - 功能名称 (如 hotspot_analyzer)
@@ -412,33 +418,39 @@ is_feature_enabled() {
   local feature="$1"
   local config_file="${DEVBOOKS_FEATURE_CONFIG}"
 
-  # 如果配置文件不存在，默认启用
-  if [[ ! -f "$config_file" ]]; then
+  if [[ -n "${DEVBOOKS_ENABLE_ALL_FEATURES:-}" ]]; then
     return 0
+  fi
+
+  # 如果配置文件不存在，默认禁用
+  if [[ ! -f "$config_file" ]]; then
+    return 1
   fi
 
   # 查找功能配置值
   local value
   value=$(awk -v feature="$feature" '
-    BEGIN { in_features = 0 }
+    BEGIN { in_features = 0; in_target = 0 }
     /^features:/ { in_features = 1; next }
-    /^[a-zA-Z]/ && !/^features:/ { in_features = 0 }
-    in_features && $0 ~ feature {
-      gsub(/.*:/, "")
-      gsub(/[[:space:]]/, "")
+    /^[a-zA-Z]/ && !/^features:/ { in_features = 0; in_target = 0 }
+    in_features && $0 ~ "^[[:space:]]{2}" feature ":" { in_target = 1; next }
+    in_features && in_target && $0 ~ "^[[:space:]]{2}[a-zA-Z0-9_]+" && $0 !~ "^[[:space:]]{2}" feature ":" { in_target = 0 }
+    in_target && /enabled:/ {
+      sub(/^[^:]+:[[:space:]]*/, "")
       gsub(/#.*/, "")
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "")
       print
       exit
     }
   ' "$config_file" 2>/dev/null)
 
-  # 检查值
+  # 检查值（默认禁用）
   case "$value" in
-    false|False|FALSE|no|No|NO|0)
-      return 1
+    true|True|TRUE|yes|Yes|YES|1)
+      return 0
       ;;
     *)
-      return 0
+      return 1
       ;;
   esac
 }

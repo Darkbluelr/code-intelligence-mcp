@@ -1,0 +1,109 @@
+# LLM Provider 注册表
+# 用于注册和配置可用的 LLM Provider
+# Change ID: augment-final-10-percent
+# AC: AC-001, AC-002
+
+# Provider 注册
+# 每个 Provider 必须包含:
+#   - script: Provider 实现脚本（相对于 scripts/llm-providers/）
+#   - env_key: API Key 环境变量名（可选）
+#   - default_model: 默认模型 ID
+#   - endpoint: API 端点（可选）
+
+providers:
+  # Anthropic Claude Provider
+  # 支持模型: claude-3-haiku, claude-sonnet-4
+  anthropic:
+    script: anthropic.sh
+    env_key: ANTHROPIC_API_KEY
+    default_model: claude-3-haiku-20240307
+    endpoint: https://api.anthropic.com/v1
+    models:
+      - id: claude-3-haiku-20240307
+        name: Claude 3 Haiku
+        description: 快速且经济的模型，适合日常任务
+        input_cost_per_1k: 0.00025
+        output_cost_per_1k: 0.00125
+      - id: claude-sonnet-4-20250514
+        name: Claude Sonnet 4
+        description: 平衡性能和成本的模型
+        input_cost_per_1k: 0.003
+        output_cost_per_1k: 0.015
+
+  # OpenAI GPT Provider
+  # 支持模型: gpt-4o-mini, gpt-4o
+  openai:
+    script: openai.sh
+    env_key: OPENAI_API_KEY
+    default_model: gpt-4o-mini
+    endpoint: https://api.openai.com/v1
+    models:
+      - id: gpt-4o-mini
+        name: GPT-4o Mini
+        description: 快速且经济的模型
+        input_cost_per_1k: 0.00015
+        output_cost_per_1k: 0.0006
+      - id: gpt-4o
+        name: GPT-4o
+        description: 最强大的 GPT 模型
+        input_cost_per_1k: 0.005
+        output_cost_per_1k: 0.015
+
+  # Ollama 本地 Provider
+  # 支持模型: 取决于本地安装的模型
+  ollama:
+    script: ollama.sh
+    env_key: null  # 不需要 API Key
+    default_model: llama3
+    endpoint: http://localhost:11434
+    models:
+      - id: llama3
+        name: Llama 3
+        description: Meta 开源大语言模型
+        local: true
+      - id: codellama
+        name: Code Llama
+        description: 代码专用 Llama 模型
+        local: true
+      - id: mistral
+        name: Mistral
+        description: Mistral AI 开源模型
+        local: true
+
+  # Mock Provider（测试用）
+  mock:
+    script: mock.sh
+    env_key: null  # 不需要 API Key
+    default_model: mock
+    endpoint: null
+    models:
+      - id: mock
+        name: Mock Model
+        description: 用于测试的 Mock 模型
+        local: true
+
+# Provider 优先级（自动检测时使用）
+# 按顺序检查，第一个可用的 Provider 被选中
+auto_detect_priority:
+  - anthropic   # 如果设置了 ANTHROPIC_API_KEY
+  - openai      # 如果设置了 OPENAI_API_KEY
+  - ollama      # 如果 Ollama 服务正在运行
+  - mock        # 最后降级到 Mock
+
+# 默认配置
+defaults:
+  timeout_ms: 2000
+  max_tokens: 1024
+  max_retries: 3
+  retry_delay_ms: 1000
+
+# 功能开关
+features:
+  # 是否启用自动 Provider 检测
+  auto_detect: true
+  # 是否在 API 调用失败时自动降级
+  fallback_on_error: true
+  # 是否缓存 Provider 检测结果
+  cache_detection: true
+  # 缓存 TTL（秒）
+  cache_ttl_seconds: 60

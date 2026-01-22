@@ -1,0 +1,666 @@
+src/server.ts:9:import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+src/server.ts:10:import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+src/server.ts:14:} from "@modelcontextprotocol/sdk/types.js";
+src/server.ts:42:    description: "Semantic code search using embeddings or keywords. Use this for natural language queries like 'find authentication code' or 'where is error handling'. Supports both semantic (AI-powered) and keyword search modes. Best for: discovering code by concept, finding related implementations, exploring unfamiliar codebases.",
+src/server.ts:50:          enum: ["semantic", "keyword"],
+src/server.ts:51:          description: "Search mode (default: semantic)",
+src/server.ts:102:    name: "ci_graph_rag",
+src/server.ts:103:    description: "Get Graph-RAG context for a query. Combines semantic search with code graph traversal to provide rich context. Use this when you need comprehensive context about a topic including related code, dependencies, and call relationships. Best for: understanding complex features, gathering context for code changes, exploring interconnected code.",
+src/server.ts:107:        query: { type: "string", description: "Query for context retrieval" },
+src/server.ts:116:    description: "Check or manage the semantic search embedding index. Use 'status' to check index health, 'build' to rebuild after major code changes, 'clear' to reset. Best for: troubleshooting search issues, maintaining search quality.",
+src/server.ts:146:    name: "ci_boundary",
+src/server.ts:147:    description: "Detect code boundary type (user code, library, generated, vendor). Use this to understand code ownership and filter analysis. Best for: excluding vendor code from analysis, identifying generated files.",
+src/server.ts:178:    name: "ci_federation",
+src/server.ts:201:    name: "ci_graph_store",
+src/server.ts:202:    description: "Query the code intelligence graph database directly with SQL. Use this for custom queries on symbols, references, and relationships. Best for: advanced analysis, custom reports, debugging index issues.",
+src/server.ts:242:    description: "Analyze the impact of changing a symbol or file. Uses multi-hop graph traversal with confidence decay to find all affected code. Best for: safe refactoring, understanding change risk, planning migrations, pre-commit impact check.",
+src/server.ts:274:          description: "Visualization level: 1=system context, 2=module, 3=file (default: 2)",
+src/server.ts:289:    name: "ci_intent",
+src/server.ts:419:  - Graph-RAG context with smart pruning
+src/server.ts:421:  - Code boundary detection
+src/server.ts:427:  - Cross-repo federation with virtual edges
+docs/Augment.md:117:这种映射允许 Augment 识别“架构漂移”（Architectural Drift）——即系统随着时间推移，原本清晰的服务边界逐渐模糊，变成了“大泥球”（Big Ball of Mud）架构。通过对比 COD 模型的历史快照（例如 `graph.json` 的 Diff），团队和 AI 都可以直观地看到某个服务何时从一个轻量级组件突变为一个拥有数百个依赖的“怪兽”8。
+docs/Augment.md:153:Augment 采用了一种专门为代码设计的“代码 RAG”策略。与检索离散文本块的通用 RAG 不同，Augment 的引擎检索的是**子图（Subgraphs）**。
+docs/Augment.md:167:3. **子图检索与遍历（Subgraph Retrieval）：** 利用 UCG，引擎确定“种子”节点（例如当前文件）。然后，它执行图遍历算法来扩展搜索范围：
+docs/Augment.md:370:| 图存储与检索 | 边类型扩展（IMPLEMENTS/EXTENDS/RETURNS_TYPE/ADR_RELATED） | ✅ | `scripts/scip-to-graph.sh` |
+docs/Augment.md:371:| 图存储与检索 | A-B 路径查询（BFS） | ✅ | `scripts/graph-store.sh find-path` |
+docs/Augment.md:372:| 图存储与检索 | Schema 迁移命令 | ✅ | `scripts/graph-store.sh migrate` |
+docs/Augment.md:374:| 上下文引擎 | 对话历史信号累积 | ✅ | `scripts/intent-learner.sh` |
+docs/Augment.md:375:| 上下文引擎 | 结构化上下文输出（5 层） | ✅ | `hooks/augment-context-global.sh` |
+docs/Augment.md:388:本项目采用 SQLite 图存储（`graph.db`）实现 Augment 的"图优于向量"策略：
+docs/Augment.md:396:通过 `augment-context-global.sh` 实现 5 层结构化输出：
+docs/Augment.md:400:3. `task_context`：任务上下文（意图分析、代码片段）
+docs/Augment.md:412:- **依赖卫士**：`dependency-guard.sh` 检测循环依赖和孤儿模块
+docs/Augment.md:413:- **架构合规**：`boundary-detector.sh` 检查分层规则违规
+docs/Augment.md:430:intent_learner:
+docs/Augment.md:439:| `.devbooks/graph.db` | 图数据库（SQLite WAL） |
+docs/Augment.md:440:| `.devbooks/subgraph-cache.db` | 子图 LRU 缓存 |
+docs/Augment.md:441:| `.devbooks/conversation-context.json` | 对话上下文（FIFO 10 轮） |
+scripts/federation-lite-discovery.sh:2:# federation-lite-discovery.sh - Contract discovery and symbol extraction
+scripts/federation-lite-discovery.sh:31:        *.graphql|*.gql)
+scripts/federation-lite-discovery.sh:32:            echo "graphql"
+scripts/federation-lite-discovery.sh:145:extract_graphql_symbols() {
+scripts/federation-lite-discovery.sh:191:        graphql)
+scripts/federation-lite-discovery.sh:192:            extract_graphql_symbols "$file"
+src/context-signal-manager.ts:51:    this.dbPath = options.dbPath ?? '.devbooks/graph.db';
+scripts/ast-delta.sh:37:: "${GRAPH_DB_PATH:=$DEVBOOKS_DIR/graph.db}"
+scripts/ast-delta.sh:390:update_graph_db() {
+scripts/ast-delta.sh:394:    # 检查 graph-store.sh 是否存在
+scripts/ast-delta.sh:395:    if [[ ! -x "$SCRIPT_DIR/graph-store.sh" ]]; then
+scripts/ast-delta.sh:396:        log_warn "graph-store.sh not found, skipping graph update"
+scripts/ast-delta.sh:401:    "$SCRIPT_DIR/graph-store.sh" init >/dev/null 2>&1 || true
+scripts/ast-delta.sh:420:                    "$SCRIPT_DIR/graph-store.sh" add-node \
+scripts/ast-delta.sh:563:        update_graph_db "$file_path" "$ast_json"
+scripts/ast-delta.sh:657:            # 如果有 scip-to-graph.sh，使用它进行全量重建
+scripts/ast-delta.sh:658:            if [[ -x "$SCRIPT_DIR/scip-to-graph.sh" ]]; then
+scripts/ast-delta.sh:659:                log_info "Using scip-to-graph.sh for full rebuild"
+scripts/ast-delta.sh:660:                "$SCRIPT_DIR/scip-to-graph.sh" 2>/dev/null || true
+scripts/ast-delta.sh:677:            # 尝试使用 scip-to-graph.sh
+scripts/ast-delta.sh:678:            if [[ -x "$SCRIPT_DIR/scip-to-graph.sh" ]]; then
+scripts/ast-delta.sh:679:                "$SCRIPT_DIR/scip-to-graph.sh" 2>/dev/null || true
+scripts/ast-delta.sh:784:    GRAPH_DB_PATH          图数据库路径（默认: .devbooks/graph.db）
+scripts/show-context.sh:52:echo "  - ci_graph_rag: 图RAG上下文检索"
+src/tool-handlers.ts:124:  const { stdout, stderr } = await runScript("graph-rag.sh", [
+src/tool-handlers.ts:168:  const { stdout, stderr } = await runScript("boundary-detector.sh", [
+src/tool-handlers.ts:185:  const { stdout, stderr } = await runScript("dependency-guard.sh", scriptArgs);
+src/tool-handlers.ts:236:  const { stdout, stderr } = await runScript("federation-lite.sh", scriptArgs);
+src/tool-handlers.ts:261:  const { stdout, stderr } = await runScript("graph-store.sh", scriptArgs);
+src/tool-handlers.ts:351:  // Note: intent-learner.sh doesn't have a 'stats' command.
+src/tool-handlers.ts:352:  // Available commands: record, get-preferences, cleanup, context, session
+src/tool-handlers.ts:391:  const { stdout, stderr } = await runScript("intent-learner.sh", scriptArgs);
+src/tool-handlers.ts:431:  ci_graph_rag: handleCiGraphRag,
+src/tool-handlers.ts:434:  ci_boundary: handleCiBoundary,
+src/tool-handlers.ts:436:  ci_federation: handleCiFederation,
+src/tool-handlers.ts:437:  ci_graph_store: handleCiGraphStore,
+src/tool-handlers.ts:441:  ci_intent: handleCiIntent,
+scripts/boundary-detector.sh:20:if ! is_feature_enabled "boundary_detector"; then
+scripts/boundary-detector.sh:21:  log_warn "边界检测器功能已禁用 (features.boundary_detector: false)"
+scripts/boundary-detector.sh:29:Usage: boundary-detector.sh [OPTIONS] <file-or-pattern>
+scripts/boundary-detector.sh:53:  boundary-detector.sh src/index.ts
+scripts/boundary-detector.sh:54:  boundary-detector.sh --path node_modules/lodash/index.js --format json
+scripts/boundary-detector.sh:55:  boundary-detector.sh --format json dist/bundle.js
+scripts/boundary-detector.sh:56:  boundary-detector.sh --config ./my-boundaries.yaml src/
+scripts/boundary-detector.sh:237:detect_boundary() {
+scripts/boundary-detector.sh:289:    result=$(detect_boundary "$TARGET" "$CONFIG_FILE")
+scripts/boundary-detector.sh:300:      result=$(detect_boundary "$file" "$CONFIG_FILE")
+scripts/boundary-detector.sh:306:    result=$(detect_boundary "$TARGET" "$CONFIG_FILE")
+scripts/cod-visualizer.sh:10:#   GRAPH_DB_PATH - 数据库路径，默认 .devbooks/graph.db
+scripts/cod-visualizer.sh:26:: "${GRAPH_DB_PATH:=$DEVBOOKS_DIR/graph.db}"
+scripts/cod-visualizer.sh:187:    echo "graph TD"
+scripts/cod-visualizer.sh:188:    echo "    subgraph System[\"Code Intelligence System\"]"
+scripts/cod-visualizer.sh:243:    echo "graph TD"
+scripts/cod-visualizer.sh:490:    echo "graph TD"
+scripts/cod-visualizer.sh:511:            local subgraph_name
+scripts/cod-visualizer.sh:512:            subgraph_name=$(_escape_mermaid_label "$module_path")
+scripts/cod-visualizer.sh:513:            echo "    subgraph $subgraph_name"
+scripts/cod-visualizer.sh:536:        local subgraph_name
+scripts/cod-visualizer.sh:537:        subgraph_name=$(_escape_mermaid_label "$module_path")
+scripts/cod-visualizer.sh:538:        echo "    subgraph $subgraph_name"
+scripts/cod-visualizer.sh:941:    GRAPH_DB_PATH       图数据库路径（默认: .devbooks/graph.db）
+scripts/federation-lite-index.sh:2:# federation-lite-index.sh - Index operations
+scripts/federation-lite-index.sh:5:# Purpose: Update, query, and manage federation index
+scripts/federation-lite-index.sh:17:# Update federation index
+scripts/federation-lite-index.sh:22:    log_info "Loading federation config: $config_file"
+scripts/federation-lite-index.sh:24:    config=$(load_federation_config "$config_file")
+scripts/federation-lite-index.sh:78:            done < <(find "$repo_path" -type f \( -name "*.proto" -o -name "openapi.yaml" -o -name "openapi.yml" -o -name "swagger.json" -o -name "*.graphql" -o -name "*.d.ts" \) 2>/dev/null)
+scripts/federation-lite-index.sh:106:            done < <(find "$repo_path" -type f \( -name "*.proto" -o -name "openapi.yaml" -o -name "openapi.yml" -o -name "swagger.json" -o -name "*.graphql" -o -name "*.d.ts" \) 2>/dev/null)
+scripts/federation-lite-index.sh:140:                    -o -name "swagger.json" -o -name "*.graphql" -o -name "*.d.ts" \) \
+scripts/federation-lite-index.sh:187:                    -o -name "swagger.json" -o -name "*.graphql" -o -name "*.d.ts" \) 2>/dev/null)
+scripts/federation-lite-index.sh:241:            echo "No federation index found at: $FEDERATION_INDEX"
+scripts/context-compressor.sh:2:# context-compressor.sh - Context skeleton compressor for TS/JS
+scripts/context-compressor.sh:5:#   JSON，包含 compressed_context 和 metadata
+scripts/context-compressor.sh:56:CACHE_DIR="${DEVBOOKS_DIR}/context-compressor-cache"
+scripts/context-compressor.sh:64:  context-compressor.sh [选项] <file|dir>...
+scripts/context-compressor.sh:607:    if ! is_feature_enabled "context_compressor"; then
+scripts/context-compressor.sh:608:      log_warn "上下文压缩功能已禁用 (features.context_compressor: false)"
+scripts/context-compressor.sh:609:      echo '{"compressed_context":"","metadata":{"status":"disabled"}}'
+scripts/context-compressor.sh:754:  local temp_context_file
+scripts/context-compressor.sh:755:  temp_context_file=$(mktemp)
+scripts/context-compressor.sh:756:  _TEMP_FILES+=("$temp_context_file")
+scripts/context-compressor.sh:757:  echo "$_OUTPUT_COMPRESSED_CONTEXT" > "$temp_context_file"
+scripts/context-compressor.sh:760:    --rawfile compressed_context "$temp_context_file" \
+scripts/context-compressor.sh:774:      compressed_context: $compressed_context,
+scripts/context-compressor.sh:798:  local compressed_context=""
+scripts/context-compressor.sh:828:    if [ -z "$compressed_context" ]; then
+scripts/context-compressor.sh:829:      compressed_context="$file_block"
+scripts/context-compressor.sh:831:      compressed_context="${compressed_context}"$'\n'"${file_block}"
+scripts/context-compressor.sh:864:    compressed_context=$(printf '%s\n' "$compressed_context" | awk -v limit="$BUDGET" 'NF {count++} count<=limit {print} END {if (count>limit) exit 0}')
+scripts/context-compressor.sh:865:    compressed_tokens=$(printf '%s\n' "$compressed_context" | count_compressed_tokens)
+scripts/context-compressor.sh:869:  _OUTPUT_COMPRESSED_CONTEXT="$compressed_context"
+scripts/test-embedding.sh:152:HOOK_SCRIPT="$PROJECT_ROOT/.claude/hooks/augment-context-with-embedding.sh"
+scripts/daemon.sh:26:: "${GRAPH_DB_PATH:=$DEVBOOKS_DIR/graph.db}"
+scripts/daemon.sh:228:            if [ -x "$SCRIPT_DIR/graph-store.sh" ] && [ -f "$GRAPH_DB_PATH" ]; then
+scripts/daemon.sh:229:                result=$("$SCRIPT_DIR/graph-store.sh" query "$payload" 2>/dev/null || echo '[]')
+scripts/daemon.sh:588:    if [ -x "$SCRIPT_DIR/graph-store.sh" ] && [ -f "$GRAPH_DB_PATH" ]; then
+scripts/daemon.sh:594:            "$SCRIPT_DIR/graph-store.sh" search "$query" 2>/dev/null >/dev/null || true
+scripts/drift-detector.sh:2:# drift-detector.sh - Architecture drift detector
+scripts/drift-detector.sh:62:  drift-detector.sh --compare <baseline.json> <current.json>
+scripts/drift-detector.sh:63:  drift-detector.sh --diff <baseline.json> <current.json>
+scripts/drift-detector.sh:64:  drift-detector.sh --snapshot <project-dir> --output <snapshot.json>
+scripts/drift-detector.sh:65:  drift-detector.sh --rules <arch-rules.yaml> <project-dir>
+scripts/drift-detector.sh:66:  drift-detector.sh --report <snapshots-dir> --period weekly
+scripts/drift-detector.sh:67:  drift-detector.sh --c4 <c4.md> --code <project-dir>
+scripts/drift-detector.sh:68:  drift-detector.sh --parse-c4 <c4.md>
+scripts/drift-detector.sh:69:  drift-detector.sh --scan-code <project-dir>
+scripts/drift-detector.sh:70:  drift-detector.sh --enable-all-features --compare <baseline.json> <current.json>
+scripts/drift-detector.sh:71:  drift-detector.sh --help
+scripts/drift-detector.sh:161:    MODE="c4-drift"
+scripts/drift-detector.sh:640:  local drift_detected=false
+scripts/drift-detector.sh:642:    drift_detected=true
+scripts/drift-detector.sh:646:    --argjson drift_detected "$drift_detected" \
+scripts/drift-detector.sh:652:      drift_detected: $drift_detected,
+scripts/drift-detector.sh:723:_snap_compare_violations_and_boundary() {
+scripts/drift-detector.sh:747:  local base_boundary current_boundary
+scripts/drift-detector.sh:748:  base_boundary=$(read_metric "$baseline" "boundary_clarity")
+scripts/drift-detector.sh:749:  current_boundary=$(read_metric "$current" "boundary_clarity")
+scripts/drift-detector.sh:750:  if awk -v b="$base_boundary" -v c="$current_boundary" 'BEGIN {exit !((b-c)>=0.10)}'; then
+scripts/drift-detector.sh:753:      --arg type "boundary_blur" \
+scripts/drift-detector.sh:754:      --argjson from "$base_boundary" \
+scripts/drift-detector.sh:755:      --argjson to "$current_boundary" \
+scripts/drift-detector.sh:756:      --argjson drop "$(awk -v b="$base_boundary" -v c="$current_boundary" 'BEGIN {printf "%.2f", (b-c)}')" \
+scripts/drift-detector.sh:843:  _snap_compare_violations_and_boundary "$baseline" "$current" "$changes" "$recommendations" "$score"
+scripts/drift-detector.sh:861:  local drift_detected=false
+scripts/drift-detector.sh:865:    drift_detected=true
+scripts/drift-detector.sh:869:    --argjson drift_detected "$drift_detected" \
+scripts/drift-detector.sh:875:      drift_detected: $drift_detected,
+scripts/drift-detector.sh:1020:        boundary_clarity: 0.85
+scripts/drift-detector.sh:1083:    if ! is_feature_enabled "drift_detector"; then
+scripts/drift-detector.sh:1084:      log_warn "架构漂移检测已禁用 (features.drift_detector: false)"
+scripts/drift-detector.sh:1085:      echo '{"status":"disabled","message":"drift_detector disabled"}'
+scripts/drift-detector.sh:1154:    c4-drift)
+scripts/drift-detector.sh:1156:        log_error "c4-drift 需要 --c4 和 --code"
+scripts/federation-lite-core.sh:2:# federation-lite-core.sh - Core utilities and configuration
+scripts/federation-lite-core.sh:5:# Purpose: Shared utilities, logging, and configuration for federation-lite
+scripts/federation-lite-core.sh:18:: "${FEDERATION_CONFIG:=config/federation.yaml}"
+scripts/federation-lite-core.sh:19:: "${FEDERATION_INDEX:=.devbooks/federation-index.json}"
+scripts/federation-lite-core.sh:20:: "${GRAPH_DB:=.devbooks/graph.db}"
+scripts/federation-lite-core.sh:70:        graphql)    echo "0.08" ;;
+scripts/federation-lite-core.sh:83:load_federation_config() {
+scripts/federation-lite-core.sh:103:    local federation_root_seen=false
+scripts/federation-lite-core.sh:104:    local in_federation=true
+scripts/federation-lite-core.sh:112:        if [[ "$line" =~ ^[[:space:]]*federation:[[:space:]]*$ ]]; then
+scripts/federation-lite-core.sh:113:            federation_root_seen=true
+scripts/federation-lite-core.sh:114:            in_federation=true
+scripts/federation-lite-core.sh:120:        if [[ "$federation_root_seen" == "true" && "$line" =~ ^[^[:space:]] ]]; then
+scripts/federation-lite-core.sh:121:            if [[ ! "$line" =~ ^federation: ]]; then
+scripts/federation-lite-core.sh:122:                in_federation=false
+scripts/federation-lite-core.sh:127:            if [[ "$federation_root_seen" == "true" && "$in_federation" != "true" ]]; then
+scripts/federation-lite-core.sh:136:            if [[ "$federation_root_seen" == "true" && "$in_federation" != "true" ]]; then
+scripts/federation-lite-core.sh:219:federation-lite.sh - Lightweight Federation Index (Cross-repo Contract Tracking)
+scripts/federation-lite-core.sh:222:  federation-lite.sh --status
+scripts/federation-lite-core.sh:223:  federation-lite.sh --update [--config config/federation.yaml]
+scripts/federation-lite-core.sh:224:  federation-lite.sh --search "<symbol>" [--format json]
+scripts/federation-lite-core.sh:225:  federation-lite.sh --list-contracts [--repo "<name>"]
+scripts/federation-lite-core.sh:226:  federation-lite.sh generate-virtual-edges [--repo <name>] [--min-confidence <n>]
+scripts/federation-lite-core.sh:227:  federation-lite.sh query-virtual <symbol> [--virtual-edges] [--confidence <n>]
+scripts/federation-lite-core.sh:228:  federation-lite.sh --help
+scripts/federation-lite-core.sh:232:  --update            Update the federation index
+scripts/federation-lite-core.sh:233:  --config <file>     Configuration file (default: config/federation.yaml)
+scripts/federation-lite-core.sh:244:    --db <path>             Path to graph.db (default: .devbooks/graph.db)
+scripts/federation-lite-core.sh:253:  FEDERATION_CONFIG   Config file path (default: config/federation.yaml)
+scripts/federation-lite-core.sh:254:  FEDERATION_INDEX    Index file path (default: .devbooks/federation-index.json)
+scripts/federation-lite-core.sh:255:  GRAPH_DB            Graph database path (default: .devbooks/graph.db)
+scripts/federation-lite-core.sh:260:  - GraphQL (.graphql)          - contract_bonus: 0.08
+scripts/federation-lite-core.sh:268:  federation-lite.sh --status
+scripts/federation-lite-core.sh:271:  federation-lite.sh --update
+scripts/federation-lite-core.sh:274:  federation-lite.sh --search "UserService"
+scripts/federation-lite-core.sh:277:  federation-lite.sh --list-contracts
+scripts/federation-lite-core.sh:280:  federation-lite.sh generate-virtual-edges --local-repo ./my-app --min-confidence 0.5
+scripts/federation-lite-core.sh:283:  federation-lite.sh query-virtual "getUserById" --confidence 0.5
+scripts/graph-rag.sh:12:#   graph-rag-context.sh --query "查询内容" [选项]
+scripts/graph-rag.sh:16:#   AC-007: graph_rag.enabled: false 时跳过
+scripts/graph-rag.sh:57:# shellcheck source=graph-rag-core.sh
+scripts/graph-rag.sh:58:source "${SCRIPT_DIR}/graph-rag-core.sh"
+scripts/graph-rag.sh:61:# shellcheck source=graph-rag-retrieval.sh
+scripts/graph-rag.sh:62:source "${SCRIPT_DIR}/graph-rag-retrieval.sh"
+scripts/graph-rag.sh:65:# shellcheck source=graph-rag-fusion.sh
+scripts/graph-rag.sh:66:source "${SCRIPT_DIR}/graph-rag-fusion.sh"
+scripts/graph-rag.sh:69:# shellcheck source=graph-rag-query.sh
+scripts/graph-rag.sh:70:source "${SCRIPT_DIR}/graph-rag-query.sh"
+scripts/graph-rag.sh:80:  graph-rag-context.sh --query "查询内容" [选项]
+scripts/graph-rag.sh:87:  --fusion-weights <w>  混合检索权重 "keyword,vector,graph"（默认: 0.3,0.5,0.2，总和须=1.0）
+scripts/graph-rag.sh:105:  graph-rag-context.sh --query "用户认证相关的函数"
+scripts/graph-rag.sh:108:  graph-rag-context.sh --query "处理支付的代码" --top-k 20 --max-depth 3
+scripts/graph-rag.sh:111:  graph-rag-context.sh --query "错误处理" --format json
+scripts/graph-rag.sh:116:    "source": "graph-rag",
+scripts/graph-rag.sh:118:    "subgraph": {
+scripts/graph-rag.sh:144:      "graph_depth": 3,
+scripts/graph-rag.sh:145:      "boundary_filtered": 5
+scripts/graph-rag.sh:153:  echo "graph-rag-context.sh version 1.0.0"
+scripts/graph-rag.sh:185:        # 解析权重: "keyword,vector,graph"
+scripts/graph-rag.sh:337:  result=$(build_context "$QUERY")
+scripts/graph-rag-fusion.sh:19:  local graph_json="$3"
+scripts/graph-rag-fusion.sh:22:  local weight_graph="$6"
+scripts/graph-rag-fusion.sh:28:    --argjson graph "$graph_json" \
+scripts/graph-rag-fusion.sh:31:    --argjson wg "$weight_graph" \
+scripts/graph-rag-fusion.sh:40:    (rank_entries($keyword; "keyword") + rank_entries($vector; "vector") + rank_entries($graph; "graph"))
+scripts/graph-rag-fusion.sh:414:fast_mock_context() {
+scripts/graph-rag-fusion.sh:423:  local graph_candidates='[
+scripts/graph-rag-fusion.sh:424:    {"file_path":"src/graph.ts","relevance_score":0.9,"distance":1,"source":"graph"}
+scripts/graph-rag-fusion.sh:429:    candidates_json=$(rrf_fusion "$keyword_candidates" "$vector_candidates" "$graph_candidates" \
+scripts/graph-rag-fusion.sh:435:  local graph_count
+scripts/graph-rag-fusion.sh:436:  graph_count=$(echo "$graph_candidates" | jq 'length' 2>/dev/null || echo 0)
+scripts/graph-rag-fusion.sh:437:  local subgraph='{"nodes":[],"edges":[]}'
+scripts/graph-rag-fusion.sh:439:  printf '{"schema_version":"1.0","source":"graph-rag","token_count":0,"subgraph":%s,"candidates":%s,"metadata":{"ckb_available":true,"ckb_fallback_reason":null,"fusion_depth":%s,"fusion_weights":"%s","graph_depth":%s,"token_count":0,"boundary_filtered":0,"legacy_mode":%s,"reranked":false,"provider":null,"fallback_reason":null,"retry_count":null,"graph_candidates":%s}}\n' \
+scripts/graph-rag-fusion.sh:440:    "$subgraph" "$candidates_json" "$FUSION_DEPTH" "$fusion_weights" "$MAX_DEPTH" "$LEGACY_MODE" "$graph_count"
+scripts/hotspot-analyzer.sh:238:# 使用 context-layer.sh 的分类逻辑
+scripts/hotspot-analyzer.sh:256:      # 使用与 context-layer.sh 相同的 fix 分类规则
+scripts/dependency-guard-report.sh:2:# dependency-guard-report.sh - Report Generation and Pre-commit Module
+scripts/dependency-guard-report.sh:6:# Part of: dependency-guard.sh modular architecture
+scripts/semantic-anomaly.sh:18:#   semantic-anomaly.sh <path>                 检测指定路径
+scripts/semantic-anomaly.sh:19:#   semantic-anomaly.sh --pattern <file> <path>  使用自定义模式文件
+scripts/semantic-anomaly.sh:20:#   semantic-anomaly.sh --output json <path>   指定输出格式
+scripts/semantic-anomaly.sh:21:#   semantic-anomaly.sh --threshold 0.8 <path> 设置置信度阈值
+scripts/semantic-anomaly.sh:112:  semantic-anomaly.sh [选项] <路径>
+scripts/semantic-anomaly.sh:119:  --report               生成报告到 evidence/semantic-anomaly-report.md
+scripts/semantic-anomaly.sh:158:  semantic-anomaly.sh src/api.ts
+scripts/semantic-anomaly.sh:161:  semantic-anomaly.sh src/
+scripts/semantic-anomaly.sh:164:  semantic-anomaly.sh --pattern my-patterns.json src/
+scripts/semantic-anomaly.sh:167:  semantic-anomaly.sh --threshold 0.9 src/
+scripts/semantic-anomaly.sh:173:  echo "semantic-anomaly.sh version 1.0.0"
+scripts/semantic-anomaly.sh:1194:  local output_file="${devbooks_dir}/semantic-anomaly-feedback.jsonl"
+scripts/semantic-anomaly.sh:1211:  local report_file="${report_dir}/semantic-anomaly-report.md"
+scripts/semantic-anomaly.sh:1284:    if ! is_feature_enabled "semantic_anomaly"; then
+scripts/dependency-guard-orphan.sh:2:# dependency-guard-orphan.sh - Orphan Detection Module
+scripts/dependency-guard-orphan.sh:6:# Part of: dependency-guard.sh modular architecture
+scripts/context-layer.sh:2:# context-layer.sh - Context Layer Enhancement (Commit Classification + Bug History)
+scripts/context-layer.sh:9:#   context-layer.sh --classify <sha>
+scripts/context-layer.sh:10:#   context-layer.sh --classify-batch --since "90 days ago"
+scripts/context-layer.sh:11:#   context-layer.sh --bug-history --file <path>
+scripts/context-layer.sh:12:#   context-layer.sh --index [--days 90]
+scripts/context-layer.sh:13:#   context-layer.sh --help
+scripts/context-layer.sh:17:#   CONTEXT_INDEX_PATH    - Index file path (default: .devbooks/context-index.json)
+scripts/context-layer.sh:32:: "${CONTEXT_INDEX_PATH:=.devbooks/context-index.json}"
+scripts/context-layer.sh:78:context-layer.sh - Context Layer Enhancement (Commit Classification + Bug History)
+scripts/context-layer.sh:81:  context-layer.sh --classify <sha>
+scripts/context-layer.sh:82:  context-layer.sh --classify-batch --since "90 days ago"
+scripts/context-layer.sh:83:  context-layer.sh --bug-history --file <path>
+scripts/context-layer.sh:84:  context-layer.sh --index [--days 90]
+scripts/context-layer.sh:85:  context-layer.sh --help
+scripts/context-layer.sh:93:  --index               Generate context index
+scripts/context-layer.sh:101:  CONTEXT_INDEX_PATH    Index file path (default: .devbooks/context-index.json)
+scripts/context-layer.sh:106:  context-layer.sh --classify abc123
+scripts/context-layer.sh:109:  context-layer.sh --classify-batch --since "30 days ago"
+scripts/context-layer.sh:112:  context-layer.sh --bug-history --file src/server.ts
+scripts/context-layer.sh:114:  # Generate context index
+scripts/context-layer.sh:115:  context-layer.sh --index --days 90
+scripts/context-layer.sh:124:# REQ-CTX-001: Commit semantic classification
+scripts/context-layer.sh:342:# Generate context index for all files
+scripts/context-layer.sh:345:generate_context_index() {
+scripts/context-layer.sh:348:    log_info "Generating context index (last $days days)..."
+scripts/context-layer.sh:578:                log_error "Usage: context-layer.sh --classify <sha>"
+scripts/context-layer.sh:588:                log_error "Usage: context-layer.sh --bug-history --file <path>"
+scripts/context-layer.sh:594:            generate_context_index "$days"
+scripts/impact-analyzer.sh:13:#   GRAPH_DB_PATH - 数据库路径，默认 .devbooks/graph.db
+scripts/impact-analyzer.sh:29:: "${GRAPH_DB_PATH:=$DEVBOOKS_DIR/graph.db}"
+scripts/impact-analyzer.sh:55:        log_info "Run 'graph-store.sh init' to initialize the database"
+scripts/impact-analyzer.sh:580:    echo "graph TD"
+scripts/impact-analyzer.sh:670:    GRAPH_DB_PATH           数据库路径（默认: .devbooks/graph.db）
+scripts/embedding.sh:78:context_signals_enabled() {
+scripts/embedding.sh:92:    in_features && /context_signals:/ { in_target = 1; next }
+scripts/embedding.sh:93:    in_features && /^[[:space:]][[:space:]][a-zA-Z]/ && !/context_signals/ { in_target = 0 }
+scripts/embedding.sh:113:apply_context_signals() {
+scripts/embedding.sh:121:  if ! context_signals_enabled; then
+scripts/embedding.sh:122:    log_warn "上下文信号功能已禁用 (features.context_signals: false)"
+scripts/embedding.sh:127:  local intent_script="$SCRIPT_DIR/intent-learner.sh"
+scripts/embedding.sh:128:  if [[ ! -x "$intent_script" ]]; then
+scripts/embedding.sh:129:    log_warn "intent-learner.sh 不可用，跳过上下文信号加权"
+scripts/embedding.sh:135:  prefs=$("$intent_script" get-preferences --top 50 2>/dev/null || echo "[]")
+scripts/embedding.sh:157:apply_context_signals_to_tsv() {
+scripts/embedding.sh:175:  json=$(apply_context_signals "$json")
+scripts/embedding.sh:517:  local storage_path
+scripts/embedding.sh:518:  storage_path=$(echo "$config" | grep -E "^\s*storage_path:" | awk '{print $2}' || true)
+scripts/embedding.sh:519:  VECTOR_DB_DIR="$PROJECT_ROOT/${storage_path:-.devbooks/embeddings}"
+scripts/embedding.sh:937:semantic_search() {
+scripts/embedding.sh:971:      if _semantic_search_with_embedding "ollama" "$query" "$top_k"; then
+scripts/embedding.sh:977:        if _detect_openai_api && _semantic_search_with_embedding "openai" "$query" "$top_k"; then
+scripts/embedding.sh:990:      if _semantic_search_with_embedding "openai" "$query" "$top_k"; then
+scripts/embedding.sh:1039:_semantic_search_with_embedding() {
+scripts/embedding.sh:1162:    candidates_json=$(apply_context_signals "$candidates_json")
+scripts/embedding.sh:1200:    apply_context_signals_to_tsv "$TEMP_DIR/final_results.tsv"
+scripts/embedding.sh:1264:  --enable-context-signals  启用上下文信号加权（需 intent-learner）
+scripts/embedding.sh:1462:          --enable-context-signals)
+scripts/embedding.sh:1481:      semantic_search "$search_query"
+scripts/dependency-guard-check.sh:2:# dependency-guard-check.sh - Cycle Detection Module
+scripts/dependency-guard-check.sh:6:# Part of: dependency-guard.sh modular architecture
+scripts/dependency-guard-check.sh:15:# Build dependency graph from files
+scripts/dependency-guard-check.sh:16:build_dependency_graph() {
+scripts/dependency-guard-check.sh:25:    local graph="{}"
+scripts/dependency-guard-check.sh:43:        graph=$(echo "$graph" | jq --arg file "$file" --argjson deps "$(echo "$imports" | jq '[.[] | .target]')" \
+scripts/dependency-guard-check.sh:47:    echo "$graph"
+scripts/benchmark.sh:493:    local guard_script="$PROJECT_ROOT/scripts/dependency-guard.sh"
+scripts/benchmark.sh:495:        log_fail "dependency-guard.sh not found or not executable"
+scripts/intent-learner.sh:2:# intent-learner.sh - 意图偏好学习模块
+scripts/intent-learner.sh:11:#   context save --query <q> --symbols <s1,s2>              - 保存对话上下文
+scripts/intent-learner.sh:12:#   context load                                             - 加载对话上下文
+scripts/intent-learner.sh:13:#   context apply-weight --results <json>                   - 应用对话连续性加权
+scripts/intent-learner.sh:33:#   INTENT_HISTORY_PATH - 历史文件路径 (默认: .devbooks/intent-history.json)
+scripts/intent-learner.sh:36:#   CONVERSATION_CONTEXT_PATH - 对话上下文路径 (默认: .devbooks/conversation-context.json)
+scripts/intent-learner.sh:57:: "${INTENT_HISTORY_PATH:=${DEVBOOKS_DIR:-.devbooks}/intent-history.json}"
+scripts/intent-learner.sh:64:: "${CONVERSATION_CONTEXT_PATH:=${DEVBOOKS_DIR:-.devbooks}/conversation-context.json}"
+scripts/intent-learner.sh:239:ensure_context_dir() {
+scripts/intent-learner.sh:248:init_empty_context() {
+scripts/intent-learner.sh:249:    ensure_context_dir
+scripts/intent-learner.sh:261:            context_window: [],
+scripts/intent-learner.sh:269:read_context() {
+scripts/intent-learner.sh:270:    ensure_context_dir
+scripts/intent-learner.sh:277:            context_window: [],
+scripts/intent-learner.sh:288:            context_window: [],
+scripts/intent-learner.sh:300:            context_window: [],
+scripts/intent-learner.sh:307:write_context() {
+scripts/intent-learner.sh:311:    ensure_context_dir
+scripts/intent-learner.sh:322:save_context_turn() {
+scripts/intent-learner.sh:359:    local context
+scripts/intent-learner.sh:360:    context=$(read_context)
+scripts/intent-learner.sh:364:    session_id=$(echo "$context" | jq -r '.session_id // empty')
+scripts/intent-learner.sh:369:        context=$(echo "$context" | jq \
+scripts/intent-learner.sh:377:    next_turn=$(echo "$context" | jq '(.context_window | length) + 1')
+scripts/intent-learner.sh:409:    # 添加到 context_window
+scripts/intent-learner.sh:410:    context=$(echo "$context" | jq --argjson new_turn "$new_turn" '
+scripts/intent-learner.sh:411:        .context_window += [$new_turn]
+scripts/intent-learner.sh:415:    context=$(echo "$context" | jq --argjson symbols "$symbols_array" '
+scripts/intent-learner.sh:422:    context=$(echo "$context" | jq --argjson max "$max_turns" '
+scripts/intent-learner.sh:423:        if (.context_window | length) > $max then
+scripts/intent-learner.sh:425:            .context_window = (.context_window | .[-$max:])
+scripts/intent-learner.sh:433:    context=$(echo "$context" | jq --argjson max "$max_focus" '
+scripts/intent-learner.sh:437:            ($ctx.context_window | [.[].focus_symbols[]] | group_by(.) | map({symbol: .[0], count: length}) | sort_by(-.count) | .[0:$max] | map(.symbol)) as $top_symbols |
+scripts/intent-learner.sh:445:    write_context "$context"
+scripts/intent-learner.sh:452:apply_context_weight() {
+scripts/intent-learner.sh:474:    local context
+scripts/intent-learner.sh:475:    context=$(read_context)
+scripts/intent-learner.sh:477:    # 如果既没有 context_window 也没有 accumulated_focus，直接返回原结果
+scripts/intent-learner.sh:478:    local context_len acc_len
+scripts/intent-learner.sh:479:    context_len=$(echo "$context" | jq '.context_window | length // 0')
+scripts/intent-learner.sh:480:    acc_len=$(echo "$context" | jq '.accumulated_focus | length // 0')
+scripts/intent-learner.sh:481:    if [[ "$context_len" -eq 0 ]] && [[ "$acc_len" -eq 0 ]]; then
+scripts/intent-learner.sh:495:        --argjson context "$context" \
+scripts/intent-learner.sh:502:        ($context.accumulated_focus // []) as $accumulated |
+scripts/intent-learner.sh:505:        ([$context.context_window[-3:]? // [] | .[].focus_symbols[]?] | unique) as $recent |
+scripts/intent-learner.sh:508:        ([$context.context_window[-1]?.focus_symbols[]?] | map(split("::")[0]) | unique) as $recent_files |
+scripts/intent-learner.sh:529:                context_boost: $total_boost
+scripts/intent-learner.sh:543:    session_id=$(init_empty_context)
+scripts/intent-learner.sh:557:        log_error "用法: intent-learner session resume <session_id>"
+scripts/intent-learner.sh:564:    local context
+scripts/intent-learner.sh:565:    context=$(read_context)
+scripts/intent-learner.sh:568:    current_id=$(echo "$context" | jq -r '.session_id // empty')
+scripts/intent-learner.sh:572:        echo "$context"
+scripts/intent-learner.sh:596:    local context
+scripts/intent-learner.sh:597:    context=$(read_context)
+scripts/intent-learner.sh:600:    session_id=$(echo "$context" | jq -r '.session_id // empty')
+scripts/intent-learner.sh:610:    echo "$context" | jq '{
+scripts/intent-learner.sh:614:            turns: (.context_window | length),
+scripts/intent-learner.sh:637:        log_error "用法: intent-learner session <new|resume|list|clear>"
+scripts/intent-learner.sh:665:# context 命令路由
+scripts/intent-learner.sh:666:cmd_context() {
+scripts/intent-learner.sh:668:        log_error "用法: intent-learner context <save|load|apply-weight>"
+scripts/intent-learner.sh:677:            save_context_turn "$@"
+scripts/intent-learner.sh:680:            read_context
+scripts/intent-learner.sh:683:            apply_context_weight "$@"
+scripts/intent-learner.sh:701:        log_error "用法: intent-learner record <symbol> <symbol_id> [--action view|edit|ignore]"
+scripts/intent-learner.sh:933:  intent-learner <command> [options]
+scripts/intent-learner.sh:958:  context save --query <q> --symbols <s1,s2> [--query-type <type>]
+scripts/intent-learner.sh:967:  context load
+scripts/intent-learner.sh:970:  context apply-weight --results <json>
+scripts/intent-learner.sh:989:  INTENT_HISTORY_PATH           历史文件路径 (默认: .devbooks/intent-history.json)
+scripts/intent-learner.sh:992:  CONVERSATION_CONTEXT_PATH     对话上下文路径 (默认: .devbooks/conversation-context.json)
+scripts/intent-learner.sh:1016:  intent-learner record handleToolCall src/server.ts::handleToolCall --action view
+scripts/intent-learner.sh:1019:  intent-learner get-preferences --top 5
+scripts/intent-learner.sh:1022:  intent-learner get-preferences --prefix src/
+scripts/intent-learner.sh:1025:  intent-learner cleanup --days 30
+scripts/intent-learner.sh:1028:  intent-learner context save --query "find auth module" --symbols "src/auth.ts,src/auth.ts::login"
+scripts/intent-learner.sh:1031:  intent-learner context load
+scripts/intent-learner.sh:1034:  intent-learner context apply-weight --results '[{"symbol":"src/auth.ts::login","score":0.8}]'
+scripts/intent-learner.sh:1037:  intent-learner session new
+scripts/intent-learner.sh:1040:  intent-learner session list
+scripts/intent-learner.sh:1043:  intent-learner session clear
+scripts/intent-learner.sh:1063:        if ! is_feature_enabled "context_signals"; then
+scripts/intent-learner.sh:1088:        context)
+scripts/intent-learner.sh:1089:            cmd_context "$@"
+scripts/graph-rag-retrieval.sh:85:ckb_graph_traverse() {
+scripts/graph-rag-retrieval.sh:115:  local graph_results='[]'
+scripts/graph-rag-retrieval.sh:127:        graph_results=$(echo "$graph_results" | jq --arg path "$import_path" '. + [{file_path: $path, depth: 1, source: "import"}]')
+scripts/graph-rag-retrieval.sh:132:  echo "$graph_results"
+scripts/graph-rag-retrieval.sh:247:      local graph_nodes
+scripts/graph-rag-retrieval.sh:248:      graph_nodes=$(ckb_graph_traverse "$file_path" "$max_depth")
+scripts/graph-rag-retrieval.sh:250:      if [ -n "$graph_nodes" ] && [ "$graph_nodes" != "[]" ]; then
+scripts/graph-rag-retrieval.sh:251:        graph_nodes=$(echo "$graph_nodes" | jq '[.[] | . + {source: "import"}]')
+scripts/graph-rag-retrieval.sh:252:        all_candidates=$(echo "$all_candidates" "$graph_nodes" | jq -s 'add | unique_by(.file_path)')
+scripts/dependency-guard.sh:2:# dependency-guard.sh - Architecture Guard (Cycle Detection + Rule Validation)
+scripts/dependency-guard.sh:9:#   dependency-guard.sh --cycles --scope "src/" --format json
+scripts/dependency-guard.sh:10:#   dependency-guard.sh --rules <rules.yaml> --format json
+scripts/dependency-guard.sh:11:#   dependency-guard.sh --all --scope "src/" --rules <rules.yaml>
+scripts/dependency-guard.sh:12:#   dependency-guard.sh --pre-commit [--with-deps]
+scripts/dependency-guard.sh:13:#   dependency-guard.sh --help
+scripts/dependency-guard.sh:40:source "${SCRIPT_DIR}/dependency-guard-extract.sh"
+scripts/dependency-guard.sh:41:source "${SCRIPT_DIR}/dependency-guard-check.sh"
+scripts/dependency-guard.sh:42:source "${SCRIPT_DIR}/dependency-guard-rules.sh"
+scripts/dependency-guard.sh:43:source "${SCRIPT_DIR}/dependency-guard-orphan.sh"
+scripts/dependency-guard.sh:44:source "${SCRIPT_DIR}/dependency-guard-report.sh"
+scripts/dependency-guard.sh:70:dependency-guard.sh - Architecture Guard (Cycle Detection + Rule Validation)
+scripts/dependency-guard.sh:73:  dependency-guard.sh --cycles --scope "src/" --format json
+scripts/dependency-guard.sh:74:  dependency-guard.sh --rules <rules.yaml> --format json
+scripts/dependency-guard.sh:75:  dependency-guard.sh --all --scope "src/" --rules <rules.yaml>
+scripts/dependency-guard.sh:76:  dependency-guard.sh --orphan-check --scope "src/" --format json
+scripts/dependency-guard.sh:77:  dependency-guard.sh --pre-commit [--with-deps]
+scripts/dependency-guard.sh:78:  dependency-guard.sh --help
+scripts/dependency-guard.sh:97:  dependency-guard.sh --cycles --scope "src/" --format json
+scripts/dependency-guard.sh:100:  dependency-guard.sh --rules config/arch-rules.yaml
+scripts/dependency-guard.sh:103:  dependency-guard.sh --pre-commit --with-deps
+scripts/graph-store.sh:2:# graph-store.sh - SQLite 图存储管理脚本
+scripts/graph-store.sh:10:#   GRAPH_DB_PATH - 数据库路径，默认 .devbooks/graph.db
+scripts/graph-store.sh:21:export LOG_PREFIX="graph-store"
+scripts/graph-store.sh:27:: "${GRAPH_DB_PATH:=$DEVBOOKS_DIR/graph.db}"
+scripts/graph-store.sh:217:    contract_type TEXT NOT NULL CHECK(contract_type IN ('proto', 'openapi', 'graphql', 'typescript')),
+scripts/graph-store.sh:374:    log_info "Initializing graph database at $GRAPH_DB_PATH"
+scripts/graph-store.sh:677:        'db_size_bytes', (SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size())
+scripts/graph-store.sh:1269:graph-store.sh - SQLite 图存储管理
+scripts/graph-store.sh:1272:    graph-store.sh <command> [options]
+scripts/graph-store.sh:1273:    graph-store.sh --enable-all-features <command> [options]
+scripts/graph-store.sh:1334:    GRAPH_DB_PATH           数据库路径（默认: .devbooks/graph.db）
+scripts/graph-store.sh:1339:    graph-store.sh init
+scripts/graph-store.sh:1342:    graph-store.sh add-node --id "sym:func:main" --symbol "main" --kind "function" --file "src/index.ts"
+scripts/graph-store.sh:1345:    graph-store.sh add-edge --source "sym:func:main" --target "sym:func:helper" --type CALLS
+scripts/graph-store.sh:1348:    graph-store.sh query-edges --from "sym:func:main" --type CALLS
+scripts/graph-store.sh:1351:    graph-store.sh find-orphans
+scripts/graph-store.sh:1354:    graph-store.sh stats
+scripts/graph-store.sh:1367:        if ! is_feature_enabled "graph_store"; then
+scripts/graph-store.sh:1368:            log_warn "图存储功能已禁用 (features.graph_store: false)"
+scripts/graph-store.sh:1369:            echo '{"status":"disabled","message":"graph_store disabled"}'
+scripts/entropy-viz.sh:7:#   2. 热点文件图 (graph TD/LR)
+scripts/entropy-viz.sh:269:graph TD
+scripts/entropy-viz.sh:270:    subgraph 热点文件分析
+scripts/cache-manager.sh:36:# Subgraph LRU Cache Configuration (REQ-SLC-001 ~ REQ-SLC-009)
+scripts/cache-manager.sh:38:: "${SUBGRAPH_CACHE_DB:=${DEVBOOKS_DIR}/subgraph-cache.db}"
+scripts/cache-manager.sh:108:# Subgraph LRU Cache Functions (REQ-SLC-001 ~ REQ-SLC-009)
+scripts/cache-manager.sh:111:# Initialize SQLite database for subgraph cache (REQ-SLC-001, REQ-SLC-002)
+scripts/cache-manager.sh:113:init_subgraph_cache_db() {
+scripts/cache-manager.sh:119:        log_error "sqlite3 is required for subgraph cache"
+scripts/cache-manager.sh:131:CREATE TABLE IF NOT EXISTS subgraph_cache (
+scripts/cache-manager.sh:140:CREATE INDEX IF NOT EXISTS idx_access_time ON subgraph_cache(access_time);
+scripts/cache-manager.sh:143:CREATE INDEX IF NOT EXISTS idx_ttl_expires ON subgraph_cache(ttl_expires);
+scripts/cache-manager.sh:160:ensure_subgraph_cache_db() {
+scripts/cache-manager.sh:162:        init_subgraph_cache_db
+scripts/cache-manager.sh:166:# Get value from subgraph cache (REQ-SLC-005)
+scripts/cache-manager.sh:170:subgraph_cache_get() {
+scripts/cache-manager.sh:173:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:181:    sqlite3 "$SUBGRAPH_CACHE_DB" "DELETE FROM subgraph_cache WHERE ttl_expires IS NOT NULL AND ttl_expires < $now_seconds;" 2>/dev/null || true
+scripts/cache-manager.sh:189:UPDATE subgraph_cache SET access_time = $now WHERE key = '$cache_key';
+scripts/cache-manager.sh:191:SELECT value FROM subgraph_cache WHERE key = '$cache_key';
+scripts/cache-manager.sh:194:WHERE stat_key = CASE WHEN (SELECT COUNT(*) FROM subgraph_cache WHERE key = '$cache_key') > 0 THEN 'hits' ELSE 'misses' END;
+scripts/cache-manager.sh:211:# Set value in subgraph cache with LRU eviction (REQ-SLC-006)
+scripts/cache-manager.sh:216:subgraph_cache_set() {
+scripts/cache-manager.sh:220:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:241:    current_count=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:249:                "SELECT key FROM subgraph_cache ORDER BY access_time ASC LIMIT $evict_count;" 2>/dev/null || echo "")
+scripts/cache-manager.sh:266:DELETE FROM subgraph_cache WHERE ttl_expires IS NOT NULL AND ttl_expires < $now_seconds;
+scripts/cache-manager.sh:270:DELETE FROM subgraph_cache
+scripts/cache-manager.sh:272:    SELECT key FROM subgraph_cache
+scripts/cache-manager.sh:275:        WHEN (SELECT COUNT(*) FROM subgraph_cache) >= $max_size THEN $evict_count
+scripts/cache-manager.sh:280:INSERT OR REPLACE INTO subgraph_cache (key, value, access_time, created_time, ttl_expires)
+scripts/cache-manager.sh:282:    (SELECT created_time FROM subgraph_cache WHERE key = '$cache_key'), $now
+scripts/cache-manager.sh:290:# Delete entry from subgraph cache
+scripts/cache-manager.sh:291:subgraph_cache_delete() {
+scripts/cache-manager.sh:294:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:296:    sqlite3 "$SUBGRAPH_CACHE_DB" "DELETE FROM subgraph_cache WHERE key = '$cache_key';"
+scripts/cache-manager.sh:300:# Clear all entries from subgraph cache
+scripts/cache-manager.sh:301:subgraph_cache_clear() {
+scripts/cache-manager.sh:302:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:305:DELETE FROM subgraph_cache;
+scripts/cache-manager.sh:312:# Get subgraph cache statistics (REQ-SLC-007, REQ-SLC-009)
+scripts/cache-manager.sh:313:subgraph_cache_stats() {
+scripts/cache-manager.sh:316:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:321:    total_entries=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:322:    oldest_access=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT MIN(access_time) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:323:    newest_access=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT MAX(access_time) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:388:  # Subgraph LRU Cache Commands
+scripts/cache-manager.sh:404:Subgraph Cache Commands:
+scripts/cache-manager.sh:409:  stats         Show subgraph cache statistics
+scripts/cache-manager.sh:414:  CACHE_MAX_SIZE      Maximum subgraph cache entries (default: 100)
+scripts/cache-manager.sh:415:  SUBGRAPH_CACHE_DB   SQLite database path (default: .devbooks/subgraph-cache.db)
+scripts/cache-manager.sh:431:  # Subgraph cache operations
+scripts/cache-manager.sh:914:    # Check for subgraph cache commands first (positional arguments)
+scripts/cache-manager.sh:923:                subgraph_cache_get "$1"
+scripts/cache-manager.sh:932:                subgraph_cache_set "$1" "$2"
+scripts/cache-manager.sh:941:                subgraph_cache_delete "$1"
+scripts/cache-manager.sh:945:                subgraph_cache_clear
+scripts/cache-manager.sh:946:                echo "Subgraph cache cleared"
+scripts/cache-manager.sh:963:                subgraph_cache_stats "$format"
+scripts/dependency-guard-rules.sh:2:# dependency-guard-rules.sh - Architecture Rule Validation Module
+scripts/dependency-guard-rules.sh:6:# Part of: dependency-guard.sh modular architecture
+scripts/vendor-proto.sh:27:SCIP_PROTO_URL="https://raw.githubusercontent.com/sourcegraph/scip/main/scip.proto"
+scripts/common.sh:154:is_code_intent() {
+scripts/common.sh:160:  local intent_type
+scripts/common.sh:161:  intent_type=$(get_intent_type "$input")
+scripts/common.sh:163:  case "$intent_type" in
+scripts/common.sh:188:get_intent_type() {
+scripts/common.sh:244:    "graph_rag.enabled") echo "true" ;;
+scripts/common.sh:245:    "graph_rag.max_depth") echo "2" ;;
+scripts/common.sh:246:    "graph_rag.token_budget") echo "8000" ;;
+scripts/common.sh:247:    "graph_rag.top_k") echo "10" ;;
+scripts/common.sh:248:    "graph_rag.ckb.enabled") echo "true" ;;
+scripts/common.sh:249:    "graph_rag.ckb.fallback_to_import") echo "true" ;;
+scripts/common.sh:1066:load_devbooks_context() {
+scripts/dependency-guard-extract.sh:2:# dependency-guard-extract.sh - Import Extraction Module
+scripts/dependency-guard-extract.sh:6:# Part of: dependency-guard.sh modular architecture
+scripts/graph-rag-query.sh:172:build_subgraph() {
+scripts/graph-rag-query.sh:238:build_context() {
+scripts/graph-rag-query.sh:244:    fast_mock_context "$query"
+scripts/graph-rag-query.sh:250:  local cache_key="graph-rag:$CWD:$query:$TOP_K:$MAX_DEPTH:$FUSION_DEPTH:$TOKEN_BUDGET:$CKB_AVAILABLE:$LEGACY_MODE:$RERANK_ENABLED:$HYBRID_WEIGHT_KEYWORD:$HYBRID_WEIGHT_VECTOR:$HYBRID_WEIGHT_GRAPH:$HYBRID_RRF_K"
+scripts/graph-rag-query.sh:261:  local graph_candidates='[]'
+scripts/graph-rag-query.sh:273:      graph_candidates=$(_ckb_search_and_traverse "$query" "$TOP_K" "$MAX_DEPTH")
+scripts/graph-rag-query.sh:274:      if [ -z "$graph_candidates" ] || [ "$graph_candidates" = "[]" ]; then
+scripts/graph-rag-query.sh:277:        graph_candidates=$(_expand_with_import_analysis "$vector_candidates" "$MAX_DEPTH")
+scripts/graph-rag-query.sh:280:      graph_candidates=$(_expand_with_import_analysis "$vector_candidates" "$MAX_DEPTH")
+scripts/graph-rag-query.sh:283:    [ -z "$graph_candidates" ] && graph_candidates='[]'
+scripts/graph-rag-query.sh:284:    candidates=$(rrf_fusion "$keyword_candidates" "$vector_candidates" "$graph_candidates" \
+scripts/graph-rag-query.sh:297:  local graph_candidates_count
+scripts/graph-rag-query.sh:298:  graph_candidates_count=$(echo "$graph_candidates" | jq 'length' 2>/dev/null || echo 0)
+scripts/graph-rag-query.sh:351:  local subgraph='{"nodes":[],"edges":[]}'
+scripts/graph-rag-query.sh:353:    subgraph=$(build_subgraph "$trimmed")
+scripts/graph-rag-query.sh:364:    --arg source "graph-rag" \
+scripts/graph-rag-query.sh:366:    --argjson subgraph "$subgraph" \
+scripts/graph-rag-query.sh:369:    --argjson graph_depth "$MAX_DEPTH" \
+scripts/graph-rag-query.sh:372:    --argjson boundary_filtered "$BOUNDARY_FILTERED_COUNT" \
+scripts/graph-rag-query.sh:381:    --argjson graph_candidates_count "$graph_candidates_count" \
+scripts/graph-rag-query.sh:386:      subgraph: $subgraph,
+scripts/graph-rag-query.sh:393:        graph_depth: $graph_depth,
+scripts/graph-rag-query.sh:395:        boundary_filtered: $boundary_filtered,
+scripts/graph-rag-query.sh:399:        graph_candidates: $graph_candidates_count,
+scripts/graph-rag-query.sh:425:    edge_count=$(echo "$result" | jq '.subgraph.edges | length')
+scripts/graph-rag-query.sh:427:    filtered_count=$(echo "$result" | jq '.metadata.boundary_filtered // 0')
+scripts/graph-rag-query.sh:438:        edge=$(echo "$result" | jq ".subgraph.edges[$j]")
+scripts/indexer.sh:106:    local db_path="${GRAPH_DB_PATH:-.devbooks/graph.db}"
+scripts/indexer.sh:272:    if ! "$SCRIPT_DIR/scip-to-graph.sh" parse --incremental --format json 2>&1; then
+scripts/graph-rag-core.sh:30:BOUNDARY_DETECTOR="${SCRIPT_DIR}/boundary-detector.sh"
+scripts/graph-rag-core.sh:39:CACHE_DIR="${TMPDIR:-/tmp}/.devbooks-cache/graph-rag"
+scripts/graph-rag-core.sh:300:        elif [[ "$line" =~ ^[[:space:]]+graph:[[:space:]]*([0-9.]+) ]]; then
+scripts/graph-rag-core.sh:334:resolve_graph_rag_cache_anchor() {
+scripts/graph-rag-core.sh:341:    "$SCRIPT_DIR/graph-rag.sh"
+scripts/graph-rag-core.sh:361:    cache_anchor=$(resolve_graph_rag_cache_anchor "$CWD") || cache_anchor=""
+scripts/graph-rag-core.sh:400:    cache_anchor=$(resolve_graph_rag_cache_anchor "$CWD") || cache_anchor=""
+scripts/graph-rag-core.sh:431:      local boundary_type
+scripts/graph-rag-core.sh:432:      boundary_type=$(echo "$result" | jq -r '.type // "user"' 2>/dev/null)
+scripts/graph-rag-core.sh:434:      case "$boundary_type" in
+scripts/federation-lite.sh:2:# federation-lite.sh - Lightweight Federation Index (Cross-repo Contract Tracking)
+scripts/federation-lite.sh:9:#   federation-lite.sh --status
+scripts/federation-lite.sh:10:#   federation-lite.sh --update [--config config/federation.yaml]
+scripts/federation-lite.sh:11:#   federation-lite.sh --search "<symbol>" [--format json]
+scripts/federation-lite.sh:12:#   federation-lite.sh --list-contracts [--repo "<name>"]
+scripts/federation-lite.sh:13:#   federation-lite.sh --help
+scripts/federation-lite.sh:16:#   FEDERATION_CONFIG   - Config file path (default: config/federation.yaml)
+scripts/federation-lite.sh:17:#   FEDERATION_INDEX    - Index file path (default: .devbooks/federation-index.json)
+scripts/federation-lite.sh:50:  [[ -z "$_fast_db_path" ]] && _fast_db_path="$_fast_local_repo/.devbooks/graph.db"
+scripts/federation-lite.sh:51:  [[ -z "$_fast_index" ]] && _fast_index="${FEDERATION_INDEX:-$_fast_local_repo/.devbooks/federation-index.json}"
+scripts/federation-lite.sh:53:  # Check federation index exists
+scripts/federation-lite.sh:212:# Source federation modules
+scripts/federation-lite.sh:213:# shellcheck source=federation-lite-core.sh
+scripts/federation-lite.sh:214:source "$SCRIPT_DIR/federation-lite-core.sh"
+scripts/federation-lite.sh:215:# shellcheck source=federation-lite-discovery.sh
+scripts/federation-lite.sh:216:source "$SCRIPT_DIR/federation-lite-discovery.sh"
+scripts/federation-lite.sh:217:# shellcheck source=federation-lite-index.sh
+scripts/federation-lite.sh:218:source "$SCRIPT_DIR/federation-lite-index.sh"
+scripts/federation-lite.sh:219:# shellcheck source=federation-lite-virtual.sh
+scripts/federation-lite.sh:220:source "$SCRIPT_DIR/federation-lite-virtual.sh"
+scripts/federation-lite.sh:341:                log_error "Usage: federation-lite.sh --search <symbol>"
+scripts/federation-lite.sh:354:                log_error "Usage: federation-lite.sh query-virtual <symbol>"
+scripts/cache-utils.sh:4:# 用途: 为 augment-context-global.sh 和 augment-context.sh 提供统一的缓存机制
+scripts/adr-parser.sh:11:#   GRAPH_DB_PATH - 图数据库路径，默认 .devbooks/graph.db
+scripts/adr-parser.sh:26:: "${GRAPH_DB_PATH:=$DEVBOOKS_DIR/graph.db}"
+scripts/adr-parser.sh:49:    "context" "decision" "status" "title" "file" "path" "type" "name"
+scripts/adr-parser.sh:180:    local context
+scripts/adr-parser.sh:181:    context=$(extract_section "$file" "Context")
+scripts/adr-parser.sh:194:        --arg context "$context" \
+scripts/adr-parser.sh:203:            context: $context,
+scripts/adr-parser.sh:237:    local context
+scripts/adr-parser.sh:238:    context=$(extract_section "$file" "Context")
+scripts/adr-parser.sh:252:        --arg context "$context" \
+scripts/adr-parser.sh:262:            context: $context,
+scripts/adr-parser.sh:301:    # 从 decision、context、title 中提取关键词
+scripts/adr-parser.sh:302:    local decision context title
+scripts/adr-parser.sh:304:    context=$(echo "$adr_json" | jq -r '.context // ""')
+scripts/adr-parser.sh:307:    local all_text="$title $decision $context"
+scripts/adr-parser.sh:386:link_keywords_to_graph() {
+scripts/adr-parser.sh:391:        log_info "graph.db 不存在，跳过关联"
+scripts/adr-parser.sh:403:        # 在 graph.db 中搜索匹配的节点
+scripts/adr-parser.sh:580:            link_result=$(link_keywords_to_graph "$adr_id" "$keywords_json")
+scripts/adr-parser.sh:702:    --link              生成关联边写入 graph.db
+scripts/adr-parser.sh:720:    GRAPH_DB_PATH       图数据库路径（默认: .devbooks/graph.db）
+scripts/federation-lite-virtual.sh:2:# federation-lite-virtual.sh - Virtual edge operations
+scripts/federation-lite-virtual.sh:237:    # Ensure federation index exists
+scripts/federation-lite-virtual.sh:278:    # Load federation index
+scripts/scip-to-graph.sh:2:# scip-to-graph.sh - SCIP 索引解析转换脚本
+scripts/scip-to-graph.sh:11:#   GRAPH_DB_PATH - 数据库路径，默认 .devbooks/graph.db
+scripts/scip-to-graph.sh:21:export LOG_PREFIX="scip-to-graph"
+scripts/scip-to-graph.sh:27:: "${GRAPH_DB_PATH:=$DEVBOOKS_DIR/graph.db}"
+scripts/scip-to-graph.sh:36:SCIP_PROTO_URL="https://raw.githubusercontent.com/sourcegraph/scip/main/scip.proto"
+scripts/scip-to-graph.sh:675:    "$SCRIPT_DIR/graph-store.sh" init >/dev/null 2>&1
+scripts/scip-to-graph.sh:730:    import_result=$("$SCRIPT_DIR/graph-store.sh" batch-import --file "$temp_json" 2>&1)
+scripts/scip-to-graph.sh:846:scip-to-graph.sh - SCIP 索引解析转换
+scripts/scip-to-graph.sh:849:    scip-to-graph.sh <command> [options]
+scripts/scip-to-graph.sh:868:    GRAPH_DB_PATH       数据库路径（默认: .devbooks/graph.db）
+scripts/scip-to-graph.sh:886:    scip-to-graph.sh parse
+scripts/scip-to-graph.sh:889:    scip-to-graph.sh parse --incremental
+scripts/scip-to-graph.sh:892:    scip-to-graph.sh parse --force --format json
+scripts/scip-to-graph.sh:895:    scip-to-graph.sh check-proto --format json
+scripts/scip-to-graph.sh:960:        bash "$SCRIPT_DIR/graph-store.sh" init >/dev/null 2>&1 || true
+scripts/scip-to-graph.sh:973:            bash "$SCRIPT_DIR/graph-store.sh" batch-import --file "$temp_json" >/dev/null 2>&1
+scripts/graph-store.sh.bak:2:# graph-store.sh - SQLite 图存储管理脚本
+scripts/graph-store.sh.bak:10:#   GRAPH_DB_PATH - 数据库路径，默认 .devbooks/graph.db
+scripts/graph-store.sh.bak:21:export LOG_PREFIX="graph-store"
+scripts/graph-store.sh.bak:27:: "${GRAPH_DB_PATH:=$DEVBOOKS_DIR/graph.db}"
+scripts/graph-store.sh.bak:217:    contract_type TEXT NOT NULL CHECK(contract_type IN ('proto', 'openapi', 'graphql', 'typescript')),
+scripts/graph-store.sh.bak:361:    log_info "Initializing graph database at $GRAPH_DB_PATH"
+scripts/graph-store.sh.bak:663:        'db_size_bytes', (SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size())
+scripts/graph-store.sh.bak:1255:graph-store.sh - SQLite 图存储管理
+scripts/graph-store.sh.bak:1258:    graph-store.sh <command> [options]
+scripts/graph-store.sh.bak:1259:    graph-store.sh --enable-all-features <command> [options]
+scripts/graph-store.sh.bak:1320:    GRAPH_DB_PATH           数据库路径（默认: .devbooks/graph.db）
+scripts/graph-store.sh.bak:1325:    graph-store.sh init
+scripts/graph-store.sh.bak:1328:    graph-store.sh add-node --id "sym:func:main" --symbol "main" --kind "function" --file "src/index.ts"
+scripts/graph-store.sh.bak:1331:    graph-store.sh add-edge --source "sym:func:main" --target "sym:func:helper" --type CALLS
+scripts/graph-store.sh.bak:1334:    graph-store.sh query-edges --from "sym:func:main" --type CALLS
+scripts/graph-store.sh.bak:1337:    graph-store.sh find-orphans
+scripts/graph-store.sh.bak:1340:    graph-store.sh stats
+scripts/graph-store.sh.bak:1353:        if ! is_feature_enabled "graph_store"; then
+scripts/graph-store.sh.bak:1354:            log_warn "图存储功能已禁用 (features.graph_store: false)"
+scripts/graph-store.sh.bak:1355:            echo '{"status":"disabled","message":"graph_store disabled"}'

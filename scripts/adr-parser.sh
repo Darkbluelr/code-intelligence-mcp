@@ -18,7 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 # 设置日志前缀
-LOG_PREFIX="adr-parser"
+export LOG_PREFIX="adr-parser"
 
 # ==================== 配置 ====================
 
@@ -415,6 +415,7 @@ link_keywords_to_graph() {
         " 2>/dev/null || true)
 
         if [[ -n "$matches" ]]; then
+            # shellcheck disable=SC2034
             while IFS='|' read -r node_id symbol file_path; do
                 [[ -z "$node_id" ]] && continue
 
