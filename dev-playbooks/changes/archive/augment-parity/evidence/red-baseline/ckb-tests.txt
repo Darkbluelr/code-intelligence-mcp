@@ -1,6 +1,0 @@
-1..5
-ok 1 CT-CKB-001: ci_graph_rag works when CKB_ENABLED=false
-ok 2 CT-CKB-002: ci_graph_rag returns valid results without CKB
-ok 3 CT-CKB-003: ci_graph_rag uses local graph when CKB unavailable
-ok 4 CT-CKB-004: ci_call_chain works without CKB
-ok 5 CT-CKB-005: degradation message shown when CKB disabled

@@ -1,9 +1,0 @@
-1..8
-ok 1 SC-PD-001: auto-discover detects naming patterns # skip auto-discover naming not yet implemented
-ok 2 SC-PD-003: auto-discover ignores patterns below threshold # skip auto-discover threshold not yet implemented
-ok 3 SC-PD-004: auto-discover respects custom min-frequency # skip auto-discover custom threshold not yet implemented
-ok 4 SC-PD-005: auto-discover outputs valid JSON with required fields # skip auto-discover json not yet implemented
-ok 5 SC-PD-006: auto-discover persists patterns to file # skip auto-discover persist not yet implemented
-ok 6 SC-PD-009: auto-discover skips when feature is disabled # skip auto-discover disabled not yet implemented
-ok 7 SC-PD-010: auto-discover handles empty codebase gracefully # skip auto-discover empty not yet implemented
-ok 8 SC-PD-011: auto-discover includes confidence scores # skip auto-discover confidence not yet implemented
