@@ -14,11 +14,19 @@ Code Intelligence MCP Server enhances AI coding assistants with deep codebase un
 - **Call Chain Analysis**: Trace function dependencies and impacts
 - **Smart Context**: Automatically inject relevant code snippets into AI conversations
 
-Perfect for use with [Claude Code](https://claude.ai/code), [Cline](https://github.com/cline/cline), or any MCP-compatible AI assistant.
+Perfect for use with Claude Code, Cline, or any MCP-compatible AI assistant.
 
 ## Quick Start
 
 ### Installation
+
+**Via npm** (recommended):
+
+```bash
+npm install -g code-intelligence-mcp
+```
+
+**Via git**:
 
 ```bash
 git clone https://github.com/Darkbluelr/code-intelligence-mcp.git
@@ -127,9 +135,9 @@ All features degrade gracefully:
 
 ## Documentation
 
-- [Technical Documentation](docs/TECHNICAL.md) - Complete API reference and architecture
-- [Configuration Guide](docs/TECHNICAL.md#configuration) - Detailed configuration options
-- [Architecture](docs/TECHNICAL.md#architecture) - System design and components
+- Technical Documentation: `docs/TECHNICAL.md` - Complete API reference and architecture
+- Configuration Guide: `docs/TECHNICAL.md` - Detailed configuration options
+- Architecture: `docs/TECHNICAL.md` - System design and components
 
 ## Examples
 
@@ -168,7 +176,7 @@ Previously stated targets (P95/relative improvements) are now tracked in evidenc
 
 ## Contributing
 
-Contributions welcome! Please read our [Contributing Guide](CONTRIBUTING.md) first.
+Contributions welcome! Please read `CONTRIBUTING.md` first.
 
 ## License
 
@@ -176,11 +184,8 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-Built with:
-- [Model Context Protocol](https://modelcontextprotocol.io/) by Anthropic
-- [tree-sitter](https://tree-sitter.github.io/) for AST parsing
-- [SCIP](https://github.com/sourcegraph/scip) for code indexing
+Built with: Model Context Protocol, tree-sitter, SCIP
 
 ---
 
-**Need help?** [Open an issue](https://github.com/Darkbluelr/code-intelligence-mcp/issues) or check the [documentation](docs/TECHNICAL.md).
+Need help? Open an issue on your repo or check `docs/TECHNICAL.md`.

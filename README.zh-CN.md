@@ -22,6 +22,14 @@ Code Intelligence MCP Server 通过以下功能增强 AI 编程助手对代码�
 
 ### 安装
 
+**通过 npm**（推荐）：
+
+```bash
+npm install -g code-intelligence-mcp
+```
+
+**通过 git**：
+
 ```bash
 git clone https://github.com/Darkbluelr/code-intelligence-mcp.git
 cd code-intelligence-mcp

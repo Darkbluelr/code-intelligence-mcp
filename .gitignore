@@ -30,6 +30,7 @@ yarn-error.log*
 # Development files (not for git/npm)
 .devbooks/
 .claude/
+.code/
 dev-playbooks/
 demo/
 docs/
