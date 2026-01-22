@@ -33,6 +33,5 @@ yarn-error.log*
 .code/
 dev-playbooks/
 demo/
-docs/
 AGENTS.md
 CLAUDE.md
