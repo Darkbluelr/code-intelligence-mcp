@@ -23,7 +23,7 @@ Perfect for use with Claude Code, Cline, or any MCP-compatible AI assistant.
 **Via npm** (recommended):
 
 ```bash
-npm install -g code-intelligence-mcp
+npm install -g @ozbombor/code-intelligence-mcp
 ```
 
 **Via git**:

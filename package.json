@@ -1,5 +1,5 @@
 {
-  "name": "code-intelligence-mcp",
+  "name": "@ozbombor/code-intelligence-mcp",
   "version": "0.1.0",
   "description": "MCP Server for code intelligence capabilities (Embedding, Graph-RAG, Call-chain tracing, Bug locator)",
   "type": "module",
