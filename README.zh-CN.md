@@ -119,14 +119,106 @@ ci_bug_locate --error "TypeError: Cannot read property 'user'"
 
 ### Embedding 提供商
 
-支持多个 embedding 提供商：
+服务器支持多个 embedding 提供商,并具有自动降级功能:
 
-```yaml
-# config/llm-providers.yaml
-embedding:
-  provider: ollama  # 或 openai, anthropic
-  model: nomic-embed-text
+**三级降级策略:**
+1. **Ollama**(本地,免费)→ 优先使用,无网络延迟,隐私安全
+2. **OpenAI API**(云端,付费)→ Ollama 不可用时自动降级
+3. **关键词搜索** → 无 embedding 服务时的最终降级方案
+
+#### 方案 1: Ollama(推荐本地使用)
+
+**安装:**
+```bash
+# 安装 Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# 拉取 embedding 模型
+ollama pull nomic-embed-text
 ```
+
+**配置:**
+```yaml
+# .devbooks/config.yaml
+embedding:
+  provider: ollama  # 或使用 'auto' 自动检测
+  ollama:
+    model: nomic-embed-text
+    endpoint: http://localhost:11434
+    timeout: 30
+```
+
+**使用:**
+```bash
+# 构建 embedding 索引
+ci-search build
+
+# 使用 Ollama 搜索
+ci-search "认证代码"
+```
+
+#### 方案 2: OpenAI API(云端)
+
+**设置:**
+```bash
+# 设置 API 密钥
+export OPENAI_API_KEY="sk-..."
+```
+
+**配置:**
+```yaml
+# .devbooks/config.yaml
+embedding:
+  provider: openai
+  openai:
+    model: text-embedding-3-small
+    api_key: ${OPENAI_API_KEY}  # 或直接设置
+    base_url: https://api.openai.com/v1
+    timeout: 30
+```
+
+**使用:**
+```bash
+# 使用 OpenAI 构建索引
+ci-search build
+
+# 或强制使用 OpenAI 进行单次搜索
+ci-search "用户认证" --provider openai
+```
+
+#### 方案 3: 关键词搜索(无需设置)
+
+关键词搜索开箱即用,无需任何配置:
+
+```bash
+# 强制使用关键词搜索
+ci-search "错误处理" --provider keyword
+```
+
+#### 高级配置
+
+**自动 Provider 检测:**
+```yaml
+# .devbooks/config.yaml
+embedding:
+  provider: auto  # 尝试 Ollama → OpenAI → 关键词
+  fallback_to_keyword: true
+  auto_build: true
+```
+
+**命令行覆盖:**
+```bash
+# 为单次搜索覆盖 provider
+ci-search "测试" --provider ollama --ollama-model mxbai-embed-large
+
+# JSON 输出与自定义设置
+ci-search "支付" --format json --top-k 10 --threshold 0.7
+```
+
+**环境变量:**
+- `OPENAI_API_KEY` - OpenAI API 密钥
+- `EMBEDDING_API_KEY` - 通用 embedding API 密钥
+- `PROJECT_ROOT` - 项目根目录
 
 ### 可选功能
 
@@ -172,13 +264,25 @@ ci_arch_check --path src/
 
 ## 性能
 
-以下为 2026-01-22 在本仓库的实测数据（见 `dev-playbooks/changes/20260122-verify-metrics/evidence/`）：
+以下指标由 `python3 benchmarks/run_benchmarks.py` 生成的 `benchmark_result.json` 自动更新。
+执行 `python3 benchmarks/update_readme.py` 可刷新本段内容。
 
-- 语义搜索（ci-search）：单次 ~570ms（非 P95）
-- Graph-RAG 检索：首次 551ms，第二次 526ms（单次）
-- 上下文压缩率（skeleton 模式、`src/server.ts`）：0.07
+<!-- BENCHMARK:START -->
+更新时间：2026-01-22T22:16:40+00:00
 
-此前的性能目标（P95/相对提升）已转为证据跟踪，建议按版本更新。
+| 指标 | 数值 | 备注 |
+| --- | --- | --- |
+| 语义搜索延迟（单次） | 1000 ms | provider=keyword |
+| Graph-RAG 冷启动延迟 | 294.85 ms | query=authentication |
+| Graph-RAG 热启动延迟 | 287.34 ms | query=authentication |
+| Graph-RAG 提速 | 2.55 % | cold vs warm |
+| 检索质量 MRR@10 | 0 | dataset=self, queries=3 |
+| 检索质量 Recall@10 | 0 | dataset=self, queries=3 |
+| 检索质量 Precision@10 | 0 | dataset=self, queries=3 |
+| 检索 P95 延迟 | 10 ms | dataset=self, queries=3 |
+| 上下文压缩率 | 0.07 | target=src/server.ts |
+| 信息保留率 | 0.13 | target=src/server.ts |
+<!-- BENCHMARK:END -->
 
 ## 贡献
 
