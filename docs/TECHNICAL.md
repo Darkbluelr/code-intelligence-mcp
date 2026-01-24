@@ -365,37 +365,458 @@ Manage and test LLM providers for semantic search.
 
 ## Structured Context Output
 
-The `context-inject-global.sh` hook outputs a 5-layer structured JSON:
+The `hooks/context-inject-global.sh` hook supports multiple output formats:
+
+- Default (Claude Code): emits a Claude Code hook envelope with `hookSpecificOutput.additionalContext` (string).
+- JSON: `hooks/context-inject-global.sh --format json` emits the Auto Tool Orchestrator JSON schema (`schema_version: "1.0"`), including `tool_plan`, `tool_results`, `fused_context`, `degraded`, and `enforcement`.
+  For backward compatibility, it also includes the 5-layer fields (`project_profile`, `current_state`, `task_context`, `recommended_tools`, `constraints`) at the top-level and under `fused_context.for_model.structured`.
+- Text: `--format text` prints a human-readable summary (mainly for debugging).
 
 ```json
 {
-  "project_profile": {
-    "name": "my-project",
-    "tech_stack": ["TypeScript", "Node.js"],
-    "architecture": "microservices",
-    "key_constraints": ["no-ui-to-db"]
+  "schema_version": "1.0",
+  "run_id": "20260124-123456-acde12",
+  "tool_plan": { "tier_max": 1, "tools": [] },
+  "tool_results": [],
+  "fused_context": {
+    "for_model": {
+      "additional_context": "",
+      "structured": {
+        "project_profile": {},
+        "current_state": {},
+        "task_context": {},
+        "recommended_tools": [],
+        "constraints": {}
+      }
+    },
+    "for_user": {
+      "tool_plan_text": "",
+      "results_text": "",
+      "limits_text": ""
+    }
   },
-  "current_state": {
-    "index_status": "ready",
-    "hotspot_files": ["src/order.ts", "src/auth.ts"],
-    "recent_commits": ["fix: order validation", "feat: add caching"]
+  "degraded": { "is_degraded": false, "reason": "", "degraded_to": "" },
+  "enforcement": { "single_tool_entry": true, "source": "orchestrator" }
+}
+```
+
+## Auto Tool Orchestration
+
+The Auto Tool Orchestration layer automatically selects and executes relevant MCP tools before AI output, reducing cognitive load and improving first-hit accuracy.
+
+### Architecture
+
+The orchestration system consists of three layers:
+
+1. **Entry Layer** (`hooks/context-inject-global.sh`)
+   - Parses Hook/CLI input
+   - Delegates all planning/execution to the orchestrator kernel
+   - Outputs three formats: hook envelope, JSON, or text
+
+2. **Orchestrator Kernel** (`hooks/auto-tool-orchestrator.sh`)
+   - The ONLY place allowed to plan/execute tools
+   - Performs intent recognition
+   - Selects appropriate tools based on user prompt
+   - Executes tools in parallel with budget control
+   - Fuses results into structured context
+
+3. **Tool Executors** (MCP tools)
+   - Individual tools like `ci_search`, `ci_graph_rag`, etc.
+   - Execute independently with timeout protection
+
+### Tool Tier Strategy
+
+Tools are organized into tiers based on cost and risk:
+
+- **Tier 0** (Always executed): `ci_index_status` - Environment readiness check
+- **Tier 1** (Default enabled): `ci_search`, `ci_graph_rag` - Quick code location
+- **Tier 2** (Disabled by default): `ci_impact`, `ci_hotspot` - Deep analysis
+
+Control tier execution with environment variable:
+
+```bash
+export CI_AUTO_TOOLS_TIER_MAX=2  # Enable tier 2 tools
+```
+
+### Intent Recognition
+
+The system recognizes user intent through multiple signals:
+
+- **Explicit signals**: Keywords like "fix", "bug", "error", "implement"
+- **Implicit signals**: File paths, line numbers, function names
+- **Historical signals**: Previous queries and actions
+- **Contextual signals**: Current git branch, recent commits
+
+### Workflow
+
+```
+User Prompt
+    ↓
+UserPromptSubmit Hook (Claude Code)
+    ↓
+context-inject-global.sh (Entry)
+    ↓
+auto-tool-orchestrator.sh (Kernel)
+    ↓
+Intent Recognition → Tool Selection → Parallel Execution
+    ↓
+Result Fusion → Context Injection
+    ↓
+AI Response with Full Context
+```
+
+### Output Schema v1.0
+
+The orchestrator outputs a stable JSON schema:
+
+```json
+{
+  "schema_version": "1.0",
+  "run_id": "20260124-123456-acde12",
+  "created_at": "2026-01-24T12:34:56Z",
+  "client": {
+    "name": "claude-code",
+    "event": "UserPromptSubmit"
   },
-  "task_context": {
-    "intent_analysis": {},
-    "relevant_snippets": [],
-    "call_chains": []
+  "inputs": {
+    "prompt": "fix the authentication bug",
+    "repo_root": "/path/to/repo",
+    "signals": []
   },
-  "recommended_tools": [
-    { "tool": "ci_bug_locate", "reason": "Error investigation", "suggested_params": {} }
+  "tool_plan": {
+    "tier_max": 1,
+    "budget": {
+      "wall_ms": 5000,
+      "max_concurrency": 3,
+      "max_injected_chars": 12000
+    },
+    "tools": [
+      {
+        "tool": "ci_search",
+        "tier": 1,
+        "reason": "Quick code location",
+        "args": {"limit": 10, "mode": "semantic"},
+        "timeout_ms": 2000
+      }
+    ]
+  },
+  "tool_results": [
+    {
+      "tool": "ci_search",
+      "status": "ok",
+      "duration_ms": 1236,
+      "data": {...}
+    }
   ],
-  "constraints": {
-    "architectural": ["shared <- core <- integration"],
-    "security": ["no hardcoded secrets"]
+  "fused_context": {
+    "for_model": {
+      "additional_context": "...",
+      "structured": {...}
+    },
+    "for_user": {
+      "tool_plan_text": "[Auto Tools] planned 3 tools",
+      "results_text": "...",
+      "limits_text": ""
+    }
   }
 }
 ```
 
-Use `--format text` for plain text output.
+### Configuration
+
+Configure auto tool orchestration in `.devbooks/config.yaml`:
+
+```yaml
+auto_tools:
+  enabled: true
+  tier_max: 1
+  budget:
+    wall_ms: 5000
+    max_concurrency: 3
+    max_injected_chars: 12000
+```
+
+Or use environment variables:
+
+```bash
+export CI_AUTO_TOOLS_ENABLED=1
+export CI_AUTO_TOOLS_TIER_MAX=1
+export CI_AUTO_TOOLS_BUDGET_WALL_MS=5000
+```
+
+### Degradation Strategy
+
+When tools fail or timeout, the system gracefully degrades:
+
+1. **Tool timeout**: Skip the tool and continue with others
+2. **All tools fail**: Return empty context with degradation notice
+3. **Budget exceeded**: Stop execution and return partial results
+
+The `degraded` field in output indicates degradation status:
+
+```json
+{
+  "degraded": {
+    "is_degraded": true,
+    "reason": "tool_timeout",
+    "degraded_to": "partial"
+  }
+}
+```
+
+## Benchmark Framework
+
+The benchmark framework provides standardized performance measurement and regression detection.
+
+### Schema v1.1
+
+The `benchmark_result.json` follows schema v1.1 with the following structure:
+
+```json
+{
+  "schema_version": "1.1",
+  "generated_at": "2026-01-24T06:27:38Z",
+  "project_root": "/path/to/project",
+  "git_commit": "3547af1",
+  "queries_version": "sha256:2a944e88",
+  "run": {
+    "mode": "full",
+    "cold_definition": "cache cleared before each cold sample",
+    "warm_definition": "same process, cache retained",
+    "cache_clear": ["rm -rf ${TMPDIR:-/tmp}/.ci-cache"],
+    "random_seed": 42
+  },
+  "environment": {
+    "os": {"name": "Darwin", "version": "25.2.0"},
+    "cpu": {"model": "Apple M4", "cores": 10, "arch": "arm64"},
+    "memory": {"total_mb": 16384},
+    "runtime": {"node": "v22.15.0", "python": "Python 3.12.9"}
+  },
+  "metrics": {
+    "semantic_search": {
+      "iterations": 3,
+      "latency_p50_ms": 209.0,
+      "latency_p95_ms": 222.0,
+      "latency_p99_ms": 222.0
+    },
+    "graph_rag": {
+      "iterations": 3,
+      "cold_latency_p95_ms": 862.64,
+      "warm_latency_p95_ms": 69.37,
+      "speedup_pct": 91.96
+    },
+    "retrieval_quality": {
+      "iterations": 12,
+      "dataset": "self",
+      "query_count": 12,
+      "mrr_at_10": 0.4264,
+      "recall_at_10": 1.0,
+      "precision_at_10": 0.3377,
+      "hit_rate_at_10": 1.0,
+      "latency_p95_ms": 6.10
+    },
+    "cache": {
+      "iterations": 20,
+      "cache_hit_p95_ms": 75.0,
+      "full_query_p95_ms": 89.0,
+      "precommit_staged_p95_ms": 35.0,
+      "precommit_deps_p95_ms": 27.0
+    }
+  }
+}
+```
+
+### Key Metrics
+
+| Metric | Direction | Description |
+|--------|-----------|-------------|
+| `mrr_at_10` | higher | Mean Reciprocal Rank at top 10 |
+| `recall_at_10` | higher | Recall at top 10 results |
+| `precision_at_10` | higher | Precision at top 10 results |
+| `hit_rate_at_10` | higher | Query hit rate at top 10 |
+| `latency_p95_ms` | lower | 95th percentile latency |
+| `semantic_search.latency_p95_ms` | lower | Semantic search P95 latency |
+| `graph_rag.cold_latency_p95_ms` | lower | Graph-RAG cold start P95 |
+| `graph_rag.warm_latency_p95_ms` | lower | Graph-RAG warm start P95 |
+| `graph_rag.speedup_pct` | higher | Speedup percentage (cold vs warm) |
+| `cache_hit_p95_ms` | lower | Cache hit P95 latency |
+| `precommit_staged_p95_ms` | lower | Pre-commit staged files P95 |
+
+### Baseline and Comparison
+
+The framework maintains baseline and current results for regression detection:
+
+**Directory Structure**:
+```
+benchmarks/
+├── baselines/
+│   ├── run-1/benchmark_result.json
+│   ├── run-2/benchmark_result.json
+│   ├── run-3/benchmark_result.json
+│   └── benchmark_result.median.json
+└── results/
+    ├── run-1/benchmark_result.json
+    ├── run-2/benchmark_result.json
+    ├── run-3/benchmark_result.json
+    └── benchmark_result.median.json
+```
+
+**Run Benchmarks**:
+```bash
+# Generate current results (3 runs)
+python benchmarks/run_benchmarks.py --output benchmarks/results/run-1/benchmark_result.json
+python benchmarks/run_benchmarks.py --output benchmarks/results/run-2/benchmark_result.json
+python benchmarks/run_benchmarks.py --output benchmarks/results/run-3/benchmark_result.json
+
+# Calculate median
+python benchmarks/calculate_median.py \
+  --input benchmarks/results/run-{1,2,3}/benchmark_result.json \
+  --output benchmarks/results/benchmark_result.median.json
+
+# Compare with baseline
+scripts/benchmark.sh --compare \
+  benchmarks/baselines/benchmark_result.median.json \
+  benchmarks/results/benchmark_result.median.json
+```
+
+**Comparison Output**:
+```
+result=no_regression
+summary={"status":"pass","metrics":[...]}
+exit_code=0
+```
+
+### Regression Thresholds
+
+Default regression thresholds:
+
+- **Higher is better** metrics: `threshold = baseline * 0.95` (5% tolerance)
+- **Lower is better** metrics: `threshold = baseline * 1.10` (10% tolerance)
+
+Custom thresholds can be set per metric or globally:
+
+```bash
+export BENCHMARK_REGRESSION_THRESHOLD=0.05  # 5% global threshold
+```
+
+## Demo Suite
+
+The Demo Suite provides standardized demonstrations with A/B comparison capabilities.
+
+### Architecture
+
+The demo suite consists of:
+
+1. **Individual Demos** (`demo/00-*.sh` to `demo/05-*.sh`)
+   - Self-contained demonstration scripts
+   - Can run independently
+   - Output to standard locations
+
+2. **Suite Runner** (`demo/run-suite.sh`)
+   - Orchestrates all demos
+   - Collects metrics from each demo
+   - Generates unified report
+
+3. **Comparison Tool** (`demo/compare.sh`)
+   - Compares two demo runs
+   - Generates diff report
+   - Supports A/B testing
+
+### Output Contract
+
+Each demo run produces standardized outputs:
+
+**metrics.json** (Machine-readable):
+```json
+{
+  "schema_version": "1.0",
+  "run_id": "20260124-demo-001",
+  "git_ref": "main",
+  "environment": {...},
+  "demos": {
+    "00-quick-compare": {
+      "status": "success",
+      "duration_ms": 1500,
+      "metrics": {...}
+    }
+  }
+}
+```
+
+**report.md** (Human-readable):
+```markdown
+# Demo Suite Report
+
+- Run ID: 20260124-demo-001
+- Git Ref: main
+- Environment: macOS 14.2, Apple M4
+
+## Results
+
+### 00-quick-compare
+- Status: ✅ Success
+- Duration: 1.5s
+- Key Findings: Auto context injection reduced query time by 60%
+```
+
+### Running Demos
+
+**Run Individual Demo**:
+```bash
+bash demo/00-quick-compare.sh
+```
+
+**Run Full Suite**:
+```bash
+bash demo/run-suite.sh --output demo-results/
+```
+
+**A/B Comparison**:
+```bash
+# Run baseline
+git checkout v0.1.0
+bash demo/run-suite.sh --output baseline/
+
+# Run current
+git checkout main
+bash demo/run-suite.sh --output current/
+
+# Compare
+bash demo/compare.sh baseline/metrics.json current/metrics.json
+```
+
+### Demo Scenarios
+
+| Demo | Scenario | Purpose |
+|------|----------|---------|
+| `00-quick-compare.sh` | With/without context injection | Show auto-injection value |
+| `01-semantic-search.sh` | Semantic code search | Demonstrate search capabilities |
+| `02-diagnosis.sh` | Bug diagnosis workflow | Show multi-tool collaboration |
+| `03-graph-rag.sh` | Graph-RAG context retrieval | Demonstrate graph traversal |
+| `04-call-chain.sh` | Call chain analysis | Show dependency tracing |
+| `05-performance.sh` | Performance benchmarks | Measure system performance |
+
+### A/B Testing
+
+The demo suite supports three types of A/B testing:
+
+1. **Version A/B**: Compare different git refs
+2. **Configuration A/B**: Compare different settings (e.g., with/without cache)
+3. **AI Agent A/B**: Compare different AI coding approaches (semi-automated)
+
+**Example Configuration A/B**:
+```bash
+# Test with cache
+export CI_CACHE_ENABLED=1
+bash demo/run-suite.sh --output with-cache/
+
+# Test without cache
+export CI_CACHE_ENABLED=0
+bash demo/run-suite.sh --output without-cache/
+
+# Compare
+bash demo/compare.sh with-cache/metrics.json without-cache/metrics.json
+```
 
 ## CI/CD Integration
 
@@ -807,4 +1228,3 @@ rules:
 ```
 
 Boundary types: `user`, `library`, `generated`, `vendor`
-

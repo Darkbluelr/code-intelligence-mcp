@@ -1,16 +1,38 @@
 {
   "name": "@ozbombor/code-intelligence-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP Server for code intelligence capabilities (Embedding, Graph-RAG, Call-chain tracing, Bug locator)",
   "type": "module",
   "main": "dist/server.js",
   "bin": {
     "code-intelligence-mcp": "./bin/code-intelligence-mcp",
-    "ci-search": "./bin/ci-search"
+    "ci-search": "./bin/ci-search",
+    "ci-setup-hook": "./bin/ci-setup-hook"
   },
+  "files": [
+    "dist/",
+    "bin/ci-search",
+    "bin/ci-setup-hook",
+    "bin/code-intelligence-mcp",
+    "scripts/",
+    "hooks/",
+    "config/arch-rules.yaml",
+    "config/boundaries.yaml",
+    "config/config.yaml.template",
+    "config/features.yaml",
+    "config/federation.yaml",
+    "config/llm-providers.yaml",
+    "docs/TECHNICAL.md",
+    "docs/TECHNICAL_zh.md",
+    "install.sh",
+    "README.md",
+    "README.zh-CN.md",
+    "scripts/postinstall.js"
+  ],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
+    "postinstall": "node scripts/postinstall.js",
     "start": "node dist/server.js",
     "lint": "shellcheck scripts/*.sh hooks/*.sh",
     "test": "echo \"No tests yet\" && exit 0"

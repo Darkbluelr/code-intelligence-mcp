@@ -365,37 +365,458 @@ ci-search --version
 
 ## 结构化上下文输出
 
-`context-inject-global.sh` 钩子输出一个 5 层结构的 JSON：
+`hooks/context-inject-global.sh` 钩子支持多种输出形态：
+
+- 默认（Claude Code）：输出 Claude Code hook envelope，内容在 `hookSpecificOutput.additionalContext`（字符串）。
+- JSON：`hooks/context-inject-global.sh --format json` 输出自动工具编排器 JSON schema（`schema_version: "1.0"`），包含 `tool_plan`、`tool_results`、`fused_context`、`degraded`、`enforcement`。
+  为兼容旧消费者，同时在顶层与 `fused_context.for_model.structured` 中保留 5 层字段（`project_profile/current_state/task_context/recommended_tools/constraints`）。
+- 文本：`--format text` 输出用户可读摘要（主要用于调试）。
 
 ```json
 {
-  "project_profile": {
-    "name": "my-project",
-    "tech_stack": ["TypeScript", "Node.js"],
-    "architecture": "microservices",
-    "key_constraints": ["no-ui-to-db"]
+  "schema_version": "1.0",
+  "run_id": "20260124-123456-acde12",
+  "tool_plan": { "tier_max": 1, "tools": [] },
+  "tool_results": [],
+  "fused_context": {
+    "for_model": {
+      "additional_context": "",
+      "structured": {
+        "project_profile": {},
+        "current_state": {},
+        "task_context": {},
+        "recommended_tools": [],
+        "constraints": {}
+      }
+    },
+    "for_user": {
+      "tool_plan_text": "",
+      "results_text": "",
+      "limits_text": ""
+    }
   },
-  "current_state": {
-    "index_status": "ready",
-    "hotspot_files": ["src/order.ts", "src/auth.ts"],
-    "recent_commits": ["fix: order validation", "feat: add caching"]
+  "degraded": { "is_degraded": false, "reason": "", "degraded_to": "" },
+  "enforcement": { "single_tool_entry": true, "source": "orchestrator" }
+}
+```
+
+## 自动工具编排
+
+自动工具编排层在 AI 输出之前自动选择并执行相关的 MCP 工具，降低认知负担并提升一次命中率。
+
+### 架构
+
+编排系统由三层组成：
+
+1. **入口层** (`hooks/context-inject-global.sh`)
+   - 解析 Hook/CLI 输入
+   - 将所有计划/执行委托给编排内核
+   - 输出三种格式：hook envelope、JSON 或文本
+
+2. **编排内核** (`hooks/auto-tool-orchestrator.sh`)
+   - 唯一允许计划/执行工具的地方
+   - 执行意图识别
+   - 根据用户提示选择合适的工具
+   - 并行执行工具并控制预算
+   - 将结果融合为结构化上下文
+
+3. **工具执行器** (MCP 工具)
+   - 独立的工具如 `ci_search`、`ci_graph_rag` 等
+   - 带超时保护的独立执行
+
+### 工具分层策略
+
+工具根据成本和风险分为不同层级：
+
+- **Tier 0**（总是执行）：`ci_index_status` - 环境就绪性检查
+- **Tier 1**（默认启用）：`ci_search`、`ci_graph_rag` - 快速代码定位
+- **Tier 2**（默认禁用）：`ci_impact`、`ci_hotspot` - 深度分析
+
+使用环境变量控制层级执行：
+
+```bash
+export CI_AUTO_TOOLS_TIER_MAX=2  # 启用 tier 2 工具
+```
+
+### 意图识别
+
+系统通过多种信号识别用户意图：
+
+- **显式信号**：关键词如 "fix"、"bug"、"error"、"implement"
+- **隐式信号**：文件路径、行号、函数名
+- **历史信号**：之前的查询和操作
+- **上下文信号**：当前 git 分支、最近提交
+
+### 工作流程
+
+```
+用户提示
+    ↓
+UserPromptSubmit Hook (Claude Code)
+    ↓
+context-inject-global.sh (入口)
+    ↓
+auto-tool-orchestrator.sh (内核)
+    ↓
+意图识别 → 工具选择 → 并行执行
+    ↓
+结果融合 → 上下文注入
+    ↓
+AI 基于完整上下文响应
+```
+
+### 输出 Schema v1.0
+
+编排器输出稳定的 JSON schema：
+
+```json
+{
+  "schema_version": "1.0",
+  "run_id": "20260124-123456-acde12",
+  "created_at": "2026-01-24T12:34:56Z",
+  "client": {
+    "name": "claude-code",
+    "event": "UserPromptSubmit"
   },
-  "task_context": {
-    "intent_analysis": {},
-    "relevant_snippets": [],
-    "call_chains": []
+  "inputs": {
+    "prompt": "修复认证 bug",
+    "repo_root": "/path/to/repo",
+    "signals": []
   },
-  "recommended_tools": [
-    { "tool": "ci_bug_locate", "reason": "Error investigation", "suggested_params": {} }
+  "tool_plan": {
+    "tier_max": 1,
+    "budget": {
+      "wall_ms": 5000,
+      "max_concurrency": 3,
+      "max_injected_chars": 12000
+    },
+    "tools": [
+      {
+        "tool": "ci_search",
+        "tier": 1,
+        "reason": "快速代码定位",
+        "args": {"limit": 10, "mode": "semantic"},
+        "timeout_ms": 2000
+      }
+    ]
+  },
+  "tool_results": [
+    {
+      "tool": "ci_search",
+      "status": "ok",
+      "duration_ms": 1236,
+      "data": {...}
+    }
   ],
-  "constraints": {
-    "architectural": ["shared <- core <- integration"],
-    "security": ["no hardcoded secrets"]
+  "fused_context": {
+    "for_model": {
+      "additional_context": "...",
+      "structured": {...}
+    },
+    "for_user": {
+      "tool_plan_text": "[Auto Tools] planned 3 tools",
+      "results_text": "...",
+      "limits_text": ""
+    }
   }
 }
 ```
 
-使用 `--format text` 可获得纯文本输出。
+### 配置
+
+在 `.devbooks/config.yaml` 中配置自动工具编排：
+
+```yaml
+auto_tools:
+  enabled: true
+  tier_max: 1
+  budget:
+    wall_ms: 5000
+    max_concurrency: 3
+    max_injected_chars: 12000
+```
+
+或使用环境变量：
+
+```bash
+export CI_AUTO_TOOLS_ENABLED=1
+export CI_AUTO_TOOLS_TIER_MAX=1
+export CI_AUTO_TOOLS_BUDGET_WALL_MS=5000
+```
+
+### 降级策略
+
+当工具失败或超时时，系统会优雅降级：
+
+1. **工具超时**：跳过该工具并继续执行其他工具
+2. **所有工具失败**：返回空上下文并附带降级通知
+3. **预算超支**：停止执行并返回部分结果
+
+输出中的 `degraded` 字段指示降级状态：
+
+```json
+{
+  "degraded": {
+    "is_degraded": true,
+    "reason": "tool_timeout",
+    "degraded_to": "partial"
+  }
+}
+```
+
+## 基准测试框架
+
+基准测试框架提供标准化的性能测量和回归检测。
+
+### Schema v1.1
+
+`benchmark_result.json` 遵循 schema v1.1，具有以下结构：
+
+```json
+{
+  "schema_version": "1.1",
+  "generated_at": "2026-01-24T06:27:38Z",
+  "project_root": "/path/to/project",
+  "git_commit": "3547af1",
+  "queries_version": "sha256:2a944e88",
+  "run": {
+    "mode": "full",
+    "cold_definition": "cache cleared before each cold sample",
+    "warm_definition": "same process, cache retained",
+    "cache_clear": ["rm -rf ${TMPDIR:-/tmp}/.ci-cache"],
+    "random_seed": 42
+  },
+  "environment": {
+    "os": {"name": "Darwin", "version": "25.2.0"},
+    "cpu": {"model": "Apple M4", "cores": 10, "arch": "arm64"},
+    "memory": {"total_mb": 16384},
+    "runtime": {"node": "v22.15.0", "python": "Python 3.12.9"}
+  },
+  "metrics": {
+    "semantic_search": {
+      "iterations": 3,
+      "latency_p50_ms": 209.0,
+      "latency_p95_ms": 222.0,
+      "latency_p99_ms": 222.0
+    },
+    "graph_rag": {
+      "iterations": 3,
+      "cold_latency_p95_ms": 862.64,
+      "warm_latency_p95_ms": 69.37,
+      "speedup_pct": 91.96
+    },
+    "retrieval_quality": {
+      "iterations": 12,
+      "dataset": "self",
+      "query_count": 12,
+      "mrr_at_10": 0.4264,
+      "recall_at_10": 1.0,
+      "precision_at_10": 0.3377,
+      "hit_rate_at_10": 1.0,
+      "latency_p95_ms": 6.10
+    },
+    "cache": {
+      "iterations": 20,
+      "cache_hit_p95_ms": 75.0,
+      "full_query_p95_ms": 89.0,
+      "precommit_staged_p95_ms": 35.0,
+      "precommit_deps_p95_ms": 27.0
+    }
+  }
+}
+```
+
+### 关键指标
+
+| 指标 | 方向 | 描述 |
+|------|------|------|
+| `mrr_at_10` | 越高越好 | 前 10 个结果的平均倒数排名 |
+| `recall_at_10` | 越高越好 | 前 10 个结果的召回率 |
+| `precision_at_10` | 越高越好 | 前 10 个结果的精确率 |
+| `hit_rate_at_10` | 越高越好 | 前 10 个结果的查询命中率 |
+| `latency_p95_ms` | 越低越好 | 第 95 百分位延迟 |
+| `semantic_search.latency_p95_ms` | 越低越好 | 语义搜索 P95 延迟 |
+| `graph_rag.cold_latency_p95_ms` | 越低越好 | Graph-RAG 冷启动 P95 |
+| `graph_rag.warm_latency_p95_ms` | 越低越好 | Graph-RAG 热启动 P95 |
+| `graph_rag.speedup_pct` | 越高越好 | 提速百分比（冷启动 vs 热启动）|
+| `cache_hit_p95_ms` | 越低越好 | 缓存命中 P95 延迟 |
+| `precommit_staged_p95_ms` | 越低越好 | 预提交暂存文件 P95 |
+
+### 基线和对比
+
+框架维护基线和当前结果以进行回归检测：
+
+**目录结构**：
+```
+benchmarks/
+├── baselines/
+│   ├── run-1/benchmark_result.json
+│   ├── run-2/benchmark_result.json
+│   ├── run-3/benchmark_result.json
+│   └── benchmark_result.median.json
+└── results/
+    ├── run-1/benchmark_result.json
+    ├── run-2/benchmark_result.json
+    ├── run-3/benchmark_result.json
+    └── benchmark_result.median.json
+```
+
+**运行基准测试**：
+```bash
+# 生成当前结果（3 次运行）
+python benchmarks/run_benchmarks.py --output benchmarks/results/run-1/benchmark_result.json
+python benchmarks/run_benchmarks.py --output benchmarks/results/run-2/benchmark_result.json
+python benchmarks/run_benchmarks.py --output benchmarks/results/run-3/benchmark_result.json
+
+# 计算中位数
+python benchmarks/calculate_median.py \
+  --input benchmarks/results/run-{1,2,3}/benchmark_result.json \
+  --output benchmarks/results/benchmark_result.median.json
+
+# 与基线对比
+scripts/benchmark.sh --compare \
+  benchmarks/baselines/benchmark_result.median.json \
+  benchmarks/results/benchmark_result.median.json
+```
+
+**对比输出**：
+```
+result=no_regression
+summary={"status":"pass","metrics":[...]}
+exit_code=0
+```
+
+### 回归阈值
+
+默认回归阈值：
+
+- **越高越好的指标**：`threshold = baseline * 0.95`（5% 容差）
+- **越低越好的指标**：`threshold = baseline * 1.10`（10% 容差）
+
+可以为每个指标或全局设置自定义阈值：
+
+```bash
+export BENCHMARK_REGRESSION_THRESHOLD=0.05  # 5% 全局阈值
+```
+
+## 演示套件
+
+演示套件提供标准化的演示，具有 A/B 对比能力。
+
+### 架构
+
+演示套件包括：
+
+1. **独立演示**（`demo/00-*.sh` 到 `demo/05-*.sh`）
+   - 自包含的演示脚本
+   - 可独立运行
+   - 输出到标准位置
+
+2. **套件运行器**（`demo/run-suite.sh`）
+   - 编排所有演示
+   - 从每个演示收集指标
+   - 生成统一报告
+
+3. **对比工具**（`demo/compare.sh`）
+   - 对比两次演示运行
+   - 生成差异报告
+   - 支持 A/B 测试
+
+### 输出契约
+
+每次演示运行产生标准化输出：
+
+**metrics.json**（机器可读）：
+```json
+{
+  "schema_version": "1.0",
+  "run_id": "20260124-demo-001",
+  "git_ref": "main",
+  "environment": {...},
+  "demos": {
+    "00-quick-compare": {
+      "status": "success",
+      "duration_ms": 1500,
+      "metrics": {...}
+    }
+  }
+}
+```
+
+**report.md**（人类可读）：
+```markdown
+# Demo Suite Report
+
+- Run ID: 20260124-demo-001
+- Git Ref: main
+- Environment: macOS 14.2, Apple M4
+
+## Results
+
+### 00-quick-compare
+- Status: ✅ Success
+- Duration: 1.5s
+- Key Findings: Auto context injection reduced query time by 60%
+```
+
+### 运行演示
+
+**运行单个演示**：
+```bash
+bash demo/00-quick-compare.sh
+```
+
+**运行完整套件**：
+```bash
+bash demo/run-suite.sh --output demo-results/
+```
+
+**A/B 对比**：
+```bash
+# 运行基线
+git checkout v0.1.0
+bash demo/run-suite.sh --output baseline/
+
+# 运行当前版本
+git checkout main
+bash demo/run-suite.sh --output current/
+
+# 对比
+bash demo/compare.sh baseline/metrics.json current/metrics.json
+```
+
+### 演示场景
+
+| 演示 | 场景 | 目的 |
+|------|------|------|
+| `00-quick-compare.sh` | 有/无上下文注入 | 展示自动注入价值 |
+| `01-semantic-search.sh` | 语义代码搜索 | 演示搜索能力 |
+| `02-diagnosis.sh` | Bug 诊断工作流 | 展示多工具协作 |
+| `03-graph-rag.sh` | Graph-RAG 上下文检索 | 演示图遍历 |
+| `04-call-chain.sh` | 调用链分析 | 展示依赖追踪 |
+| `05-performance.sh` | 性能基准测试 | 测量系统性能 |
+
+### A/B 测试
+
+演示套件支持三种类型的 A/B 测试：
+
+1. **版本 A/B**：对比不同的 git refs
+2. **配置 A/B**：对比不同的设置（例如，有/无缓存）
+3. **AI Agent A/B**：对比不同的 AI 编程方法（半自动化）
+
+**配置 A/B 示例**：
+```bash
+# 测试有缓存
+export CI_CACHE_ENABLED=1
+bash demo/run-suite.sh --output with-cache/
+
+# 测试无缓存
+export CI_CACHE_ENABLED=0
+bash demo/run-suite.sh --output without-cache/
+
+# 对比
+bash demo/compare.sh with-cache/metrics.json without-cache/metrics.json
+```
 
 ## CI/CD 集成
 

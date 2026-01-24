@@ -24,10 +24,14 @@ GEMINI.md
 # End DevBooks managed
 
 # Development files (not needed in npm package)
-docs/
 demo/
 tests/
 *.bats
+
+# Development tools (not for npm)
+bin/codex-auto
+change-check.sh
+config/auto-tools.yaml
 
 # Source files (only ship compiled dist/)
 src/
@@ -66,3 +70,6 @@ yarn-error.log*
 
 # Development scripts (not needed in runtime)
 parse-scip.js
+
+# NPM publish check report
+npm-publish-check.md

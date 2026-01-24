@@ -241,13 +241,13 @@ ci-search "支付" --format json --top-k 10 --threshold 0.7
 
 ### 自动上下文注入
 
-安装 Claude Code hook 以实现自动上下文注入：
+启用 Claude Code 的自动上下文注入：
 
 ```bash
-./install.sh --with-hook
+ci-setup-hook
 ```
 
-现在当你让 Claude "修复认证 bug" 时，相关代码会自动注入。
+这会安装一个 hook，在你与 Claude 交互时自动注入相关的代码上下文，让 AI 助手无需手动查询就能了解你的代码库。
 
 ### 自定义查询
 
@@ -262,26 +262,50 @@ ci_call_chain --symbol "processPayment" --direction both
 ci_arch_check --path src/
 ```
 
+### 演示套件
+
+运行完整的演示并进行 A/B 对比：
+
+```bash
+# 运行快速对比演示
+bash demo/00-quick-compare.sh
+
+# 运行所有演示
+bash demo/run-suite.sh
+
+# 对比版本（如果可用）
+bash demo/compare.sh baseline.json current.json
+```
+
+演示套件展示：
+- 自动上下文注入 vs 手动查询
+- 语义搜索和 Graph-RAG 能力
+- 性能基准测试和指标
+- 不同配置之间的 A/B 对比
+
 ## 性能
 
 以下指标由 `python3 benchmarks/run_benchmarks.py` 生成的 `benchmark_result.json` 自动更新。
 执行 `python3 benchmarks/update_readme.py` 可刷新本段内容。
 
 <!-- BENCHMARK:START -->
-更新时间：2026-01-22T22:16:40+00:00
+更新时间：2026-01-24T06:27:38+00:00
 
 | 指标 | 数值 | 备注 |
 | --- | --- | --- |
-| 语义搜索延迟（单次） | 1000 ms | provider=keyword |
-| Graph-RAG 冷启动延迟 | 294.85 ms | query=authentication |
-| Graph-RAG 热启动延迟 | 287.34 ms | query=authentication |
-| Graph-RAG 提速 | 2.55 % | cold vs warm |
-| 检索质量 MRR@10 | 0 | dataset=self, queries=3 |
-| 检索质量 Recall@10 | 0 | dataset=self, queries=3 |
-| 检索质量 Precision@10 | 0 | dataset=self, queries=3 |
-| 检索 P95 延迟 | 10 ms | dataset=self, queries=3 |
-| 上下文压缩率 | 0.07 | target=src/server.ts |
-| 信息保留率 | 0.13 | target=src/server.ts |
+| 语义搜索 P95 延迟 | 222 ms | iterations=3 |
+| Graph-RAG 冷启动 P95 延迟 | 862.64 ms | iterations=3 |
+| Graph-RAG 热启动 P95 延迟 | 69.37 ms | iterations=3 |
+| Graph-RAG 提速 | 91.96 % | cold vs warm |
+| 检索质量 MRR@10 | 0.4264 | dataset=self, queries=12 |
+| 检索质量 Recall@10 | 1.0 | dataset=self, queries=12 |
+| 检索质量 Precision@10 | 0.3377 | dataset=self, queries=12 |
+| 检索 P95 延迟 | 6.10 ms | dataset=self, queries=12 |
+| 缓存命中 P95 延迟 | 75 ms | iterations=20 |
+| 完整查询 P95 延迟 | 89 ms | iterations=20 |
+| 预提交暂存 P95 | 35 ms | iterations=20 |
+| 预提交依赖 P95 | 27 ms | iterations=20 |
+| 压缩延迟 | 8.95 ms | iterations=1 |
 <!-- BENCHMARK:END -->
 
 ## 贡献

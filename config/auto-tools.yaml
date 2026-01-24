@@ -1,0 +1,16 @@
+# Auto Tool Orchestrator control plane (default, conservative)
+#
+# Precedence (enforced): env > this file > defaults
+#
+# IMPORTANT:
+# - Tier-2 is disabled by default and can ONLY be enabled via env:
+#   `CI_AUTO_TOOLS_TIER_MAX=2`
+# - Even if this file sets `tier_max: 2`, it MUST be ignored unless env enables it.
+
+tier_max: 1
+
+budget:
+  wall_ms: 5000
+  max_concurrency: 3
+  max_injected_chars: 12000
+
