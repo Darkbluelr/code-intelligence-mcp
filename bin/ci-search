@@ -14,9 +14,28 @@
 
 set -euo pipefail
 
-VERSION="0.1.0"
+VERSION="0.2.1"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPTS_DIR="${SCRIPT_DIR}/../scripts"
+
+# First-run welcome message
+FIRST_RUN_FLAG="$HOME/.config/code-intelligence-mcp/first-run-done"
+if [[ ! -f "$FIRST_RUN_FLAG" ]]; then
+    mkdir -p "$(dirname "$FIRST_RUN_FLAG")"
+    cat >&2 << 'EOF'
+
+🎉 欢迎使用 Code Intelligence MCP Server！
+   Welcome to Code Intelligence MCP Server!
+
+💡 提示 / Tip:
+   运行 ci-setup-hook 启用自动上下文注入
+   Run ci-setup-hook to enable automatic context injection
+
+📚 文档 / Docs: https://github.com/Darkbluelr/code-intelligence-mcp#readme
+
+EOF
+    touch "$FIRST_RUN_FLAG"
+fi
 
 # Default values
 LIMIT=10
