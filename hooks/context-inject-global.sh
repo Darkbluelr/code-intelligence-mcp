@@ -255,7 +255,7 @@ main() {
     exit "$orch_rc"
   fi
 
-  # 输出用户可见的摘要到 stderr（不占用模型上下文）
+  # 输出用户可见的摘要到 stderr（终端可见）
   local for_user_output
   for_user_output="$(echo "$orch_json" | jq -r '
     [
@@ -268,13 +268,26 @@ main() {
 
   if [[ -n "$for_user_output" ]]; then
     echo "$for_user_output" >&2
-    echo "" >&2  # 空行分隔
+    echo "" >&2
   fi
 
-  # 输出 hook JSON 到 stdout（只包含模型需要的上下文）
-  local additional
-  additional="$(echo "$orch_json" | jq -r '.fused_context.for_model.additional_context // ""')"
-  jq -n --arg ctx "$additional" '{
+  # 构建 additionalContext：添加标题和工具计划
+  local tool_plan_text model_context combined_context
+  tool_plan_text="$(echo "$orch_json" | jq -r '.fused_context.for_user.tool_plan_text // ""')"
+  model_context="$(echo "$orch_json" | jq -r '.fused_context.for_model.additional_context // ""')"
+
+  # 如果有工具计划，添加标题和计划；否则只用模型上下文
+  if [[ -n "$tool_plan_text" && -n "$model_context" ]]; then
+    combined_context="[DevBooks 自动上下文]
+
+$tool_plan_text
+
+$model_context"
+  else
+    combined_context="$model_context"
+  fi
+
+  jq -n --arg ctx "$combined_context" '{
     hookSpecificOutput: {
       hookEventName: "UserPromptSubmit",
       additionalContext: $ctx
