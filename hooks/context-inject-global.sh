@@ -255,6 +255,23 @@ main() {
     exit "$orch_rc"
   fi
 
+  # 输出用户可见的摘要到 stderr（不占用模型上下文）
+  local for_user_output
+  for_user_output="$(echo "$orch_json" | jq -r '
+    [
+      .fused_context.for_user.tool_plan_text,
+      .fused_context.for_user.results_text,
+      .fused_context.for_user.limits_text
+    ]
+    | map(select(. != null and . != "")) | join("\n\n")
+  ' 2>/dev/null || echo "")"
+
+  if [[ -n "$for_user_output" ]]; then
+    echo "$for_user_output" >&2
+    echo "" >&2  # 空行分隔
+  fi
+
+  # 输出 hook JSON 到 stdout（只包含模型需要的上下文）
   local additional
   additional="$(echo "$orch_json" | jq -r '.fused_context.for_model.additional_context // ""')"
   jq -n --arg ctx "$additional" '{

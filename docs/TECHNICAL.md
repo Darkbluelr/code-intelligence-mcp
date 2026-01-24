@@ -522,6 +522,35 @@ The orchestrator outputs a stable JSON schema:
 }
 ```
 
+### User-Visible Output
+
+The orchestrator provides **dual-channel output** to optimize context usage:
+
+1. **stderr (User-Visible Summary)**
+   - Tool plan: `[Auto Tools] planned N tools`
+   - Execution results: Summary of each tool's status
+   - Limits: Budget constraints and tier restrictions
+   - **Does NOT consume model context**
+
+2. **stdout (Model Context)**
+   - Hook JSON with `additionalContext` field
+   - Contains only relevant code context for the AI model
+   - Optimized to stay within token budget
+
+**Example user-visible output:**
+```
+[Auto Tools] planned 3 tools
+
+结果摘要：
+ci_index_status | ok | ok
+ci_search | ok | {...}
+ci_graph_rag | ok | {...}
+
+[Limits] tier-2 disabled by default; set CI_AUTO_TOOLS_TIER_MAX=2 to enable
+```
+
+This dual-channel approach ensures users can see what tools were executed without wasting model context on status messages.
+
 ### Configuration
 
 Configure auto tool orchestration in `.devbooks/config.yaml`:

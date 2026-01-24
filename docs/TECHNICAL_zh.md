@@ -522,6 +522,35 @@ AI 基于完整上下文响应
 }
 ```
 
+### 用户可见输出
+
+编排器提供**双通道输出**以优化上下文使用：
+
+1. **stderr（用户可见摘要）**
+   - 工具计划：`[Auto Tools] planned N tools`
+   - 执行结果：每个工具的状态摘要
+   - 限制信息：预算约束和层级限制
+   - **不占用模型上下文**
+
+2. **stdout（模型上下文）**
+   - Hook JSON 包含 `additionalContext` 字段
+   - 仅包含 AI 模型需要的相关代码上下文
+   - 优化以保持在 token 预算内
+
+**用户可见输出示例：**
+```
+[Auto Tools] planned 3 tools
+
+结果摘要：
+ci_index_status | ok | ok
+ci_search | ok | {...}
+ci_graph_rag | ok | {...}
+
+[Limits] tier-2 disabled by default; set CI_AUTO_TOOLS_TIER_MAX=2 to enable
+```
+
+这种双通道方法确保用户可以看到执行了哪些工具，而不会浪费模型上下文在状态消息上。
+
 ### 配置
 
 在 `.devbooks/config.yaml` 中配置自动工具编排：
