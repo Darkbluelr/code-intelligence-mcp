@@ -1,0 +1,259 @@
+dev-playbooks/specs/pattern-learning/spec.md:119:      "examples": ["embedding.sh", "bug-locator.sh"]
+dev-playbooks/specs/hotspot-analysis/spec.md:87:| scripts/embedding.sh | 5 | 6 | 30 |
+dev-playbooks/specs/graph-rag-cli/spec.md:77:      "source": "embedding|graph|virtual",
+dev-playbooks/specs/graph-rag-cli/spec.md:84:    "embedding_candidates": 10,
+dev-playbooks/specs/graph-rag-cli/spec.md:99:| `candidates[].source` | string | 结果来源：embedding/graph/virtual |
+dev-playbooks/specs/graph-rag-cli/spec.md:101:| `metadata.embedding_candidates` | integer | 来自向量搜索的候选数 |
+dev-playbooks/specs/graph-rag-cli/spec.md:141:    {"file": "src/auth/handler.ts", "relevance": 0.92, "source": "embedding", "distance": 0},
+dev-playbooks/specs/graph-rag-cli/spec.md:147:    "embedding_candidates": 5,
+dev-playbooks/specs/graph-rag-cli/spec.md:222:    "embedding_candidates": 10,
+dev-playbooks/specs/graph-rag-cli/spec.md:244:    {"file": "src/client.ts", "relevance": 0.88, "source": "embedding", "distance": 0},
+dev-playbooks/specs/graph-rag-cli/spec.md:249:    "embedding_candidates": 5,
+dev-playbooks/specs/graph-rag-cli/spec.md:332:          "source": { "type": "string", "enum": ["embedding", "graph", "virtual"] },
+dev-playbooks/specs/graph-rag-cli/spec.md:343:        "embedding_candidates": { "type": "integer", "minimum": 0 },
+dev-playbooks/specs/_meta/project-profile.md:38:│   ├── embedding.sh       # Embedding 搜索
+dev-playbooks/specs/_meta/key-concepts.md:32:**相关组件**：`scripts/embedding.sh`，`scripts/indexer.sh`
+dev-playbooks/specs/_meta/verification-baseline.md:98:check "embedding.sh 可执行" "test -x scripts/embedding.sh"
+dev-playbooks/specs/_meta/verification-baseline.md:115:| AC-003 | 脚本可执行 | `bash scripts/embedding.sh --help` | 阻断 |
+dev-playbooks/specs/_meta/verification-baseline.md:133:   ci_search → embedding.sh → [Ollama/OpenAI] → 结果
+dev-playbooks/specs/architecture/module-graph.md:35:│  │ embedding   │  │ call-chain  │  │ bug-locator │              │
+dev-playbooks/specs/architecture/module-graph.md:75:| Embedding | `scripts/embedding.sh` | 语义代码搜索 | common.sh, Ollama/OpenAI |
+dev-playbooks/specs/architecture/module-graph.md:77:| Bug Locator | `scripts/bug-locator.sh` | Bug 位置定位 | common.sh, embedding.sh |
+dev-playbooks/specs/architecture/module-graph.md:95:| Embedding Context | `hooks/augment-context-with-embedding.sh` | Embedding 增强上下文 |
+dev-playbooks/specs/architecture/module-graph.md:115:embedding.sh        │   ✓    │   ✓    │   -    │   -    │   -    │   -    │
+dev-playbooks/specs/architecture/c4.md:74:│  │  │   Shell)        │    │   augment-context-with-embedding.sh     │││
+dev-playbooks/specs/architecture/c4.md:85:│  │  │ embedding   │  │ call-chain  │  │ bug-locator │  │ complexity  │││
+dev-playbooks/specs/architecture/c4.md:151:| Embedding Search | `scripts/embedding.sh` | Script | 语义代码搜索 | Bash |
+dev-playbooks/specs/architecture/c4.md:183:| ******Fusion Search****** | `scripts/embedding.sh::fusion_search()` | Function | ******图+向量融合查询，1-hop 图扩展，Token 预算分配****** | Bash |
+dev-playbooks/specs/architecture/c4.md:205:| `scripts/embedding.sh` | fusion_search() 函数：图+向量融合查询，1-hop 图扩展，Token 预算分配（60% embedding + 40% graph） |
+dev-playbooks/specs/architecture/c4.md:225:| `ci_search` | embedding.sh | 已有 |
+dev-playbooks/specs/architecture/c4.md:317:| `main()` | 入口，参数解析 | get_hotspot_files(), embedding_search() |
+dev-playbooks/specs/architecture/c4.md:320:| `embedding_search()` | Embedding 搜索 | embedding.sh |
+dev-playbooks/specs/architecture/c4.md:342:| `search()` | 主搜索函数 | embedding_search(), subgraph_traverse() |
+dev-playbooks/specs/architecture/c4.md:343:| `embedding_search()` | Embedding 搜索 | embedding.sh |
+dev-playbooks/specs/architecture/c4.md:510:| 2026-01-18 | ******upgrade-code-intelligence-capabilities****** | ******代码智能能力轻资产升级（70% → 85-90%）******：新增 CKBClientManager（src/server.ts 内，MCP Client SDK 集成，健康检查，降级状态管理）、fusion_search()（scripts/embedding.sh，图+向量融合查询）；增强 scip-to-graph.sh（IMPLEMENTS/EXTENDS/RETURNS_TYPE 边类型解析，正则降级）、graph-store.sh（Schema v3 迁移，自动备份与回滚，并发保护）、graph-rag.sh（--fusion-depth 参数，融合查询集成）、daemon.sh（自动预热，异步执行，30s 超时）；新增 4 个 CLI 规格（mcp-output-format, graph-store-cli, graph-rag-cli, daemon-cli） |
+dev-playbooks/specs/architecture/hotspots.md:30:| 1 | `scripts/embedding.sh` | 1332 | 🔴 高 | 考虑拆分为子模块 |
+dev-playbooks/specs/architecture/hotspots.md:62:embedding.sh (1332 行)
+dev-playbooks/specs/architecture/hotspots.md:76:| Ollama | embedding.sh | OpenAI → 关键词搜索 |
+dev-playbooks/specs/architecture/hotspots.md:78:| OpenAI API | embedding.sh, reranker.sh | Ollama → 关键词搜索 |
+dev-playbooks/specs/architecture/hotspots.md:86:1. **为 embedding.sh 添加测试覆盖**
+dev-playbooks/specs/architecture/hotspots.md:96:1. **拆分 embedding.sh**
+dev-playbooks/specs/architecture/hotspots.md:98:     - `embedding-index.sh`：索引构建
+dev-playbooks/specs/architecture/hotspots.md:99:     - `embedding-search.sh`：搜索查询
+dev-playbooks/specs/architecture/hotspots.md:100:     - `embedding-provider.sh`：Provider 抽象
+dev-playbooks/specs/architecture/hotspots.md:104:   - 覆盖：embedding, graph-rag, call-chain
+dev-playbooks/specs/architecture/hotspots.md:119:  │                        ● embedding.sh (1332)
+./scripts/embedding.sh:12:# 参考：SPEC-EMB-001
+
+三级降级说明:
+  1. Ollama（本地）→ 优先使用，无网络延迟，隐私安全
+  2. OpenAI API   → Ollama 不可用时自动降级
+  3. 关键词搜索   → API 不可用时的兜底方案
+
+EOF
+}
+
+# 显示状态
+show_status() {
+  log_info "向量索引状态"
+  echo ""
+
+  if [ ! -f "$VECTOR_DB_DIR/metadata.json" ]; then
+    echo "  状态: 未初始化"
+    echo ""
+    echo "  运行 '$0 build' 来构建索引"
+    return 0
+  fi
+
+  local metadata=$(cat "$VECTOR_DB_DIR/metadata.json")
+
+  echo "  模型: $(echo "$metadata" | jq -r '.model')"
+  echo "  向量维度: $(echo "$metadata" | jq -r '.dimension')"
+  echo "  索引类型: $(echo "$metadata" | jq -r '.index_type')"
+  echo "  文件数量: $(echo "$metadata" | jq -r '.file_count // 0')"
+  echo "  创建时间: $(echo "$metadata" | jq -r '.created_at')"
+  echo "  更新时间: $(echo "$metadata" | jq -r '.updated_at')"
+  echo ""
+
+  # 计算索引大小
+  if [ -d "$VECTOR_DB_DIR" ]; then
+    local size=$(du -sh "$VECTOR_DB_DIR" | awk '{print $1}')
+    echo "  索引大小: $size"
+  fi
+
+  echo ""
+}
+
+# 显示配置
+show_config() {
+  log_info "当前配置"
+  echo ""
+
+  echo "  配置文件: $CONFIG_FILE"
+  echo "  启用状态: $ENABLED"
+  echo "  模型: $API_MODEL"
+  echo "  API 地址: $API_BASE_URL"
+  echo "  批量大小: $BATCH_SIZE"
+  echo "  向量数据库: $VECTOR_DB_DIR"
+  echo "  向量维度: $DIMENSION"
+  echo "  索引类型: $INDEX_TYPE"
+  echo "  Top-K: $TOP_K"
+  echo "  相似度阈值: $SIMILARITY_THRESHOLD"
+  echo "  日志级别: $LOG_LEVEL"
+  echo ""
+}
+
+# 清理向量数据库
+clean_vector_db() {
+  log_warn "清理向量数据库: $VECTOR_DB_DIR"
+
+  if [ -d "$VECTOR_DB_DIR" ]; then
+    rm -rf "$VECTOR_DB_DIR"
+    log_ok "已清理"
+  else
+    log_info "向量数据库不存在"
+  fi
+}
+
+# ==================== 主函数 ====================
+
+main() {
+  # 创建临时目录
+  mkdir -p "$TEMP_DIR"
+  trap "rm -rf '$TEMP_DIR'" EXIT
+
+  # 加载配置
+  load_config
+
+  # 解析命令
+  local command="${1:-help}"
+  shift || true
+
+  case "$command" in
+    build)
+      build_index "$@"
+      ;;
+    update)
+      update_index "$@"
+      ;;
+    search)
+      if [ -z "$1" ]; then
+        log_error "请提供搜索查询"
+        echo "用法: $0 search <查询>"
+        exit 1
+      fi
+      local search_query="$1"
+      shift
+
+      # 解析 search 命令后的选项
+      while [[ $# -gt 0 ]]; do
+        case "$1" in
+          --provider)
+            CLI_PROVIDER="$2"
+            shift 2
+            ;;
+          --ollama-model)
+            CLI_OLLAMA_MODEL="$2"
+            shift 2
+            ;;
+          --ollama-endpoint)
+            CLI_OLLAMA_ENDPOINT="$2"
+            shift 2
+            ;;
+          --timeout)
+            CLI_TIMEOUT="$2"
+            shift 2
+            ;;
+          --format)
+            CLI_FORMAT="$2"
+            shift 2
+            ;;
+          --top-k)
+            TOP_K="$2"
+            shift 2
+            ;;
+          --threshold)
+            SIMILARITY_THRESHOLD="$2"
+            shift 2
+            ;;
+          --debug)
+            LOG_LEVEL="DEBUG"
+            shift
+            ;;
+          *)
+            log_warn "未知选项: $1"
+            shift
+            ;;
+        esac
+      done
+
+      semantic_search "$search_query"
+      ;;
+    status)
+      show_status
+      ;;
+    config)
+      show_config
+      ;;
+    clean)
+      clean_vector_db
+      ;;
+    help|--help|-h)
+      show_help
+      ;;
+    *)
+      log_error "未知命令: $command"
+      echo ""
+      show_help
+      exit 1
+      ;;
+  esac
+}
+
+# 解析全局选项
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --config)
+      CONFIG_FILE="$2"
+      shift 2
+      ;;
+    --provider)
+      CLI_PROVIDER="$2"
+      shift 2
+      ;;
+    --ollama-model)
+      CLI_OLLAMA_MODEL="$2"
+      shift 2
+      ;;
+    --ollama-endpoint)
+      CLI_OLLAMA_ENDPOINT="$2"
+      shift 2
+      ;;
+    --timeout)
+      CLI_TIMEOUT="$2"
+      shift 2
+      ;;
+    --format)
+      CLI_FORMAT="$2"
+      shift 2
+      ;;
+    --top-k)
+      TOP_K="$2"
+      shift 2
+      ;;
+    --threshold)
+      SIMILARITY_THRESHOLD="$2"
+      shift 2
+      ;;
+    --debug)
+      LOG_LEVEL="DEBUG"
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+# 运行主函数
+main "$@"

@@ -1,0 +1,48 @@
+# Architecture Rules Configuration
+# Version: 1.0.0
+# Purpose: Define dependency rules and cycle detection settings
+#
+# This file is used by dependency-guard.sh to validate architecture constraints.
+# See: dev-playbooks/changes/augment-upgrade-phase2/specs/dependency-guard/spec.md
+
+schema_version: "1.0.0"
+
+rules:
+  # Example: UI components should not directly import database modules
+  - name: "ui-no-direct-db"
+    description: "UI components cannot directly import database modules"
+    from: "src/ui/**"
+    cannot_import:
+      - "src/db/**"
+      - "src/data/**"
+    severity: "error"
+
+  # Example: Scripts should not import TypeScript modules
+  - name: "scripts-no-ts-import"
+    description: "Shell scripts should not source TypeScript files"
+    from: "scripts/**"
+    cannot_import:
+      - "src/**"
+    severity: "warning"
+
+  # Cycle detection rule
+  - name: "no-circular-deps"
+    type: "cycle-detection"
+    description: "Detect circular dependencies in source code"
+    scope: "src/**"
+    severity: "error"
+    whitelist:
+      - "src/types/**"
+      - "**/*.d.ts"
+
+config:
+  # Action on violation: "warn" (log only) or "block" (exit 1)
+  on_violation: "warn"
+
+  # Paths to ignore
+  ignore:
+    - "node_modules/**"
+    - "dist/**"
+    - "build/**"
+    - "**/*.test.ts"
+    - "**/*.spec.ts"

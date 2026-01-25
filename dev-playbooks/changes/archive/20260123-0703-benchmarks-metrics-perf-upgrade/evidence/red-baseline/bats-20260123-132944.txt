@@ -1,0 +1,9 @@
+$ /opt/homebrew/bin/bats tests/benchmarks-contract.bats
+1..6
+bats: unknown test name `$'test_CT-2dBM-2d401-3a_schema_v1-2e1_å\217\214å\206\231ä¸\200è\207´æ\200§-ffffffffffffffefmetrics-2e-2a_ä¸\216é¡¶å±\202å\255\227æ®µä¸\200è\207´-ffffffffffffffef''
+bats: unknown test name `$'test_CT-2dBM-2d402-3a_compare_stdout_ä¸¤è¡\214_-2b_exit_0-ffffffffffffffefæ\227 å\233\236å½\222-ffffffffffffffef''
+bats: unknown test name `$'test_CT-2dBM-2d403-3a_é\230\210å\200¼ä¼\230å\205\210çº§-ffffffffffffffefmetric-2ethreshold_ä¼\230å\205\210-ffffffffffffffef-2b_exit_1''
+bats: unknown test name `$'test_CT-2dBM-2d404-3a_version-5fmismatch_é\230»æ\226\255_compare-ffffffffffffffefexit_2-ffffffffffffffef''
+bats: unknown test name `$'test_CT-2dBM-2d405-3a_compare_ä¼\230å\205\210è¯»å\217\226_metrics-2e-2a-ffffffffffffffefç¼ºå¤±æ\227¶å\233\236é\200\200-ffffffffffffffef''
+bats: unknown test name `$'test_CT-2dBM-2d406-3a_median-2dof-2d3_äº§ç\211©è·¯å¾\204å\221½å\220\215-2få\255\230å\234¨''
+# bats warning: Executed 0 instead of expected 6 tests

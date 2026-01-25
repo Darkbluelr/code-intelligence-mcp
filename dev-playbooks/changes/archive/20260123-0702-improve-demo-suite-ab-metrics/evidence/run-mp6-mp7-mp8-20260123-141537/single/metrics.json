@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "run_id": "run-20260123-141537-249ef600",
+  "generated_at": "2026-01-23T14:15:38Z",
+  "status": "degraded",
+  "degraded": true,
+  "reasons": ["dirty_worktree",""],
+  "missing_fields": [""],
+  "git": {
+    "ref_input": "HEAD",
+    "ref_resolved": "3547af120636a4f2fa8635a238dd3cc5994b5321",
+    "dirty": true,
+    "isolation": {
+      "strategy": "in_place",
+      "workdir": "../../../../.."
+    }
+  },
+  "dataset": {
+    "queries": {
+      "path": "tests/fixtures/benchmark/queries.jsonl",
+      "line_count": 3,
+      "sha256": "92aeb057d4e22e0fd9dc44898966a3ba60f70c308ce17fc704af785572424cf8"
+    }
+  },
+  "environment": {
+    "os": "darwin",
+    "arch": "arm64",
+    "node": "v22.15.0"
+  },
+  "config": {
+    "toggles": {
+      "context_injection_mode": { "value": "on", "source": "default" },
+      "cache_mode": { "value": "cold", "source": "default" }
+    },
+    "hash": "5c59cce52fc4b83de9a9cb51af3bf3dfbe04c71cf0fcc1ac238d908b26686abc",
+    "devbooks_config": {
+      "mode": "copied",
+      "path": ".devbooks/config.yaml",
+      "sha256": "943c698d28239df52dc43de87698a0099d7f940e88c78cfb5acb5fdad1e2f048",
+      "missing": false
+    }
+  },
+  "write_boundary": {
+    "out_dir": "/Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0702-improve-demo-suite-ab-metrics/evidence/run-mp6-mp7-mp8-20260123-141537",
+    "tmp_dir": "/Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0702-improve-demo-suite-ab-metrics/evidence/run-mp6-mp7-mp8-20260123-141537/.tmp",
+    "allow_system_tmp": false
+  },
+  "metrics": {
+    "demo_suite": { "total_duration_ms": 149 },
+    "diagnosis": {
+  "simple": {
+    "has_expected_hit": true,
+    "duration_ms": 14,
+    "candidates_count": 1
+  },
+  "complex": {
+    "has_expected_hit": true,
+    "duration_ms": 0,
+    "has_call_chain": true,
+    "has_impact": true
+  }
+}
+  },
+  "steps": [
+    { "id": "single", "status": "degraded", "duration_ms": 149 }
+  ]
+}

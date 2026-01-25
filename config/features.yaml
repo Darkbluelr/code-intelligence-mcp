@@ -1,0 +1,34 @@
+features:
+  benchmark:
+    enabled: true
+  boundary_detector:
+    enabled: true
+  context_compressor:
+    enabled: true
+  context_signals:
+    enabled: true
+  data_flow_tracing:
+    enabled: true
+  drift_detector:
+    enabled: true
+  graph_store:
+    enabled: true
+  hotspot_analyzer:
+    enabled: true
+  hybrid_retrieval:
+    enabled: true
+    weights:
+      keyword: 0.3
+      vector: 0.5
+      graph: 0.2
+    rrf_k: 60
+  incremental_indexing:
+    enabled: true
+  llm_rerank:
+    enabled: true
+  pattern_learner:
+    enabled: true
+  performance_regression:
+    enabled: true
+  semantic_anomaly:
+    enabled: true

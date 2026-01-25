@@ -1,0 +1,2 @@
+rg -i "FAIL|FAILED|ERROR" dev-playbooks/changes/20260123-0702-improve-demo-suite-ab-metrics/evidence/green-final/bats-demo-suite-20260124-130550.log
+(no matches)

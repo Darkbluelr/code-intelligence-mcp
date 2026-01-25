@@ -1,0 +1,955 @@
+rg: .gitlab-ci.yml.template: No such file or directory (os error 2)
+rg: README*: No such file or directory (os error 2)
+dev-playbooks/project.md:40:- **位置**：`tests/*.bats`
+dev-playbooks/specs/scip-parser-offline/spec.md:279:| CT-SPO-001 | behavior | SC-SPO-001 | `tests/scip-to-graph.bats::test_vendored_proto` |
+dev-playbooks/specs/scip-parser-offline/spec.md:280:| CT-SPO-002 | behavior | SC-SPO-002 | `tests/scip-to-graph.bats::test_custom_proto_path` |
+dev-playbooks/specs/scip-parser-offline/spec.md:281:| CT-SPO-003 | behavior | SC-SPO-003 | `tests/scip-to-graph.bats::test_offline_no_proto_error` |
+dev-playbooks/specs/scip-parser-offline/spec.md:282:| CT-SPO-004 | behavior | SC-SPO-004, SC-SPO-007 | `tests/scip-to-graph.bats::test_download_fallback` |
+dev-playbooks/specs/scip-parser-offline/spec.md:283:| CT-SPO-005 | behavior | SC-SPO-006 | `tests/scip-to-graph.bats::test_proto_version_check` |
+dev-playbooks/specs/intent-learner/spec.md:66:**验证**：`tests/intent-learner.bats::test_record_history`
+dev-playbooks/specs/intent-learner/spec.md:84:**验证**：`tests/intent-learner.bats::test_preference_calculation`
+dev-playbooks/specs/intent-learner/spec.md:99:**验证**：`tests/intent-learner.bats::test_90_day_cleanup`
+dev-playbooks/specs/intent-learner/spec.md:114:**验证**：`tests/intent-learner.bats::test_top_n_preferences`
+dev-playbooks/specs/intent-learner/spec.md:128:**验证**：`tests/intent-learner.bats::test_prefix_filter`
+dev-playbooks/specs/intent-learner/spec.md:143:**验证**：`tests/intent-learner.bats::test_max_entries_limit`
+dev-playbooks/specs/intent-learner/spec.md:157:**验证**：`tests/intent-learner.bats::test_empty_history`
+dev-playbooks/specs/intent-learner/spec.md:172:**验证**：`tests/intent-learner.bats::test_action_weight`
+dev-playbooks/specs/intent-learner/spec.md:188:**验证**：`tests/intent-learner.bats::test_corrupt_recovery`
+dev-playbooks/specs/intent-learner/spec.md:203:| SC-IL-001 | `tests/intent-learner.bats::test_record_history` |
+dev-playbooks/specs/intent-learner/spec.md:204:| SC-IL-002 | `tests/intent-learner.bats::test_preference_calculation` |
+dev-playbooks/specs/intent-learner/spec.md:205:| SC-IL-003 | `tests/intent-learner.bats::test_90_day_cleanup` |
+dev-playbooks/specs/intent-learner/spec.md:206:| SC-IL-004 | `tests/intent-learner.bats::test_top_n_preferences` |
+dev-playbooks/specs/intent-learner/spec.md:207:| SC-IL-005 | `tests/intent-learner.bats::test_prefix_filter` |
+dev-playbooks/specs/intent-learner/spec.md:208:| SC-IL-006 | `tests/intent-learner.bats::test_max_entries_limit` |
+dev-playbooks/specs/intent-learner/spec.md:209:| SC-IL-007 | `tests/intent-learner.bats::test_empty_history` |
+dev-playbooks/specs/intent-learner/spec.md:210:| SC-IL-008 | `tests/intent-learner.bats::test_action_weight` |
+dev-playbooks/specs/intent-learner/spec.md:211:| SC-IL-009 | `tests/intent-learner.bats::test_corrupt_recovery` |
+dev-playbooks/specs/vuln-tracker/spec.md:66:**验证**：`tests/vuln-tracker.bats::test_basic_scan`
+dev-playbooks/specs/vuln-tracker/spec.md:81:**验证**：`tests/vuln-tracker.bats::test_npm7_format`
+dev-playbooks/specs/vuln-tracker/spec.md:96:**验证**：`tests/vuln-tracker.bats::test_npm6_format`
+dev-playbooks/specs/vuln-tracker/spec.md:111:**验证**：`tests/vuln-tracker.bats::test_severity_filter`
+dev-playbooks/specs/vuln-tracker/spec.md:126:**验证**：`tests/vuln-tracker.bats::test_dependency_trace`
+dev-playbooks/specs/vuln-tracker/spec.md:141:**验证**：`tests/vuln-tracker.bats::test_npm_audit_fallback`
+dev-playbooks/specs/vuln-tracker/spec.md:156:**验证**：`tests/vuln-tracker.bats::test_json_output`
+dev-playbooks/specs/vuln-tracker/spec.md:171:**验证**：`tests/vuln-tracker.bats::test_markdown_output`
+dev-playbooks/specs/vuln-tracker/spec.md:186:**验证**：`tests/vuln-tracker.bats::test_no_vulnerabilities`
+dev-playbooks/specs/vuln-tracker/spec.md:201:**验证**：`tests/vuln-tracker.bats::test_dev_dependencies`
+dev-playbooks/specs/vuln-tracker/spec.md:216:| SC-VT-001 | `tests/vuln-tracker.bats::test_basic_scan` |
+dev-playbooks/specs/vuln-tracker/spec.md:217:| SC-VT-002 | `tests/vuln-tracker.bats::test_npm7_format` |
+dev-playbooks/specs/vuln-tracker/spec.md:218:| SC-VT-003 | `tests/vuln-tracker.bats::test_npm6_format` |
+dev-playbooks/specs/vuln-tracker/spec.md:219:| SC-VT-004 | `tests/vuln-tracker.bats::test_severity_filter` |
+dev-playbooks/specs/vuln-tracker/spec.md:220:| SC-VT-005 | `tests/vuln-tracker.bats::test_dependency_trace` |
+dev-playbooks/specs/vuln-tracker/spec.md:221:| SC-VT-006 | `tests/vuln-tracker.bats::test_npm_audit_fallback` |
+dev-playbooks/specs/vuln-tracker/spec.md:222:| SC-VT-007 | `tests/vuln-tracker.bats::test_json_output` |
+dev-playbooks/specs/vuln-tracker/spec.md:223:| SC-VT-008 | `tests/vuln-tracker.bats::test_markdown_output` |
+dev-playbooks/specs/vuln-tracker/spec.md:224:| SC-VT-009 | `tests/vuln-tracker.bats::test_no_vulnerabilities` |
+dev-playbooks/specs/vuln-tracker/spec.md:225:| SC-VT-010 | `tests/vuln-tracker.bats::test_dev_dependencies` |
+dev-playbooks/specs/indexer-scheduler/spec.md:320:| CT-IS-001 | behavior | SC-IS-001, SC-IS-002 | `tests/indexer.bats::test_incremental_path_invoked` |
+dev-playbooks/specs/indexer-scheduler/spec.md:321:| CT-IS-002 | behavior | SC-IS-003, SC-IS-004, SC-IS-005 | `tests/indexer.bats::test_fallback_to_full_rebuild` |
+dev-playbooks/specs/indexer-scheduler/spec.md:322:| CT-IS-003 | behavior | SC-IS-007 | `tests/indexer.bats::test_dry_run_mode` |
+dev-playbooks/specs/indexer-scheduler/spec.md:323:| CT-IS-004 | behavior | SC-IS-008 | `tests/indexer.bats::test_cli_compatibility` |
+dev-playbooks/specs/indexer-scheduler/spec.md:324:| CT-IS-005 | behavior | SC-IS-009 | `tests/indexer.bats::test_idempotency` |
+dev-playbooks/specs/indexer-scheduler/spec.md:325:| CT-IS-006 | behavior | SC-IS-006 | `tests/indexer.bats::test_feature_toggle` |
+dev-playbooks/specs/indexer-scheduler/spec.md:326:| CT-IS-007 | behavior | SC-IS-002 | `tests/indexer.bats::test_debounce_aggregation` |
+dev-playbooks/specs/indexer-scheduler/spec.md:327:| CT-IS-008 | behavior | SC-IS-010 | `tests/indexer.bats::test_version_stamp_consistency` |
+dev-playbooks/specs/ci-index-status-semantic/spec.md:242:| CT-CIS-001 | behavior | SC-CIS-001 | `tests/server.bats::test_ci_index_status_status` |
+dev-playbooks/specs/ci-index-status-semantic/spec.md:243:| CT-CIS-002 | behavior | SC-CIS-002 | `tests/server.bats::test_ci_index_status_build` |
+dev-playbooks/specs/ci-index-status-semantic/spec.md:244:| CT-CIS-003 | behavior | SC-CIS-003 | `tests/server.bats::test_ci_index_status_clear` |
+dev-playbooks/specs/ci-index-status-semantic/spec.md:245:| CT-CIS-004 | behavior | SC-CIS-004, SC-CIS-005 | `tests/server.bats::test_ci_index_status_validation` |
+dev-playbooks/specs/ci-cd-integration/spec.md:397:| `tests/ci.bats` | 新增 | CI 相关测试 |
+dev-playbooks/specs/federation-virtual-edges/spec.md:77:**验证**：`tests/federation-lite.bats::test_proto_virtual_edge`
+dev-playbooks/specs/federation-virtual-edges/spec.md:96:**验证**：`tests/federation-lite.bats::test_confidence_calculation`
+dev-playbooks/specs/federation-virtual-edges/spec.md:112:**验证**：`tests/federation-lite.bats::test_low_confidence_filter`
+dev-playbooks/specs/federation-virtual-edges/spec.md:127:**验证**：`tests/federation-lite.bats::test_virtual_edge_query`
+dev-playbooks/specs/federation-virtual-edges/spec.md:141:**验证**：`tests/federation-lite.bats::test_high_confidence_mark`
+dev-playbooks/specs/federation-virtual-edges/spec.md:157:**验证**：`tests/federation-lite.bats::test_openapi_virtual_edge`
+dev-playbooks/specs/federation-virtual-edges/spec.md:174:**验证**：`tests/federation-lite.bats::test_virtual_edge_sync`
+dev-playbooks/specs/federation-virtual-edges/spec.md:189:**验证**：`tests/federation-lite.bats::test_fuzzy_match`
+dev-playbooks/specs/federation-virtual-edges/spec.md:205:| SC-FV-001 | `tests/federation-lite.bats::test_proto_virtual_edge` |
+dev-playbooks/specs/federation-virtual-edges/spec.md:206:| SC-FV-002 | `tests/federation-lite.bats::test_confidence_calculation` |
+dev-playbooks/specs/federation-virtual-edges/spec.md:207:| SC-FV-003 | `tests/federation-lite.bats::test_low_confidence_filter` |
+dev-playbooks/specs/federation-virtual-edges/spec.md:208:| SC-FV-004 | `tests/federation-lite.bats::test_virtual_edge_query` |
+dev-playbooks/specs/federation-virtual-edges/spec.md:209:| SC-FV-005 | `tests/federation-lite.bats::test_high_confidence_mark` |
+dev-playbooks/specs/federation-virtual-edges/spec.md:210:| SC-FV-006 | `tests/federation-lite.bats::test_openapi_virtual_edge` |
+dev-playbooks/specs/federation-virtual-edges/spec.md:211:| SC-FV-007 | `tests/federation-lite.bats::test_virtual_edge_sync` |
+dev-playbooks/specs/federation-virtual-edges/spec.md:212:| SC-FV-008 | `tests/federation-lite.bats::test_fuzzy_match` |
+dev-playbooks/specs/cod-visualizer/spec.md:66:**验证**：`tests/cod-visualizer.bats::test_module_mermaid`
+dev-playbooks/specs/cod-visualizer/spec.md:83:**验证**：`tests/cod-visualizer.bats::test_file_d3json`
+dev-playbooks/specs/cod-visualizer/spec.md:100:**验证**：`tests/cod-visualizer.bats::test_hotspot_coloring`
+dev-playbooks/specs/cod-visualizer/spec.md:114:**验证**：`tests/cod-visualizer.bats::test_complexity_annotation`
+dev-playbooks/specs/cod-visualizer/spec.md:128:**验证**：`tests/cod-visualizer.bats::test_mermaid_syntax_valid`
+dev-playbooks/specs/cod-visualizer/spec.md:143:**验证**：`tests/cod-visualizer.bats::test_d3json_schema_valid`
+dev-playbooks/specs/cod-visualizer/spec.md:157:**验证**：`tests/cod-visualizer.bats::test_empty_module`
+dev-playbooks/specs/cod-visualizer/spec.md:171:**验证**：`tests/cod-visualizer.bats::test_output_to_file`
+dev-playbooks/specs/cod-visualizer/spec.md:186:| SC-CV-001 | `tests/cod-visualizer.bats::test_module_mermaid` |
+dev-playbooks/specs/cod-visualizer/spec.md:187:| SC-CV-002 | `tests/cod-visualizer.bats::test_file_d3json` |
+dev-playbooks/specs/cod-visualizer/spec.md:188:| SC-CV-003 | `tests/cod-visualizer.bats::test_hotspot_coloring` |
+dev-playbooks/specs/cod-visualizer/spec.md:189:| SC-CV-004 | `tests/cod-visualizer.bats::test_complexity_annotation` |
+dev-playbooks/specs/cod-visualizer/spec.md:190:| SC-CV-005 | `tests/cod-visualizer.bats::test_mermaid_syntax_valid` |
+dev-playbooks/specs/cod-visualizer/spec.md:191:| SC-CV-006 | `tests/cod-visualizer.bats::test_d3json_schema_valid` |
+dev-playbooks/specs/cod-visualizer/spec.md:192:| SC-CV-007 | `tests/cod-visualizer.bats::test_empty_module` |
+dev-playbooks/specs/cod-visualizer/spec.md:193:| SC-CV-008 | `tests/cod-visualizer.bats::test_output_to_file` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:240:| `tests/ast-delta.bats` | 新增 | 测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:241:| `tests/impact-analyzer.bats` | 新增 | 测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:242:| `tests/cod-visualizer.bats` | 新增 | 测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:243:| `tests/intent-learner.bats` | 新增 | 测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:244:| `tests/vuln-tracker.bats` | 新增 | 测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:245:| `tests/graph-rag.bats` | 修改 | 测试更新 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:246:| `tests/federation-lite.bats` | 修改 | 测试更新 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:315:| `tests/ast-delta.bats` | 新增 | P0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:316:| `tests/impact-analyzer.bats` | 新增 | P0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:317:| `tests/cod-visualizer.bats` | 新增 | P0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:318:| `tests/intent-learner.bats` | 新增 | P1 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:319:| `tests/vuln-tracker.bats` | 新增 | P1 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:320:| `tests/graph-rag.bats` | 修改（智能裁剪测试） | P1 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:321:| `tests/federation-lite.bats` | 修改（虚拟边测试） | P1 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:322:| `tests/regression.bats` | 验证（向后兼容） | P0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:464:| AC-F01 | AST Delta 增量索引：单文件更新 < 100ms | `tests/ast-delta.bats` 性能测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:465:| AC-F02 | 传递性影响分析：5 跳内置信度正确计算 | `tests/impact-analyzer.bats` 算法测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:467:| AC-F04 | 子图智能裁剪：输出 Token 数 ≤ 预算 | `tests/graph-rag.bats` 预算测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:468:| AC-F05 | 联邦虚拟边：跨仓符号可查询 | `tests/federation-lite.bats` 虚拟边测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:469:| AC-F06 | 意图偏好学习：历史记录正确存储 | `tests/intent-learner.bats` 存储测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:470:| AC-F07 | 安全漏洞追踪：npm audit 输出正确解析 | `tests/vuln-tracker.bats` 解析测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:1609:| **验证方法** | `tests/intent-learner.bats` 清理测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:1661:| **验证方法** | `tests/vuln-tracker.bats` 过滤测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:1849:└── tests/ast-delta.bats
+dev-playbooks/specs/ast-delta/spec.md:69:**验证**：`tests/ast-delta.bats::test_single_file_update`
+dev-playbooks/specs/ast-delta/spec.md:86:**验证**：`tests/ast-delta.bats::test_batch_update`
+dev-playbooks/specs/ast-delta/spec.md:104:**验证**：`tests/ast-delta.bats::test_cache_invalidation`
+dev-playbooks/specs/ast-delta/spec.md:121:**验证**：`tests/ast-delta.bats::test_fallback_to_scip`
+dev-playbooks/specs/ast-delta/spec.md:136:**验证**：`tests/ast-delta.bats::test_large_change_triggers_rebuild`
+dev-playbooks/specs/ast-delta/spec.md:151:**验证**：`tests/ast-delta.bats::test_performance`
+dev-playbooks/specs/ast-delta/spec.md:166:**验证**：`tests/ast-delta.bats::test_atomic_write`
+dev-playbooks/specs/ast-delta/spec.md:181:| SC-AD-001 | `tests/ast-delta.bats::test_single_file_update` |
+dev-playbooks/specs/ast-delta/spec.md:182:| SC-AD-002 | `tests/ast-delta.bats::test_batch_update` |
+dev-playbooks/specs/ast-delta/spec.md:183:| SC-AD-003 | `tests/ast-delta.bats::test_cache_invalidation` |
+dev-playbooks/specs/ast-delta/spec.md:184:| SC-AD-004 | `tests/ast-delta.bats::test_fallback_to_scip` |
+dev-playbooks/specs/ast-delta/spec.md:185:| SC-AD-005 | `tests/ast-delta.bats::test_large_change_triggers_rebuild` |
+dev-playbooks/specs/ast-delta/spec.md:186:| SC-AD-006 | `tests/ast-delta.bats::test_performance` |
+dev-playbooks/specs/ast-delta/spec.md:187:| SC-AD-007 | `tests/ast-delta.bats::test_atomic_write` |
+dev-playbooks/specs/impact-analyzer/spec.md:65:**验证**：`tests/impact-analyzer.bats::test_symbol_impact`
+dev-playbooks/specs/impact-analyzer/spec.md:81:**验证**：`tests/impact-analyzer.bats::test_file_impact`
+dev-playbooks/specs/impact-analyzer/spec.md:100:**验证**：`tests/impact-analyzer.bats::test_confidence_calculation`
+dev-playbooks/specs/impact-analyzer/spec.md:115:**验证**：`tests/impact-analyzer.bats::test_threshold_filter`
+dev-playbooks/specs/impact-analyzer/spec.md:130:**验证**：`tests/impact-analyzer.bats::test_mermaid_output`
+dev-playbooks/specs/impact-analyzer/spec.md:145:**验证**：`tests/impact-analyzer.bats::test_depth_limit`
+dev-playbooks/specs/impact-analyzer/spec.md:159:**验证**：`tests/impact-analyzer.bats::test_empty_result`
+dev-playbooks/specs/impact-analyzer/spec.md:174:| SC-IA-001 | `tests/impact-analyzer.bats::test_symbol_impact` |
+dev-playbooks/specs/impact-analyzer/spec.md:175:| SC-IA-002 | `tests/impact-analyzer.bats::test_file_impact` |
+dev-playbooks/specs/impact-analyzer/spec.md:176:| SC-IA-003 | `tests/impact-analyzer.bats::test_confidence_calculation` |
+dev-playbooks/specs/impact-analyzer/spec.md:177:| SC-IA-004 | `tests/impact-analyzer.bats::test_threshold_filter` |
+dev-playbooks/specs/impact-analyzer/spec.md:178:| SC-IA-005 | `tests/impact-analyzer.bats::test_mermaid_output` |
+dev-playbooks/specs/impact-analyzer/spec.md:179:| SC-IA-006 | `tests/impact-analyzer.bats::test_depth_limit` |
+dev-playbooks/specs/impact-analyzer/spec.md:180:| SC-IA-007 | `tests/impact-analyzer.bats::test_empty_result` |
+dev-playbooks/specs/smart-pruning/spec.md:67:**验证**：`tests/graph-rag.bats::test_budget_pruning`
+dev-playbooks/specs/smart-pruning/spec.md:83:**验证**：`tests/graph-rag.bats::test_priority_calculation`
+dev-playbooks/specs/smart-pruning/spec.md:101:**验证**：`tests/graph-rag.bats::test_budget_boundary`
+dev-playbooks/specs/smart-pruning/spec.md:115:**验证**：`tests/graph-rag.bats::test_default_budget`
+dev-playbooks/specs/smart-pruning/spec.md:129:**验证**：`tests/graph-rag.bats::test_zero_budget`
+dev-playbooks/specs/smart-pruning/spec.md:144:**验证**：`tests/graph-rag.bats::test_single_fragment_exceeds_budget`
+dev-playbooks/specs/smart-pruning/spec.md:159:**验证**：`tests/graph-rag.bats::test_intent_preference_integration`
+dev-playbooks/specs/smart-pruning/spec.md:173:**验证**：`tests/graph-rag.bats::test_token_estimation`
+dev-playbooks/specs/smart-pruning/spec.md:188:| SC-SP-001 | `tests/graph-rag.bats::test_budget_pruning` |
+dev-playbooks/specs/smart-pruning/spec.md:189:| SC-SP-002 | `tests/graph-rag.bats::test_priority_calculation` |
+dev-playbooks/specs/smart-pruning/spec.md:190:| SC-SP-003 | `tests/graph-rag.bats::test_budget_boundary` |
+dev-playbooks/specs/smart-pruning/spec.md:191:| SC-SP-004 | `tests/graph-rag.bats::test_default_budget` |
+dev-playbooks/specs/smart-pruning/spec.md:192:| SC-SP-005 | `tests/graph-rag.bats::test_zero_budget` |
+dev-playbooks/specs/smart-pruning/spec.md:193:| SC-SP-006 | `tests/graph-rag.bats::test_single_fragment_exceeds_budget` |
+dev-playbooks/specs/smart-pruning/spec.md:194:| SC-SP-007 | `tests/graph-rag.bats::test_intent_preference_integration` |
+dev-playbooks/specs/smart-pruning/spec.md:195:| SC-SP-008 | `tests/graph-rag.bats::test_token_estimation` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:99:| `tests/ast-delta.bats` | 新增 | 单元测试和性能测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:294:| `tests/impact-analyzer.bats` | 新增 | 算法正确性测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:374:| `tests/cod-visualizer.bats` | 新增 | 输出格式验证 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:468:| `tests/graph-rag.bats` | 修改 | 新增预算测试用例 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:544:| `tests/federation-lite.bats` | 修改 | 新增虚拟边测试用例 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:647:| `tests/intent-learner.bats` | 新增 | 存储和清理测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:746:| `tests/vuln-tracker.bats` | 新增 | 解析和过滤测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1011:| AC-F01 | AST Delta 增量索引：单文件更新 P95 < 100ms（±20%） | `tests/ast-delta.bats` 性能测试 | M1 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1012:| AC-F02 | 传递性影响分析：5 跳内置信度正确计算 | `tests/impact-analyzer.bats` 算法测试 | M2 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1014:| AC-F04 | 子图智能裁剪：输出 Token 数 ≤ 预算值 | `tests/graph-rag.bats` 预算测试 | M4 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1015:| AC-F05 | 联邦虚拟边：跨仓符号可查询，置信度正确计算 | `tests/federation-lite.bats` 虚拟边测试 | M5 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1016:| AC-F06 | 意图偏好学习：历史记录正确存储和查询 | `tests/intent-learner.bats` 存储测试 | M6 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1017:| AC-F07 | 安全漏洞追踪：npm audit 输出正确解析 | `tests/vuln-tracker.bats` 解析测试 | M7 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1019:| AC-F09 | 意图历史 90 天自动清理 | `tests/intent-learner.bats` 清理测试 | M6 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1020:| AC-F10 | 漏洞严重性阈值过滤正确 | `tests/vuln-tracker.bats` 过滤测试 | M7 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1035:| AST Delta + Graph Store | 增量更新写入 graph.db | `tests/integration/ast-graph.bats` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1036:| Impact Analyzer + Graph Store | 图遍历查询性能 | `tests/integration/impact-graph.bats` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1037:| Smart Pruning + LLM Rerank | 裁剪后重排序 | `tests/integration/pruning-rerank.bats` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1038:| Virtual Edges + Federation | 虚拟边与契约索引协作 | `tests/integration/federation-edges.bats` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1047:bats tests/integration/ast-graph.bats
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1166:└── tests/ast-delta.bats
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1171:├── tests/impact-analyzer.bats
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1172:└── tests/cod-visualizer.bats
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1177:├── tests/graph-rag.bats (更新)
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1178:└── tests/intent-learner.bats
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1183:├── tests/federation-lite.bats (更新)
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1184:└── tests/vuln-tracker.bats
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1189:├── tests/integration/*.bats
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:61:| `tests/ast-delta.bats` | M1: AST Delta | 7 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:62:| `tests/impact-analyzer.bats` | M2: 影响分析 | 7 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:63:| `tests/cod-visualizer.bats` | M3: COD 可视化 | 8 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:64:| `tests/vuln-tracker.bats` | M7: 漏洞追踪 | 10 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:65:| `tests/intent-learner.bats` | M6: 意图学习 | 9 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:71:| `tests/graph-rag.bats` | 8 | M4: 智能裁剪 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:72:| `tests/federation-lite.bats` | 8 | M5: 虚拟边 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:78:| `tests/integration/ast-graph.bats` | AST Delta + Graph Store |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:79:| `tests/integration/impact-graph.bats` | Impact Analyzer + Graph Store |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:80:| `tests/integration/pruning-rerank.bats` | Smart Pruning + Intent Learner |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:81:| `tests/integration/federation-edges.bats` | Virtual Edges + Federation |
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:500:  - 验收锚点：`tests/integration/ast-graph.bats`（Test Owner 产出）
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:504:  - 验收锚点：`tests/integration/impact-graph.bats`（Test Owner 产出）
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:508:  - 验收锚点：`tests/integration/pruning-rerank.bats`（Test Owner 产出）
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:512:  - 验收锚点：`tests/integration/federation-edges.bats`（Test Owner 产出）
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:253:| REG3 | tests/bug-locator.bats | 18 个测试用例全部通过 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:282:  - 创建 `tests/bug-locator.bats` 或等效测试
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:444:| 2026-01-10 | Judge | B2-R2（回归测试不存在） | **成立** | M6：创建 `tests/bug-locator.bats` 或等效测试文件 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:459:| V-M3 | 回归测试定义 | `tests/bug-locator.bats` 存在（16 测试用例） | ✅ 通过 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:481:| M6 | 创建回归测试定义 | Author / Test Owner | 存在 `tests/bug-locator.bats` 或等效测试文件 | ✅ 已完成 (18 测试用例) |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:490:| V-M3 | 回归测试定义 | 测试文件存在 | `tests/bug-locator.bats` 或等效 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:492:| V-M6 | 回归测试存在 | `test -f tests/bug-locator.bats` 或等效 | 文件存在性 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:521:   - M6：已创建 `tests/bug-locator.bats`（18 测试用例）
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:14:| `tests/ast-delta.bats` | 23 | 23 | 0 | 0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:15:| `tests/impact-analyzer.bats` | 21 | 21 | 0 | 0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:16:| `tests/cod-visualizer.bats` | 16 | 16 | 0 | 0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:17:| `tests/intent-learner.bats` | 21 | 21 | 0 | 0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:18:| `tests/vuln-tracker.bats` | 24 | 24 | 0 | 0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:26:| `tests/graph-rag.bats` | 14 | 2 | 12 | 0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:27:| `tests/federation-lite.bats` | 8 | 8 | 0 | 0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:51:| `scripts/ast-delta.sh` | `tests/ast-delta.bats` | P0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:52:| `scripts/impact-analyzer.sh` | `tests/impact-analyzer.bats` | P0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:53:| `scripts/cod-visualizer.sh` | `tests/cod-visualizer.bats` | P0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:54:| `scripts/intent-learner.sh` | `tests/intent-learner.bats` | P0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:55:| `scripts/vuln-tracker.sh` | `tests/vuln-tracker.bats` | P0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:67:**验证**：`tests/graph-rag.bats::test_budget_pruning`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:83:**验证**：`tests/graph-rag.bats::test_priority_calculation`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:101:**验证**：`tests/graph-rag.bats::test_budget_boundary`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:115:**验证**：`tests/graph-rag.bats::test_default_budget`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:129:**验证**：`tests/graph-rag.bats::test_zero_budget`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:144:**验证**：`tests/graph-rag.bats::test_single_fragment_exceeds_budget`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:159:**验证**：`tests/graph-rag.bats::test_intent_preference_integration`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:173:**验证**：`tests/graph-rag.bats::test_token_estimation`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:188:| SC-SP-001 | `tests/graph-rag.bats::test_budget_pruning` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:189:| SC-SP-002 | `tests/graph-rag.bats::test_priority_calculation` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:190:| SC-SP-003 | `tests/graph-rag.bats::test_budget_boundary` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:191:| SC-SP-004 | `tests/graph-rag.bats::test_default_budget` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:192:| SC-SP-005 | `tests/graph-rag.bats::test_zero_budget` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:193:| SC-SP-006 | `tests/graph-rag.bats::test_single_fragment_exceeds_budget` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:194:| SC-SP-007 | `tests/graph-rag.bats::test_intent_preference_integration` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:195:| SC-SP-008 | `tests/graph-rag.bats::test_token_estimation` |
+dev-playbooks/changes/archive/augment-parity/proposal.md:159:| `tests/graph-store.bats` | 新增 | 测试 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:160:| `tests/scip-to-graph.bats` | 新增 | 测试 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:161:| `tests/daemon.bats` | 新增 | 测试 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:245:| `tests/graph-store.bats` | 新增 | P0 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:246:| `tests/scip-to-graph.bats` | 新增 | P0 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:247:| `tests/daemon.bats` | 新增 | P0 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:248:| `tests/graph-rag.bats` | 需更新（重排序测试） | P1 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:249:| `tests/dependency-guard.bats` | 需更新（孤儿检测测试） | P1 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:250:| `tests/pattern-learner.bats` | 需更新（自动发现测试） | P1 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:251:| `tests/regression.bats` | 需验证（向后兼容） | P0 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:252:| `tests/mcp-contract.bats` | 需更新（新工具契约） | P1 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:345:| AC-P01 | SQLite 图存储支持 4 种核心边类型 CRUD（DEFINES/IMPORTS/CALLS/MODIFIES），2 种扩展边类型（IMPLEMENTS/EXTENDS）依赖 AST 分析，本次标记为后续迭代 | `tests/graph-store.bats` 全部通过 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:347:| AC-P03 | 守护进程启动后 P95 延迟 < 500ms | `tests/daemon.bats` 性能测试通过 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:349:| AC-P05 | 孤儿模块检测正确识别无入边节点 | `tests/dependency-guard.bats` 孤儿测试通过 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:1264:└── tests/graph-store.bats
+dev-playbooks/changes/archive/augment-parity/proposal.md:1268:└── tests/daemon.bats
+dev-playbooks/changes/archive/enhance-code-intelligence/evidence/red-baseline/summary.md:80:2. Run `bats tests/*.bats` after implementation
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:77:**验证**：`tests/federation-lite.bats::test_proto_virtual_edge`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:96:**验证**：`tests/federation-lite.bats::test_confidence_calculation`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:112:**验证**：`tests/federation-lite.bats::test_low_confidence_filter`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:127:**验证**：`tests/federation-lite.bats::test_virtual_edge_query`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:141:**验证**：`tests/federation-lite.bats::test_high_confidence_mark`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:157:**验证**：`tests/federation-lite.bats::test_openapi_virtual_edge`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:174:**验证**：`tests/federation-lite.bats::test_virtual_edge_sync`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:189:**验证**：`tests/federation-lite.bats::test_fuzzy_match`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:205:| SC-FV-001 | `tests/federation-lite.bats::test_proto_virtual_edge` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:206:| SC-FV-002 | `tests/federation-lite.bats::test_confidence_calculation` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:207:| SC-FV-003 | `tests/federation-lite.bats::test_low_confidence_filter` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:208:| SC-FV-004 | `tests/federation-lite.bats::test_virtual_edge_query` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:209:| SC-FV-005 | `tests/federation-lite.bats::test_high_confidence_mark` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:210:| SC-FV-006 | `tests/federation-lite.bats::test_openapi_virtual_edge` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:211:| SC-FV-007 | `tests/federation-lite.bats::test_virtual_edge_sync` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/federation-virtual-edges/spec.md:212:| SC-FV-008 | `tests/federation-lite.bats::test_fuzzy_match` |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:26:| AC-009 | Bug 定位回归 | `tests/bug-locator.bats` 16 个测试用例全部通过 | A（机器裁判） |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:466:- `tests/bug-locator.bats` 18 个测试用例通过
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:530:| 回归测试 | `bats tests/bug-locator.bats` | AC-009 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:729:| AC-009 | 回归测试 | (已有 tests/bug-locator.bats) |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:56:- 新增测试：`tests/context-compressor.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:64:- 新增测试：`tests/drift-detector.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:71:- 新增测试：`tests/data-flow-tracing.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:117:- 新增测试：`tests/benchmark.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:126:   - 验证：tests/graph-store.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:132:   - 验证：tests/data-flow-tracing.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:139:   - 验证：tests/context-compressor.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:145:   - 验证：tests/drift-detector.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:151:   - 验证：tests/embedding.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:158:   - 验证：tests/graph-rag.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:164:   - 验证：tests/graph-rag.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:170:   - 验证：tests/semantic-anomaly.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:177:   - 验证：tests/benchmark.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:255:- 新增 4 个测试文件：`tests/context-compressor.bats`, `tests/drift-detector.bats`, `tests/data-flow-tracing.bats`（增强）, `tests/benchmark.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:256:- 修改 3 个测试文件：`tests/graph-store.bats`, `tests/embedding.bats`, `tests/graph-rag.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:489:   npm test -- tests/graph-store.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:629:- ✅ `tests/context-compressor.bats` - 已存在（待增强）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:630:- ✅ `tests/drift-detector.bats` - 已存在（待增强）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:631:- ✅ `tests/data-flow-tracing.bats` - 已存在（待增强）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:632:- ⚠️ `tests/benchmark.bats` - 不存在（需新建）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:633:- ✅ `tests/semantic-anomaly.bats` - 已存在（待增强异常检测闭环）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:636:1. `tests/benchmark.bats` - 评测基准测试（🆕 待实现）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:643:1. `tests/context-compressor.bats` - 上下文压缩功能测试（✅ 已存在）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:649:2. `tests/drift-detector.bats` - 架构漂移检测测试（✅ 已存在）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:655:3. `tests/data-flow-tracing.bats` - 数据流追踪测试（✅ 已存在）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:661:4. `tests/semantic-anomaly.bats` - 语义异常检测测试（✅ 已存在）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:666:1. `tests/graph-store.bats` - 增加闭包表和路径索引测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:672:2. `tests/embedding.bats` - 增加混合检索测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:678:3. `tests/graph-rag.bats` - 增加重排序和上下文信号测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:777:   - **验证**：运行 `tests/graph-store.bats` 确保向后兼容
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:782:   - **验证**：运行 `tests/semantic-anomaly.bats` 确保输出格式正确
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:874:   - **测试策略**：在 `tests/graph-store.bats` 中测试 `query_graph()` 函数
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:881:   - **测试策略**：在 `tests/hotspot-analyzer.bats` 中测试 `calculate_score()` 函数
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:888:   - **测试策略**：在 `tests/embedding.bats` 中测试 `hybrid_search()` 函数
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:997:  3. 运行 `npm test -- tests/graph-store.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1015:  3. 运行 `npm test -- tests/graph-store.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1051:npm test -- tests/graph-store.bats >> evidence/rollback-validation.log
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1074:| AC-003 | 数据流追踪覆盖 TS/JS，输出格式正确 | 运行 tests/data-flow-tracing.bats | Bats 测试报告 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1088:1. `tests/context-compressor.bats` - 上下文压缩功能测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1089:2. `tests/drift-detector.bats` - 架构漂移检测测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1090:3. `tests/data-flow-tracing.bats` - 数据流追踪测试（已存在，需增强）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1091:4. `tests/benchmark.bats` - 评测基准测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1094:1. `tests/graph-store.bats` - 增加闭包表和路径索引测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1095:2. `tests/embedding.bats` - 增加混合检索测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1096:3. `tests/graph-rag.bats` - 增加重排序和上下文信号测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1710:1. **补充 `tests/benchmark.bats`**（唯一缺失的测试文件）
+dev-playbooks/changes/archive/augment-parity/design.md:635:- [ ] 新增 tests/graph-store.bats
+dev-playbooks/changes/archive/augment-parity/design.md:636:- [ ] 新增 tests/scip-to-graph.bats
+dev-playbooks/changes/archive/augment-parity/design.md:642:- [ ] 新增 tests/daemon.bats
+dev-playbooks/changes/archive/augment-parity/design.md:783:| 单元测试 | `bats tests/*.bats` | 100% 通过 |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:52:| AC-001 | 热点算法输出正确 | tests/hotspot-analyzer.bats | HS-* | 20 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:53:| AC-002 | 意图分析 4 维信号 | tests/intent-analysis.bats | IA-* | 11 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:54:| AC-003 | 子图检索保留边关系 | tests/subgraph-retrieval.bats | SR-* | 21 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:55:| AC-004 | 边界识别正确 | tests/boundary-detector.bats | BD-* | 24 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:56:| AC-005 | Pattern Learner 学习 | tests/pattern-learner.bats | PL-* | 19 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:57:| AC-006 | 数据流追踪 | tests/data-flow-tracing.bats | DF-* | 23 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:58:| AC-007 | 增量索引 | tests/incremental-indexing.bats | II-* | 23 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:59:| AC-008 | MCP 工具兼容 | tests/mcp-contract.bats | CT-* | 24 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:60:| AC-009 | Bug 定位回归 | tests/bug-locator.bats | BL-*, REGRESSION-*, PERF-*, BASELINE-* | 16 | GREEN |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:61:| AC-010 | 功能开关可用 | tests/feature-toggle.bats | FT-* | 11 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:69:**测试文件**: `tests/hotspot-analyzer.bats`
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:82:**测试文件**: `tests/boundary-detector.bats`
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:95:**测试文件**: `tests/intent-analysis.bats`
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:106:**测试文件**: `tests/subgraph-retrieval.bats`
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:117:**测试文件**: `tests/pattern-learner.bats`
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:128:**测试文件**: `tests/data-flow-tracing.bats`
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:139:**测试文件**: `tests/incremental-indexing.bats`
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:149:**测试文件**: `tests/mcp-contract.bats`
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:162:**测试文件**: `tests/feature-toggle.bats`
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:179:| 回归测试 | `bats tests/bug-locator.bats` | AC-009 | GREEN |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:180:| 单元测试 | `bats tests/*.bats` | AC-001, AC-004 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:181:| 契约测试 | `bats tests/mcp-contract.bats` | AC-008 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:182:| 性能测试 | `bats tests/*-performance.bats` | AC-001, AC-007 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:229:EXPECT_RED=true bats tests/*.bats
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:232:EXPECT_RED=false bats tests/*.bats
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:235:bats tests/hotspot-analyzer.bats
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:236:bats tests/boundary-detector.bats
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:239:bats tests/bug-locator.bats
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:242:bats tests/*.bats | grep -E "(BOUNDARY|passed|failed)"
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:260:        run: EXPECT_RED=true bats tests/*.bats
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:263:        run: bats tests/bug-locator.bats  # 必须全部通过
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:65:**验证**：`tests/impact-analyzer.bats::test_symbol_impact`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:81:**验证**：`tests/impact-analyzer.bats::test_file_impact`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:100:**验证**：`tests/impact-analyzer.bats::test_confidence_calculation`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:115:**验证**：`tests/impact-analyzer.bats::test_threshold_filter`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:130:**验证**：`tests/impact-analyzer.bats::test_mermaid_output`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:145:**验证**：`tests/impact-analyzer.bats::test_depth_limit`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:159:**验证**：`tests/impact-analyzer.bats::test_empty_result`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:174:| SC-IA-001 | `tests/impact-analyzer.bats::test_symbol_impact` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:175:| SC-IA-002 | `tests/impact-analyzer.bats::test_file_impact` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:176:| SC-IA-003 | `tests/impact-analyzer.bats::test_confidence_calculation` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:177:| SC-IA-004 | `tests/impact-analyzer.bats::test_threshold_filter` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:178:| SC-IA-005 | `tests/impact-analyzer.bats::test_mermaid_output` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:179:| SC-IA-006 | `tests/impact-analyzer.bats::test_depth_limit` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/impact-analyzer/spec.md:180:| SC-IA-007 | `tests/impact-analyzer.bats::test_empty_result` |
+dev-playbooks/changes/archive/augment-parity/archive-summary.md:45:| tests/graph-store.bats | 11 | AC-001 |
+dev-playbooks/changes/archive/augment-parity/archive-summary.md:46:| tests/scip-to-graph.bats | 10 | AC-002 |
+dev-playbooks/changes/archive/augment-parity/archive-summary.md:47:| tests/daemon.bats | 12 | AC-003 |
+dev-playbooks/changes/archive/augment-parity/archive-summary.md:48:| tests/llm-rerank.bats | 11 | AC-004 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:73:- `tests/context-compressor.bats` 通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:91:- `tests/drift-detector.bats` 通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:106:- `tests/data-flow-tracing.bats` 通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:121:- `tests/graph-store.bats` 通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:136:- `tests/hybrid-retrieval.bats` 通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:152:- `tests/reranker.bats` 通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:173:- `tests/long-term-memory.bats` 通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:187:- `tests/semantic-anomaly.bats` 通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:203:- `tests/benchmark.bats` 通过
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:849:| 单元测试 | `bats tests/*.bats` | 100% 通过 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:853:| 回归测试 | `tests/regression/*.bats` | 100% 通过 |
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:181:> **前置条件**：`tests/bug-locator.bats` 18 个测试用例通过，变更前输出已记录为基线。
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:404:| 回归测试 | `bats tests/bug-locator.bats` | 失败 |
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:549:- `bats tests/bug-locator.bats` ✅ 16/16 通过
+dev-playbooks/changes/archive/augment-parity/verification.md:37:| AC-001 | SQLite 图存储 4 种边类型 CRUD | tests/graph-store.bats | SC-GS-001 ~ SC-GS-011 | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:38:| AC-002 | SCIP → 图数据转换 | tests/scip-to-graph.bats | SC-SP-001 ~ SC-SP-010 | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:39:| AC-003 | 守护进程 P95 < 500ms | tests/daemon.bats | SC-DM-001 ~ SC-DM-012 | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:40:| AC-004 | LLM 重排序开关 | tests/llm-rerank.bats | SC-LR-001 ~ SC-LR-011 | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:41:| AC-005 | 孤儿模块检测 | tests/dependency-guard.bats | SC-OD-001 ~ SC-OD-010 | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:42:| AC-006 | 自动模式发现 >= 3 种 | tests/pattern-learner.bats | SC-PD-001 ~ SC-PD-011 | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:43:| AC-007 | 现有测试无回归 | tests/regression.bats | 全量回归 | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:44:| AC-008 | 无 CKB 时正常工作 | tests/mcp-contract.bats | CT-CKB-001 ~ CT-CKB-005 | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:50:| AC-N01 | P95 延迟 | tests/daemon.bats | < 600ms | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:51:| AC-N02 | 冷启动延迟 | tests/daemon.bats | 记录 | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:52:| AC-N03 | 图数据库大小 | tests/graph-store.bats | < 10MB | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:53:| AC-N04 | SCIP 解析覆盖率 | tests/scip-to-graph.bats | 100% TS | 🟢 Green |
+dev-playbooks/changes/archive/augment-parity/verification.md:86:| tests/graph-store.bats | 🆕 新增 | 11 | AC-001 |
+dev-playbooks/changes/archive/augment-parity/verification.md:87:| tests/scip-to-graph.bats | 🆕 新增 | 10 | AC-002 |
+dev-playbooks/changes/archive/augment-parity/verification.md:88:| tests/daemon.bats | 🆕 新增 | 12 | AC-003, AC-N01, AC-N02 |
+dev-playbooks/changes/archive/augment-parity/verification.md:89:| tests/llm-rerank.bats | 🆕 新增 | 11 | AC-004 |
+dev-playbooks/changes/archive/augment-parity/verification.md:90:| tests/dependency-guard.bats | 📝 修改 | +10 | AC-005 |
+dev-playbooks/changes/archive/augment-parity/verification.md:91:| tests/pattern-learner.bats | 📝 修改 | +11 | AC-006 |
+dev-playbooks/changes/archive/augment-parity/verification.md:92:| tests/regression.bats | 📝 修改 | +1 | AC-007 |
+dev-playbooks/changes/archive/augment-parity/verification.md:93:| tests/mcp-contract.bats | 📝 修改 | +5 | AC-008 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:51:| `tests/cache-manager.bats` | 15 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:52:| `tests/dependency-guard.bats` | 17 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:53:| `tests/context-layer.bats` | 16 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:54:| `tests/federation-lite.bats` | 22 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:55:| `tests/regression.bats` | 29 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:56:| `tests/performance.bats` | 9 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:66:**验证**：`tests/intent-learner.bats::test_record_history`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:84:**验证**：`tests/intent-learner.bats::test_preference_calculation`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:99:**验证**：`tests/intent-learner.bats::test_90_day_cleanup`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:114:**验证**：`tests/intent-learner.bats::test_top_n_preferences`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:128:**验证**：`tests/intent-learner.bats::test_prefix_filter`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:143:**验证**：`tests/intent-learner.bats::test_max_entries_limit`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:157:**验证**：`tests/intent-learner.bats::test_empty_history`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:172:**验证**：`tests/intent-learner.bats::test_action_weight`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:188:**验证**：`tests/intent-learner.bats::test_corrupt_recovery`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:203:| SC-IL-001 | `tests/intent-learner.bats::test_record_history` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:204:| SC-IL-002 | `tests/intent-learner.bats::test_preference_calculation` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:205:| SC-IL-003 | `tests/intent-learner.bats::test_90_day_cleanup` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:206:| SC-IL-004 | `tests/intent-learner.bats::test_top_n_preferences` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:207:| SC-IL-005 | `tests/intent-learner.bats::test_prefix_filter` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:208:| SC-IL-006 | `tests/intent-learner.bats::test_max_entries_limit` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:209:| SC-IL-007 | `tests/intent-learner.bats::test_empty_history` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:210:| SC-IL-008 | `tests/intent-learner.bats::test_action_weight` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/intent-learner/spec.md:211:| SC-IL-009 | `tests/intent-learner.bats::test_corrupt_recovery` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:9:| 2026-01-19 05:38 | IMPLEMENTATION_GAP | scripts/benchmark.sh 未实现 --dataset/--baseline/--compare（评测基准与回归检测） | scripts/benchmark.sh, tests/benchmark.bats | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:10:| 2026-01-19 05:38 | IMPLEMENTATION_GAP | scripts/embedding.sh 缺少 --benchmark 支持（混合检索质量指标） | scripts/embedding.sh, tests/hybrid-retrieval.bats | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:11:| 2026-01-19 05:38 | IMPLEMENTATION_GAP | semantic-anomaly.sh 未实现 --output <file> JSONL/--feedback/--report（AC-008 规格增量） | scripts/semantic-anomaly.sh, tests/semantic-anomaly.bats | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:17:| 2026-01-19 06:20 | DESIGN_GAP | 上下文压缩未定义不支持语言的错误反馈（新增 T-CC-ERROR-004 期望友好提示） | dev-playbooks/specs/context-compressor/spec.md, tests/context-compressor.bats | ✅ (IMPL_ONLY) |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:18:| 2026-01-19 08:09 | TEST_COVERAGE | tasks.md 计划包含 tests/reranker.bats，但仓库缺失该文件且禁止修改 tests/；改用 reranker-performance.json 与 llm-rerank.bats 作为验证 | dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/tasks.md, scripts/reranker.sh, tests/llm-rerank.bats | ✅ (IMPL_ONLY) |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:20:| 2026-01-20 19:30 | TEST_QUALITY | 修复 M-004：tests/context-compressor.bats:481-522 并发测试添加缓存隔离验证（验证缓存目录创建和交叉污染检测） | tests/context-compressor.bats | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:21:| 2026-01-20 19:30 | TEST_QUALITY | 修复 M-006：tests/hybrid-retrieval.bats:395-419 性能测试添加预热验证（每次预热失败时立即报错） | tests/hybrid-retrieval.bats | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:22:| 2026-01-20 19:30 | TEST_QUALITY | 修复 M-007：tests/llm-rerank.bats:345-402 并发测试添加竞态条件验证（时间戳验证确保真正并发执行） | tests/llm-rerank.bats | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:36:| 2026-01-19 05:38 | TEST_QUALITY | 混合检索骨架测试过多 | tests/hybrid-retrieval.bats 已转为实际断言 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:37:| 2026-01-19 05:38 | TEST_COVERAGE | 评测基准测试大量 skip | tests/benchmark.bats 已移除 skip 并补全断言 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:810:| `tests/graph-store.bats` | 修改 | 路径查询测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:811:| `tests/adr-parser.bats` | 新增 | ADR 解析测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:812:| `tests/daemon.bats` | 修改 | 预热 + 取消测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:813:| `tests/cache-manager.bats` | 修改 | LRU 缓存测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:814:| `tests/bug-locator.bats` | 修改 | 融合测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:816:| `tests/augment-context.bats` | 新增 | 结构化输出 + DevBooks 适配测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:943:| AC-G01 | 边类型扩展 | TypeScript 项目索引后，graph.db 包含 IMPLEMENTS/EXTENDS/RETURNS_TYPE 边类型（覆盖 TypeScript、Python） | `tests/graph-store.bats::test_edge_types` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:944:| AC-G01a | 迁移命令 | `graph-store.sh migrate --check` 在新旧 graph.db 上均返回正确状态 | `tests/graph-store.bats::test_migrate_check` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:945:| AC-G02 | 路径查询 | `find-path --from A --to B` 返回正确路径，深度 1-10 均可工作 | `tests/graph-store.bats::test_find_path` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:946:| AC-G03 | ADR 解析 | 解析 MADR 和 Nygard 格式的 ADR 文件，正确提取 Status/Decision/Context | `tests/adr-parser.bats::test_parse_madr` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:947:| AC-G04 | 对话上下文 | **存储 5 轮后可正确读取全部上下文**：写入 5 条对话记录，读取时返回完整 5 条 | `tests/intent-learner.bats::test_conversation_context` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:948:| AC-G05 | 预热机制 | **预热完成后 `cache-manager.sh stats` 显示已缓存条目 > 0** | `tests/daemon.bats::test_warmup` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:949:| AC-G06 | 请求取消 | **并发场景测试**：启动长时间请求，发起新请求后旧请求在 100ms 内终止（使用 flock 文件锁） | `tests/daemon.bats::test_cancel_concurrent` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:950:| AC-G07 | LRU 缓存 | **连续执行 10 次相同查询，命中率 > 80%**（跨进程持久化验证） | `tests/cache-manager.bats::test_lru_hit_rate` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:951:| AC-G08 | Bug 定位融合 | **输出 JSON 包含 `impact` 字段**，Schema：`{ symbol, score, impact: { total_affected, affected_files[] } }` | `tests/bug-locator.bats::test_with_impact` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:952:| AC-G09 | GitHub Action | workflow 文件语法正确（通过 `actionlint` 检查） | `tests/ci.bats::test_workflow_syntax` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:954:| AC-G11 | 结构化输出 | **输出 JSON 包含 5 个必需字段**：`project_profile`、`current_state`、`task_context`、`recommended_tools`、`constraints` | `tests/augment-context.bats::test_structured_output` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:955:| AC-G12 | DevBooks 适配 | **正向测试**：有 `.devbooks/config.yaml` 时注入画像；**负向测试**：无配置时不报错 | `tests/augment-context.bats::test_devbooks_detection` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1330:└── tests/graph-store.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1336:└── tests/adr-parser.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1341:└── tests/daemon.bats、tests/cache-manager.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1345:└── tests/bug-locator.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1355:└── tests/augment-context.bats
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:66:**验证**：`tests/vuln-tracker.bats::test_basic_scan`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:81:**验证**：`tests/vuln-tracker.bats::test_npm7_format`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:96:**验证**：`tests/vuln-tracker.bats::test_npm6_format`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:111:**验证**：`tests/vuln-tracker.bats::test_severity_filter`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:126:**验证**：`tests/vuln-tracker.bats::test_dependency_trace`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:141:**验证**：`tests/vuln-tracker.bats::test_npm_audit_fallback`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:156:**验证**：`tests/vuln-tracker.bats::test_json_output`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:171:**验证**：`tests/vuln-tracker.bats::test_markdown_output`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:186:**验证**：`tests/vuln-tracker.bats::test_no_vulnerabilities`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:201:**验证**：`tests/vuln-tracker.bats::test_dev_dependencies`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:216:| SC-VT-001 | `tests/vuln-tracker.bats::test_basic_scan` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:217:| SC-VT-002 | `tests/vuln-tracker.bats::test_npm7_format` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:218:| SC-VT-003 | `tests/vuln-tracker.bats::test_npm6_format` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:219:| SC-VT-004 | `tests/vuln-tracker.bats::test_severity_filter` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:220:| SC-VT-005 | `tests/vuln-tracker.bats::test_dependency_trace` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:221:| SC-VT-006 | `tests/vuln-tracker.bats::test_npm_audit_fallback` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:222:| SC-VT-007 | `tests/vuln-tracker.bats::test_json_output` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:223:| SC-VT-008 | `tests/vuln-tracker.bats::test_markdown_output` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:224:| SC-VT-009 | `tests/vuln-tracker.bats::test_no_vulnerabilities` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/vuln-tracker/spec.md:225:| SC-VT-010 | `tests/vuln-tracker.bats::test_dev_dependencies` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:106:| CON-QA-002 | **缓存命中率**：重复查询 LRU 缓存命中率 > 80% | tests/cache-manager.bats |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:107:| CON-QA-003 | **请求取消**：取消信号在 100ms 内生效 | tests/daemon.bats |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:122:| CON-COMPAT-001 | **SCIP 语言支持**：边类型扩展需支持 TypeScript、Python，其他语言降级到 REFERENCES | tests/graph-store.bats |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:123:| CON-COMPAT-002 | **ADR 格式**：支持 MADR 和 Nygard 两种格式 | tests/adr-parser.bats |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:139:| Python 项目索引后支持 IMPLEMENTS（需类型注解） | tests/graph-store.bats::test_edge_types_python |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:140:| 不支持的语言降级到 REFERENCES，不报错 | tests/graph-store.bats::test_edge_types_fallback |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:142:**测试脚本**：`tests/graph-store.bats::test_edge_types`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:148:| `graph-store.sh migrate --check` 在旧 graph.db 上返回 NEEDS_MIGRATION | tests/graph-store.bats::test_migrate_check_old |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:149:| `graph-store.sh migrate --check` 在新 graph.db 上返回 UP_TO_DATE | tests/graph-store.bats::test_migrate_check_new |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:150:| `graph-store.sh migrate --apply` 成功迁移数据且不丢失 | tests/graph-store.bats::test_migrate_apply |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:151:| 迁移前自动创建备份文件 | tests/graph-store.bats::test_migrate_backup |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:153:**测试脚本**：`tests/graph-store.bats::test_migrate_*`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:159:| `find-path --from A --to B` 返回 A 到 B 的最短路径 | tests/graph-store.bats::test_find_path_basic |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:160:| 路径深度 1~10 均可工作 | tests/graph-store.bats::test_find_path_depth |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:161:| 不存在路径时返回空结果，不报错 | tests/graph-store.bats::test_find_path_no_path |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:162:| 路径结果包含路径节点列表和长度 | tests/graph-store.bats::test_find_path_output |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:164:**测试脚本**：`tests/graph-store.bats::test_find_path`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:172:| 解析 MADR 格式 ADR 文件，正确提取 Status/Decision/Context | tests/adr-parser.bats::test_parse_madr |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:173:| 解析 Nygard 格式 ADR 文件，正确提取 Status/Decision/Context | tests/adr-parser.bats::test_parse_nygard |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:174:| ADR 关键词关联到 graph.db 节点，生成 ADR_RELATED 边 | tests/adr-parser.bats::test_adr_graph_link |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:175:| 无 ADR 目录时不报错 | tests/adr-parser.bats::test_no_adr_dir |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:177:**测试脚本**：`tests/adr-parser.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:183:| 写入 5 条对话记录后可正确读取全部 5 条 | tests/intent-learner.bats::test_conversation_context_write_read |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:184:| 上下文包含 turn、query、focus_symbols 字段 | tests/intent-learner.bats::test_conversation_context_schema |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:185:| 超过 10 轮后 FIFO 淘汰最旧记录 | tests/intent-learner.bats::test_conversation_context_fifo |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:186:| 搜索结果排序加入对话连续性加权 | tests/intent-learner.bats::test_conversation_context_weighting |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:188:**测试脚本**：`tests/intent-learner.bats::test_conversation_context`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:194:| 输出 JSON 包含 `project_profile` 字段 | tests/augment-context.bats::test_structured_output_profile |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:195:| 输出 JSON 包含 `current_state` 字段 | tests/augment-context.bats::test_structured_output_state |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:196:| 输出 JSON 包含 `task_context` 字段 | tests/augment-context.bats::test_structured_output_task |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:197:| 输出 JSON 包含 `recommended_tools` 字段 | tests/augment-context.bats::test_structured_output_tools |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:198:| 输出 JSON 包含 `constraints` 字段 | tests/augment-context.bats::test_structured_output_constraints |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:199:| 输出符合定义的 JSON Schema | tests/augment-context.bats::test_structured_output_schema |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:212:**测试脚本**：`tests/augment-context.bats::test_structured_output`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:218:| **正向测试**：有 `.devbooks/config.yaml` 时检测到 DevBooks 配置 | tests/augment-context.bats::test_devbooks_detection_positive |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:219:| **正向测试**：注入项目画像（技术栈 + 架构模式） | tests/augment-context.bats::test_devbooks_profile_inject |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:220:| **正向测试**：注入架构约束（分层规则） | tests/augment-context.bats::test_devbooks_constraints_inject |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:221:| **负向测试**：无 `.devbooks/config.yaml` 时不报错 | tests/augment-context.bats::test_devbooks_detection_negative |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:222:| **负向测试**：非 DevBooks 项目正常输出上下文 | tests/augment-context.bats::test_devbooks_fallback |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:224:**测试脚本**：`tests/augment-context.bats::test_devbooks_*`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:232:| `daemon.sh warmup` 执行成功 | tests/daemon.bats::test_warmup_success |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:233:| 预热完成后 `cache-manager.sh stats` 显示已缓存条目 > 0 | tests/daemon.bats::test_warmup_cache_populated |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:234:| 预热加载热点文件子图 | tests/daemon.bats::test_warmup_hotspot |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:235:| 预热加载常用符号索引 | tests/daemon.bats::test_warmup_symbols |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:237:**测试脚本**：`tests/daemon.bats::test_warmup`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:243:| 启动长时间请求后，发起新请求时旧请求在 100ms 内终止 | tests/daemon.bats::test_cancel_concurrent |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:244:| 取消信号使用 flock 文件锁保证原子性 | tests/daemon.bats::test_cancel_atomic |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:245:| 取消后资源正确释放 | tests/daemon.bats::test_cancel_cleanup |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:246:| 未取消的请求正常完成 | tests/daemon.bats::test_cancel_normal_completion |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:248:**测试脚本**：`tests/daemon.bats::test_cancel_concurrent`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:254:| 连续执行 10 次相同查询，命中率 > 80% | tests/cache-manager.bats::test_lru_hit_rate |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:255:| 缓存使用 SQLite 持久化（`.devbooks/subgraph-cache.db`） | tests/cache-manager.bats::test_lru_persistence |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:256:| 跨进程缓存有效（进程 1 写入，进程 2 读取） | tests/cache-manager.bats::test_lru_cross_process |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:257:| 超过 100 个条目时 LRU 淘汰最旧条目 | tests/cache-manager.bats::test_lru_eviction |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:258:| 缓存统计命令返回正确的条目数/命中率 | tests/cache-manager.bats::test_lru_stats |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:260:**测试脚本**：`tests/cache-manager.bats::test_lru_*`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:268:| `--with-impact` 参数使输出 JSON 包含 `impact` 字段 | tests/bug-locator.bats::test_with_impact_field |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:269:| `impact` 字段包含 `total_affected` 数值 | tests/bug-locator.bats::test_with_impact_total |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:270:| `impact` 字段包含 `affected_files` 数组 | tests/bug-locator.bats::test_with_impact_files |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:271:| 综合分数正确加入影响范围权重 | tests/bug-locator.bats::test_with_impact_scoring |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:272:| 不带 `--with-impact` 时保持原有输出格式（向后兼容） | tests/bug-locator.bats::test_without_impact_compat |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:299:**测试脚本**：`tests/bug-locator.bats::test_with_impact`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:308:| workflow 在 PR 时触发 | tests/ci.bats::test_workflow_trigger |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:309:| 循环依赖检测失败时 CI 失败 | tests/ci.bats::test_workflow_cycles |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:310:| 架构规则违规时 CI 失败 | tests/ci.bats::test_workflow_violations |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:311:| 检测通过时 CI 成功 | tests/ci.bats::test_workflow_success |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:313:**测试脚本**：`tests/ci.bats::test_workflow_syntax`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:322:| 现有 MCP 工具（ci_search、ci_call_chain 等）无回归 | tests/mcp-contract.bats |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:323:| 现有脚本无破坏性变更 | tests/*.bats |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:374:| **新增** | `tests/adr-parser.bats` | ADR 解析测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:375:| **新增** | `tests/augment-context.bats` | 上下文输出测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:376:| **新增** | `tests/ci.bats` | CI 测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:558:| AC-G01 | AC-G01 | tests/graph-store.bats::test_edge_types |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:559:| AC-G01a | AC-G01a | tests/graph-store.bats::test_migrate_* |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:560:| AC-G02 | AC-G02 | tests/graph-store.bats::test_find_path |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:561:| AC-G03 | AC-G03 | tests/adr-parser.bats |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:562:| AC-G04 | AC-G04 | tests/intent-learner.bats::test_conversation_context |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:563:| AC-G05 | AC-G05 | tests/daemon.bats::test_warmup |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:564:| AC-G06 | AC-G06 | tests/daemon.bats::test_cancel_concurrent |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:565:| AC-G07 | AC-G07 | tests/cache-manager.bats::test_lru_* |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:566:| AC-G08 | AC-G08 | tests/bug-locator.bats::test_with_impact |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:567:| AC-G09 | AC-G09 | tests/ci.bats::test_workflow_syntax |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:569:| AC-G11 | AC-G11 | tests/augment-context.bats::test_structured_output |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:570:| AC-G12 | AC-G12 | tests/augment-context.bats::test_devbooks_* |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:160:| `tests/cache-manager.bats` | 15 | Cache Manager |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:161:| `tests/dependency-guard.bats` | 17 | Dependency Guard |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:162:| `tests/context-layer.bats` | 16 | Context Layer |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:163:| `tests/federation-lite.bats` | 22 | Federation Lite |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:164:| `tests/regression.bats` | 29 | 回归测试 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:165:| `tests/performance.bats` | 9 | 性能测试 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:191:| 单元测试 | `bats tests/*.bats` | 100% 通过 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:194:| 性能基准 | `bats tests/performance.bats` | 全部通过 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:195:| 回归测试 | `bats tests/regression.bats` | 100% 通过 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:33:**依赖（Dependencies）**：Test Owner 提供/补齐对应验收测试（如设计中提及的 `tests/graph-store.bats` 用例）。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:46:**依赖（Dependencies）**：依赖 MP1.1 的 `ADR_RELATED` edge_type 可用；Test Owner 创建 `tests/adr-parser.bats`（设计引用）。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:59:**依赖（Dependencies）**：Test Owner 可能需扩展/新增 `tests/intent-learner.bats` 对应用例（设计引用）。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:72:**依赖（Dependencies）**：预热优先依赖 MP5（LRU 缓存）以兑现跨进程收益；Test Owner 维护 `tests/daemon.bats` 用例（已存在）。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:85:**依赖（Dependencies）**：Test Owner 维护 `tests/cache-manager.bats`（已存在）；MP4 warmup 与 MP6 影响分析可复用缓存。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:98:**依赖（Dependencies）**：Test Owner 维护 `tests/bug-locator.bats`（已存在）；影响分析脚本输出 JSON 契约稳定。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:111:**依赖（Dependencies）**：Test Owner 创建 `tests/augment-context.bats`（设计引用）；MP8 DevBooks 适配会注入部分字段。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:124:**依赖（Dependencies）**：高风险：`common.sh` 被 18 个脚本直接调用（见“风险与边界”）；Test Owner 创建 `tests/augment-context.bats`（设计引用）。  
+dev-playbooks/changes/archive/augment-parity/tasks.md:98:- `tests/graph-store.bats` 测试已创建
+dev-playbooks/changes/archive/augment-parity/tasks.md:138:- `tests/scip-to-graph.bats` 测试已创建
+dev-playbooks/changes/archive/augment-parity/tasks.md:209:- `tests/daemon.bats` 测试已创建
+dev-playbooks/changes/archive/augment-parity/tasks.md:303:- `tests/llm-rerank.bats` 测试已创建
+dev-playbooks/changes/archive/augment-parity/tasks.md:328:- `tests/dependency-guard.bats` 测试已创建
+dev-playbooks/changes/archive/augment-parity/tasks.md:353:- `tests/pattern-learner.bats` 测试已创建
+dev-playbooks/changes/archive/augment-parity/tasks.md:456:- [ ] [AC-007] `npm test` / `bats tests/*.bats` 全部通过
+dev-playbooks/changes/archive/augment-parity/tasks.md:688:bats tests/*.bats
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:69:**验证**：`tests/ast-delta.bats::test_single_file_update`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:86:**验证**：`tests/ast-delta.bats::test_batch_update`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:104:**验证**：`tests/ast-delta.bats::test_cache_invalidation`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:121:**验证**：`tests/ast-delta.bats::test_fallback_to_scip`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:136:**验证**：`tests/ast-delta.bats::test_large_change_triggers_rebuild`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:151:**验证**：`tests/ast-delta.bats::test_performance`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:166:**验证**：`tests/ast-delta.bats::test_atomic_write`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:181:| SC-AD-001 | `tests/ast-delta.bats::test_single_file_update` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:182:| SC-AD-002 | `tests/ast-delta.bats::test_batch_update` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:183:| SC-AD-003 | `tests/ast-delta.bats::test_cache_invalidation` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:184:| SC-AD-004 | `tests/ast-delta.bats::test_fallback_to_scip` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:185:| SC-AD-005 | `tests/ast-delta.bats::test_large_change_triggers_rebuild` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:186:| SC-AD-006 | `tests/ast-delta.bats::test_performance` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/ast-delta/spec.md:187:| SC-AD-007 | `tests/ast-delta.bats::test_atomic_write` |
+dev-playbooks/changes/archive/20260118-0057-upgrade-code-intelligence-capabilities/tasks.md:49:| tests/upgrade-capabilities.bats | 新增 | 47 个测试用例 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:35:  - Candidate Anchors：`bats tests/context-compressor.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:42:  - Candidate Anchors：`bats tests/drift-detector.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:49:  - Candidate Anchors：`bats tests/data-flow-tracing.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:56:  - Candidate Anchors：`bats tests/graph-store.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:63:  - Candidate Anchors：`bats tests/graph-store.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:70:  - Candidate Anchors：`bats tests/hybrid-retrieval.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:77:  - Candidate Anchors：`bats tests/llm-rerank.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:84:  - Candidate Anchors：`bats tests/long-term-memory.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:91:  - Candidate Anchors：`bats tests/semantic-anomaly.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:98:  - Candidate Anchors：`bats tests/benchmark.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:105:  - Candidate Anchors：`bats tests/feature-toggle.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:112:  - Candidate Anchors：`bats tests/regression.bats`, `bats tests/benchmark.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:181:- 功能开关通过 `tests/feature-toggle.bats` 验证
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:185:- 复用 `tests/regression.bats` 作为既有合同与工具存活性检查
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:232:- unit：`bats tests/context-compressor.bats`, `bats tests/drift-detector.bats`, `bats tests/long-term-memory.bats`, `bats tests/semantic-anomaly.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:233:- integration：`bats tests/data-flow-tracing.bats`, `bats tests/graph-store.bats`, `bats tests/hybrid-retrieval.bats`, `bats tests/llm-rerank.bats`, `bats tests/benchmark.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:236:- config/feature：`bats tests/feature-toggle.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:237:- regression gate：`bats tests/regression.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:298:- 运行命令：`DEVBOOKS_ENABLE_ALL_FEATURES=1 bats tests/*.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:309:- M-001 `tests/context-compressor.bats` `T-CC-005`：缓存性能测试不稳定；建议预热次数 1→10，并使用 P95 代替单次测量
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:310:- M-002 `tests/drift-detector.bats` `T-PERF-DD-001`：性能阈值过严；建议放宽至 15s 或使用 `DRIFT_DETECTOR_TIMEOUT` 覆盖
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:311:- M-003 `tests/data-flow-tracing.bats`：缺少错误路径测试；新增 DF-ERROR-004（`--data-flow` 需 `--symbol`）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:312:- M-004 `tests/graph-store.bats` `SC-GS-012`：超大批量可能超时；建议通过 `GRAPH_STORE_BULK_NODES` 降为 500 或超时提高到 120s
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:313:- M-005 `tests/llm-rerank.bats` `SC-LR-012`：并发测试缺少隔离验证；增加断言确认两进程 `DEVBOOKS_DIR` 不同
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:314:- M-006 `tests/long-term-memory.bats` `T-CS-001`：权重断言过宽；建议收紧至 ±1% 或先修复实现权重
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:315:- M-007 `tests/semantic-anomaly.bats` `T-SA-011`：召回率依赖 fixture；在 `setup()` 调用 `validate_ground_truth_fixture()`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:316:- M-008 `tests/benchmark.bats` `T-BM-001`：自举数据集质量检查不足；增加函数/类定义密度检查（每 100 行 ≥ 5 个定义）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:367:执行命令: `DEVBOOKS_ENABLE_ALL_FEATURES=1 bats tests/<modified-files>.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:699:| 测试文件质量 | tests/hybrid-retrieval.bats, tests/context-compressor.bats, tests/llm-rerank.bats, tests/graph-store.bats | ad2529e |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:728:| C-003 | tests/hybrid-retrieval.bats:127-132 | teardown 缺少 mock 清理 | 测试间状态泄漏 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:729:| C-004 | tests/llm-rerank.bats:103-105 | fixture 依赖脆弱 | CI 环境测试失败 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:817:| C-003 | tests/hybrid-retrieval.bats:127-132 | teardown 缺少 mock 清理 | 添加 unset MOCK_* 环境变量 | ✅ | aeac5d5 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:818:| C-004 | tests/llm-rerank.bats:103-105 | fixture 依赖脆弱 | 使用 skip 替代 fail | ✅ | aeac5d5 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:840:bats tests/hybrid-retrieval.bats -f "T-HR-001"  # ok
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:841:bats tests/llm-rerank.bats -f "SC-LR-001"       # ok
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:858:- `tests/hybrid-retrieval.bats` - 添加 mock 清理
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:859:- `tests/llm-rerank.bats` - 使用 skip 处理缺失 fixture
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:66:**验证**：`tests/cod-visualizer.bats::test_module_mermaid`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:83:**验证**：`tests/cod-visualizer.bats::test_file_d3json`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:100:**验证**：`tests/cod-visualizer.bats::test_hotspot_coloring`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:114:**验证**：`tests/cod-visualizer.bats::test_complexity_annotation`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:128:**验证**：`tests/cod-visualizer.bats::test_mermaid_syntax_valid`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:143:**验证**：`tests/cod-visualizer.bats::test_d3json_schema_valid`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:157:**验证**：`tests/cod-visualizer.bats::test_empty_module`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:171:**验证**：`tests/cod-visualizer.bats::test_output_to_file`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:186:| SC-CV-001 | `tests/cod-visualizer.bats::test_module_mermaid` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:187:| SC-CV-002 | `tests/cod-visualizer.bats::test_file_d3json` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:188:| SC-CV-003 | `tests/cod-visualizer.bats::test_hotspot_coloring` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:189:| SC-CV-004 | `tests/cod-visualizer.bats::test_complexity_annotation` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:190:| SC-CV-005 | `tests/cod-visualizer.bats::test_mermaid_syntax_valid` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:191:| SC-CV-006 | `tests/cod-visualizer.bats::test_d3json_schema_valid` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:192:| SC-CV-007 | `tests/cod-visualizer.bats::test_empty_module` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:193:| SC-CV-008 | `tests/cod-visualizer.bats::test_output_to_file` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/deviation-log.md:7:| 2026-01-16 16:53 | DESIGN_GAP | 规格定义 bug-locator.sh 使用 locate 子命令，但现有 CLI 仅支持 --error；新增测试按 --error + --with-impact 编写，需澄清最终 CLI 契约（已回写设计） | tests/bug-locator.bats | ✅ |
+dev-playbooks/changes/archive/augment-parity-final-gaps/deviation-log.md:8:| 2026-01-16 | CONSTRAINT_CHANGE | 规格 REQ-BLF-002 定义 --with-impact 输出为纯数组格式，但为保持向后兼容（REQ-BLF-006），实现保持 `{schema_version, candidates:[...]}` 对象格式；测试需按对象格式更新 jq 表达式 | specs/bug-locator-fusion/spec.md, tests/bug-locator.bats | ✅ |
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:819:- [x] 现有 `tests/*.bats` 全部通过
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:1078:| 单元测试 | `bats tests/*.bats` | 100% 通过 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:18:| AC-001 | 支持 Anthropic/OpenAI/Ollama/Mock 四种 Provider | tests/llm-provider.bats | SC-LPA-001, SC-LPA-002, SC-LPA-003, SC-LPA-005 | P0 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:19:| AC-002 | Provider 切换无需修改调用代码，切换延迟 <100ms | tests/llm-provider.bats | SC-LPA-004 | P0 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:20:| AC-003 | 语义异常检测：召回率 >=80%，误报率 <20% | tests/semantic-anomaly.bats | SC-SA-001, SC-SA-002, SC-SA-003, SC-SA-004 | P0 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:21:| AC-004 | 跨函数数据流追踪：最大深度 5 跳，支持跨文件 | tests/data-flow-tracing.bats | SC-DFT-001, SC-DFT-002, SC-DFT-003, SC-DFT-004 | P0 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:22:| AC-004a | 追踪性能约束：单跳 P95 <100ms，总时间 <500ms | tests/data-flow-tracing.bats | PERF-DFT-001 | P0 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:23:| AC-005 | 请求取消延迟 P95 <10ms（热启动），<50ms（冷启动） | tests/keystroke-cancel.bats | SC-KC-001, SC-KC-002, SC-KC-003, SC-KC-004 | P1 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:24:| AC-005a | 测试环境：MacBook Pro M2 16GB / Intel i7-10th 16GB | tests/keystroke-cancel.bats | PERF-KC-001 | P1 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:25:| AC-006 | 上下文压缩率 >=50%，语义保留度 >=90% | tests/context-compressor.bats | SC-CC-001, SC-CC-002, SC-CC-003, SC-CC-004 | P1 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:26:| AC-006a | TypeScript 必须支持，Python/Go 可选 | tests/context-compressor.bats | SC-CC-005, SC-CC-006 | P1 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:27:| AC-007 | 对话记忆 >=100 轮历史，存储 <50MB/100轮 | tests/long-term-memory.bats | SC-LTM-001, SC-LTM-003 | P1 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:28:| AC-007a | Top-5 召回准确率 >=80% | tests/long-term-memory.bats | SC-LTM-002, SC-LTM-004 | P1 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:29:| AC-008 | 联邦查询延迟 P95 <500ms（缓存），<2s（远程） | tests/federation-lite.bats | SC-FED-001, SC-FED-002 | P2 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:30:| AC-008a | 支持 Bearer Token 认证 | tests/federation-lite.bats | SC-FED-003 | P2 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:31:| AC-008b | 离线模式降级到本地缓存，TTL 24h | tests/federation-lite.bats | SC-FED-004 | P2 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:32:| AC-009 | COD 增量更新延迟 <1s（单文件），<5s（批量 <=10） | tests/cod-visualizer.bats | SC-COD-001, SC-COD-002 | P2 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:33:| AC-009a | 跨平台支持：macOS (fswatch) + Linux (inotify) | tests/cod-visualizer.bats | SC-COD-003 | P2 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:34:| AC-009b | 防抖动阈值：默认 500ms，可配置 100-2000ms | tests/cod-visualizer.bats | SC-COD-004 | P2 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:35:| AC-009c | Mermaid 图输出：节点上限 50，超出提供文本摘要 | tests/graph-store.bats | SC-GS-001 | P2 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:36:| AC-010 | 架构漂移检测：耦合度变化 >10%、依赖违规、边界模糊 | tests/drift-detector.bats | SC-DD-001, SC-DD-002, SC-DD-003 | P2 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:37:| AC-010a | 快照格式：JSON Schema，支持 diff 对比 | tests/drift-detector.bats | SC-DD-004 | P2 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:67:#### M1: LLM Provider 抽象（tests/llm-provider.bats）
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:84:#### M2: 语义异常检测（tests/semantic-anomaly.bats）
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:101:#### M3: 跨函数数据流追踪（tests/data-flow-tracing.bats）
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:118:#### M4: 击键级请求取消（tests/keystroke-cancel.bats）
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:133:#### M5: 上下文智能压缩（tests/context-compressor.bats）
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:148:#### M6: 对话长期记忆（tests/long-term-memory.bats）
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:204:| tests/llm-provider.bats | `llm-provider.sh` 脚本不存在 | P0 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:205:| tests/semantic-anomaly.bats | `semantic-anomaly.sh` 脚本不存在 | P0 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:206:| tests/data-flow-tracing.bats | `call-chain.sh --data-flow` 选项未实现 | P0 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:207:| tests/keystroke-cancel.bats | `daemon.sh` 信号机制未实现 | P1 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:208:| tests/context-compressor.bats | `context-compressor.sh` 脚本不存在 | P1 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:209:| tests/long-term-memory.bats | `intent-learner.sh` 记忆功能未实现 | P1 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:210:| tests/drift-detector.bats | `drift-detector.sh` 脚本不存在 | P2 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:219:bats tests/llm-provider.bats 2>&1 | tee evidence/red-baseline/llm-provider-$(date +%Y%m%d-%H%M%S).log
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:220:bats tests/semantic-anomaly.bats 2>&1 | tee evidence/red-baseline/semantic-anomaly-$(date +%Y%m%d-%H%M%S).log
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:221:bats tests/data-flow-tracing.bats 2>&1 | tee evidence/red-baseline/data-flow-$(date +%Y%m%d-%H%M%S).log
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:351:| proposal.md 5.1 | AC-001, AC-002 | tests/llm-provider.bats | evidence/red-baseline/llm-provider-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:352:| proposal.md 5.2 | AC-003 | tests/semantic-anomaly.bats | evidence/red-baseline/semantic-anomaly-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:353:| proposal.md 5.3 | AC-004, AC-004a | tests/data-flow-tracing.bats | evidence/red-baseline/data-flow-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:354:| proposal.md 5.4 | AC-005, AC-005a | tests/keystroke-cancel.bats | evidence/red-baseline/keystroke-cancel-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:355:| proposal.md 5.5 | AC-006, AC-006a | tests/context-compressor.bats | evidence/red-baseline/context-compressor-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:356:| proposal.md 5.6 | AC-007, AC-007a | tests/long-term-memory.bats | evidence/red-baseline/long-term-memory-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:357:| proposal.md 5.7 | AC-008, AC-008a, AC-008b | tests/federation-lite.bats | evidence/red-baseline/federation-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:358:| proposal.md 5.8 | AC-009, AC-009a, AC-009b | tests/cod-visualizer.bats | evidence/red-baseline/cod-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:359:| proposal.md 5.9 | AC-009c | tests/graph-store.bats | evidence/red-baseline/graph-store-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:360:| proposal.md 5.10 | AC-010, AC-010a | tests/drift-detector.bats | evidence/red-baseline/drift-detector-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:413:| tests/llm-provider.bats | 待创建 | P0 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:414:| tests/semantic-anomaly.bats | 待创建 | P0 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:415:| tests/data-flow-tracing.bats | 已存在，需更新 | P0 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:416:| tests/keystroke-cancel.bats | 待创建 | P1 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:417:| tests/context-compressor.bats | 待创建 | P1 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:418:| tests/long-term-memory.bats | 待创建 | P1 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:419:| tests/drift-detector.bats | 待创建 | P2 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:25:- `tests/context-compressor.bats`（功能测试）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:30:- 新增测试：`tests/context-compressor.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:37:- `tests/context-compressor.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:48:- [x] MP1.5 编写 `tests/context-compressor.bats`，覆盖 3 种压缩级别和边界条件
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:59:- `tests/drift-detector.bats`（功能测试）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:64:- 新增测试：`tests/drift-detector.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:72:- `tests/drift-detector.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:84:- [x] MP2.6 编写 `tests/drift-detector.bats`，覆盖 4 种漂移类型和评分阈值
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:95:- `tests/data-flow-tracing.bats`（功能测试）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:100:- 新增测试：`tests/data-flow-tracing.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:107:- `tests/data-flow-tracing.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:118:- [x] MP3.5 编写 `tests/data-flow-tracing.bats`，覆盖单函数、跨函数、循环依赖场景
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:129:- `tests/graph-store.bats`（功能测试）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:143:- `tests/graph-store.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:156:- [x] MP4.7 编写 `tests/graph-store.bats`，覆盖迁移、预计算、增量更新、性能测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:169:- `tests/hybrid-retrieval.bats`（功能测试）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:182:- `tests/hybrid-retrieval.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:193:- [x] MP5.5 编写 `tests/hybrid-retrieval.bats`，覆盖 RRF 融合、权重配置、A/B 测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:204:- `tests/reranker.bats`（功能测试）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:215:- `tests/reranker.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:226:- [x] MP6.5 编写 `tests/reranker.bats`，覆盖两种策略、超时降级、性能对比
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:238:- `tests/long-term-memory.bats`（功能测试）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:251:- `tests/long-term-memory.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:263:- [x] MP7.6 编写 `tests/long-term-memory.bats`，覆盖信号记录、权重调整、衰减机制
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:274:- `tests/semantic-anomaly.bats`（功能测试）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:279:- 新增测试：`tests/semantic-anomaly.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:286:- `tests/semantic-anomaly.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:299:- [x] MP8.7 编写 `tests/semantic-anomaly.bats`，覆盖异常检测、反馈学习、报告生成
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:309:- `tests/benchmark.bats`（功能测试）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:314:- 新增测试：`tests/benchmark.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:321:- `tests/benchmark.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:333:- [x] MP9.6 编写 `tests/benchmark.bats`，覆盖两种数据集、指标计算、回归检测
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:175:- DBP-01 Bug 定位 CLI 契约回写（保持 `--error` 入口与外层结构）：`tests/bug-locator.bats`（T-BLF-01 ~ T-BLF-05）
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:205:- CI 模板覆盖：`bats tests/ci.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:337:- tests/adr-parser.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:338:- tests/augment-context.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:339:- tests/ci.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:342:- tests/graph-store.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:343:- tests/intent-learner.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:344:- tests/daemon.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:345:- tests/cache-manager.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:346:- tests/bug-locator.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:350:- `bats tests/graph-store.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:351:- `bats tests/adr-parser.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:352:- `bats tests/intent-learner.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:353:- `bats tests/daemon.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:354:- `bats tests/cache-manager.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:355:- `bats tests/bug-locator.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:356:- `bats tests/augment-context.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:357:- `bats tests/ci.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:358:- `bats tests/mcp-contract.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:359:- `bats tests/*.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/ci-cd-integration/spec.md:390:| `tests/ci.bats` | 新增 | CI 相关测试 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:378:   npm test -- tests/graph-store.bats
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/proposal.md:160:  - `tests/scip-to-graph.bats`：覆盖 `parse/--incremental/--force` 等路径；离线 proto 改造不能破坏这些场景
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:423:| AA-001 | T1.1-T1.9 | `bats tests/llm-rerank.bats` | 100% Provider 覆盖，切换延迟 P95 <100ms |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:424:| AA-002 | T2.1-T2.9 | `bats tests/semantic-anomaly.bats` | 召回率 >=80%，误报率 <20% |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:425:| AA-003 | T3.1-T3.7 | `bats tests/data-flow-tracing.bats` | 最大深度 5 跳，单跳延迟 P95 <100ms |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:426:| AA-004 | T4.1-T4.6 | `bats tests/daemon.bats` | 热启动 P95 <10ms，冷启动 P95 <50ms |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:427:| AA-005 | T5.1-T5.7 | `bats tests/context-compressor.bats` | 压缩率 >=50%，TypeScript 支持 |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:428:| AA-006 | T6.1-T6.7 | `bats tests/intent-learner.bats` | >=100 轮历史，Top-5 召回率 >=80% |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:429:| AA-007 | T7.1-T7.5 | `bats tests/federation-lite.bats` | P95 <500ms（缓存），Bearer Token 认证 |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:430:| AA-008 | T8.1-T8.6 | `bats tests/cod-visualizer.bats` | <1s 增量更新，macOS + Linux 支持 |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:431:| AA-009 | T9.1-T9.4 | `bats tests/graph-store.bats` | Mermaid 输出，节点上限 50 |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:432:| AA-010 | T10.1-T10.6 | `bats tests/drift-detector.bats` | 检测耦合度变化 >10%，JSON Schema 输出 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:195:### 二、测试文件质量（tests/*.bats）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:199:**[C-003] `tests/hybrid-retrieval.bats:127-132` - 缺少 teardown 中的 mock 清理**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:218:**[C-004] `tests/llm-rerank.bats:103-105` - 测试依赖外部 fixture 文件但未验证存在性**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:226:**[M-004] `tests/context-compressor.bats:481-522` - 并发测试缺少资源隔离验证**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:231:**[M-005] `tests/graph-store.bats` - 测试使用 skip_if_not_ready 但未定义该函数**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:236:**[M-006] `tests/hybrid-retrieval.bats:395-419` - 性能测试缺少预热验证**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:247:**[M-007] `tests/llm-rerank.bats:345-402` - 并发测试缺少竞态条件验证**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:254:**[m-004] `tests/context-compressor.bats` - 测试命名不一致**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:259:**[m-005] `tests/graph-store.bats:468-469` - 魔法数字未提取为常量**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:549:- **文件**: tests/hybrid-retrieval.bats, tests/context-compressor.bats, tests/llm-rerank.bats, tests/graph-store.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:583:| 测试文件 | tests/context-compressor.bats, tests/hybrid-retrieval.bats, tests/llm-rerank.bats, tests/graph-store.bats | a95741d |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:660:| M-NEW-004 | tests/hybrid-retrieval.bats:127-137 | `CKB_UNAVAILABLE` 未清理 | 添加到 teardown |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:661:| M-NEW-005 | tests/graph-store.bats:591-619 | setup 命令未使用 run 包装 | 添加错误处理 |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:21:**验收方式**: A（机器裁判）- `tests/indexer.bats::test_incremental_path_invoked`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:29:**验收方式**: A（机器裁判）- `tests/indexer.bats::test_fallback_to_full_rebuild`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:37:**验收方式**: A（机器裁判）- `tests/scip-to-graph.bats::test_offline_proto_resolution`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:45:**验收方式**: A（机器裁判）- `tests/indexer.bats::test_cli_compatibility`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:53:**验收方式**: A（机器裁判）- `tests/server.bats::test_ci_index_status_semantic`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:61:**验收方式**: A（机器裁判）- `tests/indexer.bats::test_idempotency`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:69:**验收方式**: A（机器裁判）- `tests/indexer.bats::test_debounce_aggregation`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:77:**验收方式**: A（机器裁判）- `tests/indexer.bats::test_version_stamp_consistency`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/design.md:85:**验收方式**: A（机器裁判）- `tests/indexer.bats::test_feature_toggle`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:154:| CT-IS-001 | behavior | 增量路径触发 | `tests/indexer.bats::test_incremental_path_invoked` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:155:| CT-IS-002 | behavior | 回退全量重建 | `tests/indexer.bats::test_fallback_to_full_rebuild` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:156:| CT-IS-003 | behavior | dry-run 模式 | `tests/indexer.bats::test_dry_run_mode` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:157:| CT-IS-004 | behavior | CLI 兼容性 | `tests/indexer.bats::test_cli_compatibility` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:158:| CT-IS-005 | behavior | 幂等性 | `tests/indexer.bats::test_idempotency` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:159:| CT-IS-006 | behavior | 功能开关 | `tests/indexer.bats::test_feature_toggle` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:160:| CT-IS-007 | behavior | 防抖聚合 | `tests/indexer.bats::test_debounce_aggregation` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:161:| CT-IS-008 | behavior | 版本戳一致性 | `tests/indexer.bats::test_version_stamp_consistency` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:167:| CT-SPO-001 | behavior | vendored proto | `tests/scip-to-graph.bats::test_vendored_proto` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:168:| CT-SPO-002 | behavior | 自定义路径 | `tests/scip-to-graph.bats::test_custom_proto_path` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:169:| CT-SPO-003 | behavior | 离线无 proto 报错 | `tests/scip-to-graph.bats::test_offline_no_proto_error` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:170:| CT-SPO-004 | behavior | 下载降级 | `tests/scip-to-graph.bats::test_download_fallback` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:171:| CT-SPO-005 | behavior | 版本检查 | `tests/scip-to-graph.bats::test_proto_version_check` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:177:| CT-CIS-001 | behavior | status 动作 | `tests/server.bats::test_ci_index_status_status` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:178:| CT-CIS-002 | behavior | build 动作 | `tests/server.bats::test_ci_index_status_build` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:179:| CT-CIS-003 | behavior | clear 动作 | `tests/server.bats::test_ci_index_status_clear` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/contract-plan.md:180:| CT-CIS-004 | behavior | 参数验证 | `tests/server.bats::test_ci_index_status_validation` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/scip-parser-offline/spec.md:273:| CT-SPO-001 | behavior | SC-SPO-001 | `tests/scip-to-graph.bats::test_vendored_proto` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/scip-parser-offline/spec.md:274:| CT-SPO-002 | behavior | SC-SPO-002 | `tests/scip-to-graph.bats::test_custom_proto_path` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/scip-parser-offline/spec.md:275:| CT-SPO-003 | behavior | SC-SPO-003 | `tests/scip-to-graph.bats::test_offline_no_proto_error` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/scip-parser-offline/spec.md:276:| CT-SPO-004 | behavior | SC-SPO-004, SC-SPO-007 | `tests/scip-to-graph.bats::test_download_fallback` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/scip-parser-offline/spec.md:277:| CT-SPO-005 | behavior | SC-SPO-006 | `tests/scip-to-graph.bats::test_proto_version_check` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/ci-index-status-semantic/spec.md:236:| CT-CIS-001 | behavior | SC-CIS-001 | `tests/server.bats::test_ci_index_status_status` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/ci-index-status-semantic/spec.md:237:| CT-CIS-002 | behavior | SC-CIS-002 | `tests/server.bats::test_ci_index_status_build` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/ci-index-status-semantic/spec.md:238:| CT-CIS-003 | behavior | SC-CIS-003 | `tests/server.bats::test_ci_index_status_clear` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/ci-index-status-semantic/spec.md:239:| CT-CIS-004 | behavior | SC-CIS-004, SC-CIS-005 | `tests/server.bats::test_ci_index_status_validation` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:72:| Unit Tests | `bats tests/indexer-scheduler.bats` | PASS (38/38) | `evidence/green-final/indexer-scheduler-*.log` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:219:| tests/indexer-scheduler.bats | Scheduler logic, routing, debounce | AC-001, AC-002, AC-006, AC-007, AC-008, AC-009 |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:220:| tests/scip-to-graph.bats (extended) | Offline proto resolution | AC-003 |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:221:| tests/indexer.bats (extended) | CLI compatibility | AC-004 |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/verification.md:222:| tests/server.bats (new) | ci_index_status semantic | AC-005 |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/indexer-scheduler/spec.md:314:| CT-IS-001 | behavior | SC-IS-001, SC-IS-002 | `tests/indexer.bats::test_incremental_path_invoked` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/indexer-scheduler/spec.md:315:| CT-IS-002 | behavior | SC-IS-003, SC-IS-004, SC-IS-005 | `tests/indexer.bats::test_fallback_to_full_rebuild` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/indexer-scheduler/spec.md:316:| CT-IS-003 | behavior | SC-IS-007 | `tests/indexer.bats::test_dry_run_mode` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/indexer-scheduler/spec.md:317:| CT-IS-004 | behavior | SC-IS-008 | `tests/indexer.bats::test_cli_compatibility` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/indexer-scheduler/spec.md:318:| CT-IS-005 | behavior | SC-IS-009 | `tests/indexer.bats::test_idempotency` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/indexer-scheduler/spec.md:319:| CT-IS-006 | behavior | SC-IS-006 | `tests/indexer.bats::test_feature_toggle` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/indexer-scheduler/spec.md:320:| CT-IS-007 | behavior | SC-IS-002 | `tests/indexer.bats::test_debounce_aggregation` |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/specs/indexer-scheduler/spec.md:321:| CT-IS-008 | behavior | SC-IS-010 | `tests/indexer.bats::test_version_stamp_consistency` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/COLLABORATION-SUMMARY.md:45:- **文件**: `tests/hybrid-retrieval.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/semantic-anomaly-output-fix-summary.md:9:tests/semantic-anomaly.bats 的 T-SA-013, T-SA-014, T-SA-015 测试失败，原因是：
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/evidence/red-baseline/summary.md:5:**Test File**: `tests/indexer-scheduler.bats`
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/tasks.md:40:- 类型：契约测试（`tests/scip-to-graph.bats::test_vendored_proto`）
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/tasks.md:68:- 类型：行为测试（`tests/scip-to-graph.bats::test_offline_proto_resolution`）
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/tasks.md:129:- 类型：行为测试（`tests/indexer.bats::test_incremental_path_invoked`、`test_fallback_to_full_rebuild`、`test_debounce_aggregation`、`test_version_stamp_consistency`、`test_idempotency`、`test_feature_toggle`）
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/tasks.md:156:- 类型：行为测试（`tests/indexer.bats::test_cli_compatibility`、`test_dry_run_mode`）
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/tasks.md:182:- 类型：行为测试（`tests/server.bats::test_ci_index_status_semantic`、`test_ci_index_status_status`、`test_ci_index_status_build`、`test_ci_index_status_clear`、`test_ci_index_status_validation`）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/benchmark-implementation-summary.md:121:- ✅ `tests/benchmark.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/benchmark-implementation-summary.md:126:- `tests/benchmark.bats`: 添加功能开关支持
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:30:**测试文件**: `tests/context-compressor.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:37:# (in test file tests/context-compressor.bats, line 116)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:62:**测试文件**: `tests/drift-detector.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:69:# (in test file tests/drift-detector.bats, line 54)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:93:**测试文件**: `tests/data-flow-tracing.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:111:**测试文件**: `tests/long-term-memory.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:120:#  in test file tests/long-term-memory.bats, line 55)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:132:**测试文件**: `tests/semantic-anomaly.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:274:- `tests/*.bats`: 28 个测试文件（部分已存在）
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:48:- tests/dependency-guard.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:49:- tests/federation-lite.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:50:- tests/cache-manager.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:51:- tests/performance.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:52:- tests/context-layer.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:53:- tests/hotspot-analyzer.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:54:- tests/regression.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:55:- tests/boundary-detector.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:56:- tests/bug-locator.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:57:- tests/data-flow-tracing.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:58:- tests/feature-toggle.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:59:- tests/incremental-indexing.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:60:- tests/intent-analysis.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:61:- tests/mcp-contract.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:62:- tests/pattern-learner.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:63:- tests/subgraph-retrieval.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/major-issues-fix-plan.md:6:- **位置**: tests/context-compressor.bats:T-CC-005
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/major-issues-fix-plan.md:12:- **位置**: tests/drift-detector.bats:T-PERF-DD-001
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/major-issues-fix-plan.md:18:- **位置**: tests/data-flow-tracing.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/major-issues-fix-plan.md:24:- **位置**: tests/graph-store.bats:SC-GS-012
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/major-issues-fix-plan.md:30:- **位置**: tests/llm-rerank.bats:SC-LR-012
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/major-issues-fix-plan.md:36:- **位置**: tests/long-term-memory.bats:T-CS-001
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/major-issues-fix-plan.md:42:- **位置**: tests/semantic-anomaly.bats:T-SA-011
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/major-issues-fix-plan.md:48:- **位置**: tests/benchmark.bats:T-BM-001
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/coder-completion-report.md:75:2. 或手动运行：`bats tests/semantic-anomaly.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/fix-report-m009-m010-m011.md:195:运行 `bats tests/graph-store.bats` 结果：
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/evidence/green-final/summary.md:16:| Unit Tests | `bats tests/indexer-scheduler.bats` | PASS (38/38) | `indexer-scheduler-20260118-144815.log` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/retest-20260120-summary.md:5:执行命令: `DEVBOOKS_ENABLE_ALL_FEATURES=1 bats tests/<modified-files>.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/green/critical-graph-store.txt:7:#  in test file tests/graph-store.bats, line 178)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/green/critical-graph-store.txt:15:#  in test file tests/graph-store.bats, line 198)
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:662:# tests/intent-learner.bats
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:861:| `tests/graph-rag.bats` | 修改 | 背包算法、TF-IDF、去重测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:862:| `tests/impact-analyzer.bats` | 修改 | 内存 BFS、动态衰减测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:863:| `tests/intent-learner.bats` | 修改 | 半衰期、动作权重测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:864:| `tests/common.bats` | 新增 | Token 估算测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:956:| AC-A01 | 背包算法 | **预算 1000 tokens 时，利用率 > 90%**（vs 贪心 60-80%） | `tests/graph-rag.bats::test_knapsack_utilization` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:957:| AC-A02 | TF-IDF | **驼峰分解正确**：`handleAuth` → `[handle, auth]` | `tests/graph-rag.bats::test_tfidf_camel_case` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:958:| AC-A03 | 候选去重 | **同符号多来源时合并为单条，score 有加成** | `tests/graph-rag.bats::test_candidate_fusion` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:959:| AC-A04 | 多维距离 | **多路径节点距离 < 单路径节点**（同深度） | `tests/graph-rag.bats::test_multidim_distance` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:960:| AC-A05 | 内存 BFS | **1000 节点遍历耗时 < 1s**（vs 当前 ~5s） | `tests/impact-analyzer.bats::test_bfs_performance` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:961:| AC-A06 | 动态衰减 | **高频调用符号衰减系数 < 低频符号** | `tests/impact-analyzer.bats::test_dynamic_decay` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:962:| AC-A07 | 半衰期 | **30 天前查询权重 > 0.3**（vs 当前 0.032） | `tests/intent-learner.bats::test_halflife_weight` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:963:| AC-A08 | IGNORE 负权重 | **IGNORE 动作后偏好分数下降** | `tests/intent-learner.bats::test_ignore_penalty` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:964:| AC-A09 | 乘法加权 | **多信号同时触发时分数不超过 3x 原始分数** | `tests/intent-learner.bats::test_multiplicative_boost` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:965:| AC-A10 | 智能 Token | **代码估算 vs 英文估算差异 > 20%** | `tests/common.bats::test_smart_token_estimate` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:966:| AC-A11 | LLM 重排序可配置 | **默认关闭，设置 enabled=true 后尝试调用** | `tests/graph-rag.bats::test_llm_rerank_config` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1098:├── tests/graph-rag.bats
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1103:└── tests/impact-analyzer.bats
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1107:└── tests/intent-learner.bats
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1111:├── tests/common.bats
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:36:| `tests/graph-rag.bats` | 修改 | 背包算法、TF-IDF、去重测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:37:| `tests/impact-analyzer.bats` | 修改 | 内存 BFS、动态衰减测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:38:| `tests/intent-learner.bats` | 修改 | 半衰期、动作权重测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:39:| `tests/common.bats` | 新增 | Token 估算测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:92:| `tests/graph-rag.bats` | 全文件 | 测试脚本 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:93:| `tests/llm-rerank.bats` | 多处 | `$GRAPH_RAG --query ...` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:94:| `tests/subgraph-retrieval.bats` | 多处 | 集成测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:101:| `tests/impact-analyzer.bats` | 全文件 | 测试脚本 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:108:| `tests/intent-learner.bats` | 全文件 | 测试脚本 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:60:- 测试文件 `tests/graph-rag.bats::test_tfidf_camel_case` 已存在
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:76:| AC-A01 | `tests/graph-rag.bats::test_knapsack_utilization` | tests/graph-rag.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:77:| AC-A02 | `tests/graph-rag.bats::test_tfidf_camel_case` | tests/graph-rag.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:78:| AC-A03 | `tests/graph-rag.bats::test_candidate_fusion` | tests/graph-rag.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:79:| AC-A04 | `tests/graph-rag.bats::test_multidim_distance` | tests/graph-rag.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:80:| AC-A05 | `tests/impact-analyzer.bats::test_bfs_performance` | tests/impact-analyzer.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:81:| AC-A06 | `tests/impact-analyzer.bats::test_dynamic_decay` | tests/impact-analyzer.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:82:| AC-A07 | `tests/intent-learner.bats::test_halflife_weight` | tests/intent-learner.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:83:| AC-A08 | `tests/intent-learner.bats::test_ignore_penalty` | tests/intent-learner.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:84:| AC-A09 | `tests/intent-learner.bats::test_multiplicative_boost` | tests/intent-learner.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:85:| AC-A10 | `tests/common.bats::test_smart_token_estimate` | tests/graph-rag.bats (CT-GS-005) | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:86:| AC-A11 | `tests/graph-rag.bats::test_llm_rerank_config` | tests/graph-rag.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:253:| ALG-001 + ALG-002 | tests/graph-rag.bats | evidence/red-baseline/graph-rag-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:254:| ALG-003 | tests/impact-analyzer.bats | evidence/red-baseline/test-*-part*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:255:| ALG-004 + ALG-005 | tests/intent-learner.bats | evidence/red-baseline/test-*-part*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:256:| ALG-006 | tests/federation-lite.bats | evidence/red-baseline/test-*-part*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:257:| ALG-007 | tests/pattern-learner.bats | evidence/red-baseline/pattern-decay-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:258:| ALG-008 | tests/hotspot-analyzer.bats | evidence/red-baseline/hotspot-weighting-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:259:| ALG-009 | tests/boundary-detector.bats | evidence/red-baseline/ct-bd-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:260:| ALG-010 | tests/cache-manager.bats | evidence/red-baseline/cache-lru-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:261:| ALG-011 | tests/intent-classification.bats | evidence/red-baseline/test-*-intent.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:270:| CT-PS-* | tests/graph-rag.bats | 4 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:271:| CT-GS-* | tests/graph-rag.bats | 5 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:272:| CT-IA-* | tests/impact-analyzer.bats | 11 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:273:| CT-PF-* | tests/intent-learner.bats | 5 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:274:| CT-CW-* | tests/intent-learner.bats | 6 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:275:| CT-VE-* | tests/federation-lite.bats | 5 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:276:| CT-PD-* | tests/pattern-learner.bats | 5 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:277:| CT-HW-* | tests/hotspot-analyzer.bats | 6 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:278:| CT-BD-* | tests/boundary-detector.bats | 6 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:279:| CT-CL-* | tests/cache-manager.bats | 6 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:280:| CT-IC-* | tests/intent-classification.bats | 48 |

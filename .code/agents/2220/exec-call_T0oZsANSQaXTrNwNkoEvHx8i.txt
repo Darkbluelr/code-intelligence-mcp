@@ -1,0 +1,253 @@
++        --arg baseline_schema "$(jq -r '.schema_version // ""' "$baseline_file")" \
++        --arg current_schema "$(jq -r '.schema_version // ""' "$current_file")" \
++        --argjson metrics "$metrics_json" \
++        '{
++          status: $status,
++          threshold_mode: $threshold_mode,
++          baseline: { schema_version: $baseline_schema, queries_version: $baseline_version },
++          current: { schema_version: $current_schema, queries_version: $current_version },
++          metrics: $metrics
++        }')
++
++    echo "summary=$summary_json"
++
++    if [[ "$overall_status" == "fail" ]]; then
++        return 1
++    fi
++    return 0
++}
++
++median_of_three() {
++    local run1="$1"
++    local run2="$2"
++    local run3="$3"
++    local output_file="$4"
++
++    if ! validate_json_file "$run1"; then
++        return 1
+     fi
+-    if awk -v curr="$curr_recall" -v thr="$recall_threshold" 'BEGIN {exit !(curr < thr)}'; then
+-        regression=true
++    if ! validate_json_file "$run2"; then
++        return 1
+     fi
+-    if awk -v curr="$curr_p95" -v thr="$p95_threshold" 'BEGIN {exit !(curr > thr)}'; then
+-        regression=true
++    if ! validate_json_file "$run3"; then
++        return 1
+     fi
+ 
+-    if [[ "$regression" == "true" ]]; then
+-        echo "regression detected"
++    if [[ -z "$output_file" ]]; then
++        log_fail "output file required"
+         return 1
+     fi
+ 
+-    echo "no regression detected"
+-    return 0
++    local median_json
++    median_json=$(jq -s '
++      def median_three(a; b; c):
++        [a, b, c] | sort | .[1];
++      . as $runs
++      | $runs[1]
++      | .metrics.retrieval_quality.mrr_at_10 = median_three(
++          $runs[0].metrics.retrieval_quality.mrr_at_10;
++          $runs[1].metrics.retrieval_quality.mrr_at_10;
++          $runs[2].metrics.retrieval_quality.mrr_at_10
++        )
++      | .metrics.retrieval_quality.recall_at_10 = median_three(
++          $runs[0].metrics.retrieval_quality.recall_at_10;
++          $runs[1].metrics.retrieval_quality.recall_at_10;
++          $runs[2].metrics.retrieval_quality.recall_at_10
++        )
++      | .metrics.retrieval_quality.precision_at_10 = median_three(
++          $runs[0].metrics.retrieval_quality.precision_at_10;
++          $runs[1].metrics.retrieval_quality.precision_at_10;
++          $runs[2].metrics.retrieval_quality.precision_at_10
++        )
++      | .metrics.retrieval_quality.hit_rate_at_10 = median_three(
++          $runs[0].metrics.retrieval_quality.hit_rate_at_10;
++          $runs[1].metrics.retrieval_quality.hit_rate_at_10;
++          $runs[2].metrics.retrieval_quality.hit_rate_at_10
++        )
++      | .metrics.retrieval_quality.latency_p50_ms = median_three(
++          $runs[0].metrics.retrieval_quality.latency_p50_ms;
++          $runs[1].metrics.retrieval_quality.latency_p50_ms;
++          $runs[2].metrics.retrieval_quality.latency_p50_ms
++        )
++      | .metrics.retrieval_quality.latency_p95_ms = median_three(
++          $runs[0].metrics.retrieval_quality.latency_p95_ms;
++          $runs[1].metrics.retrieval_quality.latency_p95_ms;
++          $runs[2].metrics.retrieval_quality.latency_p95_ms
++        )
++      | .metrics.retrieval_quality.latency_p99_ms = median_three(
++          $runs[0].metrics.retrieval_quality.latency_p99_ms;
++          $runs[1].metrics.retrieval_quality.latency_p99_ms;
++          $runs[2].metrics.retrieval_quality.latency_p99_ms
++        )
++      | .metrics.semantic_search.latency_p50_ms = median_three(
++          $runs[0].metrics.semantic_search.latency_p50_ms;
++          $runs[1].metrics.semantic_search.latency_p50_ms;
++          $runs[2].metrics.semantic_search.latency_p50_ms
++        )
++      | .metrics.semantic_search.latency_p95_ms = median_three(
++          $runs[0].metrics.semantic_search.latency_p95_ms;
++          $runs[1].metrics.semantic_search.latency_p95_ms;
++          $runs[2].metrics.semantic_search.latency_p95_ms
++        )
++      | .metrics.semantic_search.latency_p99_ms = median_three(
++          $runs[0].metrics.semantic_search.latency_p99_ms;
++          $runs[1].metrics.semantic_search.latency_p99_ms;
++          $runs[2].metrics.semantic_search.latency_p99_ms
++        )
++      | .metrics.graph_rag.cold_latency_p50_ms = median_three(
++          $runs[0].metrics.graph_rag.cold_latency_p50_ms;
++          $runs[1].metrics.graph_rag.cold_latency_p50_ms;
++          $runs[2].metrics.graph_rag.cold_latency_p50_ms
++        )
++      | .metrics.graph_rag.cold_latency_p95_ms = median_three(
++          $runs[0].metrics.graph_rag.cold_latency_p95_ms;
++          $runs[1].metrics.graph_rag.cold_latency_p95_ms;
++          $runs[2].metrics.graph_rag.cold_latency_p95_ms
++        )
++      | .metrics.graph_rag.cold_latency_p99_ms = median_three(
++          $runs[0].metrics.graph_rag.cold_latency_p99_ms;
++          $runs[1].metrics.graph_rag.cold_latency_p99_ms;
++          $runs[2].metrics.graph_rag.cold_latency_p99_ms
++        )
++      | .metrics.graph_rag.warm_latency_p50_ms = median_three(
++          $runs[0].metrics.graph_rag.warm_latency_p50_ms;
++          $runs[1].metrics.graph_rag.warm_latency_p50_ms;
++          $runs[2].metrics.graph_rag.warm_latency_p50_ms
++        )
++      | .metrics.graph_rag.warm_latency_p95_ms = median_three(
++          $runs[0].metrics.graph_rag.warm_latency_p95_ms;
++          $runs[1].metrics.graph_rag.warm_latency_p95_ms;
++          $runs[2].metrics.graph_rag.warm_latency_p95_ms
++        )
++      | .metrics.graph_rag.warm_latency_p99_ms = median_three(
++          $runs[0].metrics.graph_rag.warm_latency_p99_ms;
++          $runs[1].metrics.graph_rag.warm_latency_p99_ms;
++          $runs[2].metrics.graph_rag.warm_latency_p99_ms
++        )
++      | .metrics.graph_rag.speedup_pct = median_three(
++          $runs[0].metrics.graph_rag.speedup_pct;
++          $runs[1].metrics.graph_rag.speedup_pct;
++          $runs[2].metrics.graph_rag.speedup_pct
++        )
++      | .metrics.context_compression.iterations = median_three(
++          $runs[0].metrics.context_compression.iterations;
++          $runs[1].metrics.context_compression.iterations;
++          $runs[2].metrics.context_compression.iterations
++        )
++      | .metrics.context_compression.compression_latency_ms = median_three(
++          $runs[0].metrics.context_compression.compression_latency_ms;
++          $runs[1].metrics.context_compression.compression_latency_ms;
++          $runs[2].metrics.context_compression.compression_latency_ms
++        )
++      | .metrics.context_compression.tokens_before = median_three(
++          $runs[0].metrics.context_compression.tokens_before;
++          $runs[1].metrics.context_compression.tokens_before;
++          $runs[2].metrics.context_compression.tokens_before
++        )
++      | .metrics.context_compression.tokens_after = median_three(
++          $runs[0].metrics.context_compression.tokens_after;
++          $runs[1].metrics.context_compression.tokens_after;
++          $runs[2].metrics.context_compression.tokens_after
++        )
++      | .metrics.context_compression.compression_ratio = median_three(
++          $runs[0].metrics.context_compression.compression_ratio;
++          $runs[1].metrics.context_compression.compression_ratio;
++          $runs[2].metrics.context_compression.compression_ratio
++        )
++      | .metrics.context_compression.information_retention = median_three(
++          $runs[0].metrics.context_compression.information_retention;
++          $runs[1].metrics.context_compression.information_retention;
++          $runs[2].metrics.context_compression.information_retention
++        )
++      | .metrics.cache.iterations = median_three(
++          $runs[0].metrics.cache.iterations;
++          $runs[1].metrics.cache.iterations;
++          $runs[2].metrics.cache.iterations
++        )
++      | .metrics.cache.cache_hit_p95_ms = median_three(
++          $runs[0].metrics.cache.cache_hit_p95_ms;
++          $runs[1].metrics.cache.cache_hit_p95_ms;
++          $runs[2].metrics.cache.cache_hit_p95_ms
++        )
++      | .metrics.cache.full_query_p95_ms = median_three(
++          $runs[0].metrics.cache.full_query_p95_ms;
++          $runs[1].metrics.cache.full_query_p95_ms;
++          $runs[2].metrics.cache.full_query_p95_ms
++        )
++      | .metrics.cache.precommit_staged_p95_ms = median_three(
++          $runs[0].metrics.cache.precommit_staged_p95_ms;
++          $runs[1].metrics.cache.precommit_staged_p95_ms;
++          $runs[2].metrics.cache.precommit_staged_p95_ms
++        )
++      | .metrics.cache.precommit_deps_p95_ms = median_three(
++          $runs[0].metrics.cache.precommit_deps_p95_ms;
++          $runs[1].metrics.cache.precommit_deps_p95_ms;
++          $runs[2].metrics.cache.precommit_deps_p95_ms
++        )
++      | .mrr_at_10 = .metrics.retrieval_quality.mrr_at_10
++      | .recall_at_10 = .metrics.retrieval_quality.recall_at_10
++      | .precision_at_10 = .metrics.retrieval_quality.precision_at_10
++      | .hit_rate_at_10 = .metrics.retrieval_quality.hit_rate_at_10
++      | .p50_latency_ms = .metrics.retrieval_quality.latency_p50_ms
++      | .p95_latency_ms = .metrics.retrieval_quality.latency_p95_ms
++      | .p99_latency_ms = .metrics.retrieval_quality.latency_p99_ms
++      | .cache_hit_p95_ms = .metrics.cache.cache_hit_p95_ms
++      | .full_query_p95_ms = .metrics.cache.full_query_p95_ms
++      | .precommit_staged_p95_ms = .metrics.cache.precommit_staged_p95_ms
++      | .precommit_deps_p95_ms = .metrics.cache.precommit_deps_p95_ms
++      | .compression_latency_ms = .metrics.context_compression.compression_latency_ms
++    ' "$run1" "$run2" "$run3")
++
++    mkdir -p "$(dirname "$output_file")"
++    printf '%s\n' "$median_json" > "$output_file"
++    log_ok "Median report saved to $output_file"
+ }
+ 
+ # ============================================================
+@@ -560,6 +903,9 @@ main() {
+     local baseline=""
+     local compare_base=""
+     local compare_current=""
++    local median_a=""
++    local median_b=""
++    local median_c=""
+     local use_new=false
+ 
+     while [[ $# -gt 0 ]]; do
+@@ -594,6 +940,13 @@ main() {
+                 use_new=true
+                 shift 3
+                 ;;
++            --median)
++                median_a="${2:-}"
++                median_b="${3:-}"
++                median_c="${4:-}"
++                use_new=true
++                shift 4
++                ;;
+             --enable-all-features)
+                 DEVBOOKS_ENABLE_ALL_FEATURES=1
+                 shift
+@@ -629,6 +982,14 @@ main() {
+     done
+ 
+     if [[ "$use_new" == "true" ]]; then
++        if [[ -n "$median_a" ]]; then
++            if [[ -z "$output" ]]; then
++                log_fail "output file required for median"
++                return 1
++            fi
++            median_of_three "$median_a" "$median_b" "$median_c" "$output"
++            return $?
++        fi
+         if [[ -n "$baseline" ]]; then
+             if ! validate_json_file "$baseline"; then
+                 return 1

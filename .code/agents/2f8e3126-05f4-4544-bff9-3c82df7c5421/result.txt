@@ -1,0 +1,202 @@
+现在让我生成差异报告：
+
+## 功能与文档对齐审计报告
+
+### 一、代码中存在但 README.md 缺失的功能
+
+#### 1. **Pattern Learning (模式学习)**
+- **脚本**: `scripts/pattern-learner.sh`
+- **功能**: 从代码库学习语义模式并检测异常，支持 `learn`、`detect`、`decay` 命令
+- **状态**: README.md 第 20 行提到 "Pattern Learning"，但未提供任何使用说明或 MCP 工具定义
+- **建议**: 
+  - 在 "MCP Tools" 表格中添加 `ci_pattern_learn` 工具
+  - 在使用说明部分添加 Pattern Learning 章节，说明如何学习模式、检测异常、管理模式衰减
+
+#### 2. **Context Layer Enhancement (上下文层增强)**
+- **脚本**: `scripts/context-layer.sh`
+- **功能**: 提交分类和 Bug 历史提取，支持 `--classify`、`--bug-history`、`--index` 命令
+- **状态**: 完全未在 README.md 中提及
+- **建议**: 
+  - 在 Features 列表中添加 "Context Layer: Commit classification and bug history extraction"
+  - 添加使用说明章节
+
+#### 3. **Cache Manager (缓存管理器)**
+- **脚本**: `scripts/cache-manager.sh`
+- **功能**: 完整的缓存管理系统，支持 stats、clear、cache-get、cache-set 等操作
+- **状态**: README.md 第 184-198 行有使用说明，但未在 Features 列表或 MCP Tools 表格中列出
+- **建议**: 
+  - 在 Features 列表中添加 "Cache Management: LRU cache with statistics and manual control"
+  - 考虑添加 `ci_cache` MCP 工具以便通过 MCP 协议访问
+
+#### 4. **LLM Provider Abstraction (LLM 提供商抽象)**
+- **脚本**: `scripts/llm-provider.sh` 和 `scripts/llm-providers/` 目录
+- **功能**: 统一的 LLM 提供商接口，支持多个 LLM 后端
+- **状态**: 完全未在 README.md 中提及
+- **建议**: 
+  - 在 Configuration 章节添加 LLM Provider 配置说明
+  - 说明如何配置和切换不同的 LLM 提供商
+
+#### 5. **Performance Regression Detection (性能回归检测)**
+- **脚本**: `scripts/performance-regression.sh`
+- **功能**: 性能回归检测
+- **状态**: 完全未在 README.md 中提及
+- **建议**: 
+  - 在 Features 列表中添加
+  - 添加使用说明
+
+#### 6. **Show Context (上下文展示)**
+- **脚本**: `scripts/show-context.sh`
+- **功能**: 展示当前上下文信息
+- **状态**: 完全未在 README.md 中提及
+- **建议**: 添加使用说明
+
+#### 7. **Reranker (重排序器)**
+- **脚本**: `scripts/reranker.sh`
+- **功能**: LLM 重排序功能
+- **状态**: 完全未在 README.md 中提及
+- **建议**: 
+  - 在 Features 列表中添加 "LLM Reranking: Improve search result relevance with LLM-based reranking"
+  - 添加配置说明（config/features.yaml 中已有 llm_rerank 配置）
+
+#### 8. **Modular Call Chain Scripts (模块化调用链脚本)**
+- **脚本**: 
+  - `scripts/call-chain-core.sh`
+  - `scripts/call-chain-dataflow.sh`
+  - `scripts/call-chain-trace.sh`
+- **功能**: 调用链功能已拆分为多个模块化脚本
+- **状态**: README.md 仅提到 `call-chain.sh`，未说明内部模块化架构
+- **建议**: 在架构说明中提及模块化设计
+
+#### 9. **Modular Dependency Guard Scripts (模块化依赖守护脚本)**
+- **脚本**:
+  - `scripts/dependency-guard-check.sh`
+  - `scripts/dependency-guard-extract.sh`
+  - `scripts/dependency-guard-orphan.sh`
+  - `scripts/dependency-guard-report.sh`
+  - `scripts/dependency-guard-rules.sh`
+- **功能**: 依赖守护功能已拆分为多个模块化脚本
+- **状态**: README.md 仅提到 `dependency-guard.sh`
+- **建议**: 在架构说明中提及模块化设计
+
+#### 10. **Modular Federation Scripts (模块化联邦脚本)**
+- **脚本**:
+  - `scripts/federation-lite-core.sh`
+  - `scripts/federation-lite-discovery.sh`
+  - `scripts/federation-lite-index.sh`
+  - `scripts/federation-lite-virtual.sh`
+- **功能**: 联邦功能已拆分为多个模块化脚本
+- **状态**: README.md 仅提到 `federation-lite.sh`
+- **建议**: 在架构说明中提及模块化设计
+
+#### 11. **Modular Graph-RAG Scripts (模块化 Graph-RAG 脚本)**
+- **脚本**:
+  - `scripts/graph-rag-core.sh`
+  - `scripts/graph-rag-fusion.sh`
+  - `scripts/graph-rag-query.sh`
+  - `scripts/graph-rag-retrieval.sh`
+- **功能**: Graph-RAG 功能已拆分为多个模块化脚本
+- **状态**: README.md 仅提到 `graph-rag.sh`
+- **建议**: 在架构说明中提及模块化设计
+
+---
+
+### 二、README.md 中存在但代码中无对应实现的描述
+
+#### 1. **Pattern Learning MCP Tool**
+- **README 位置**: 第 20 行 Features 列表
+- **状态**: 
+  - 脚本 `pattern-learner.sh` 存在
+  - 但 `src/server.ts` 和 `src/tool-handlers.ts` 中**没有** `ci_pattern_learn` 工具定义
+- **影响**: 用户无法通过 MCP 协议调用 Pattern Learning 功能
+- **建议**: 在 `src/server.ts` 中添加 `ci_pattern_learn` 工具定义
+
+#### 2. **Cache Manager CLI Usage (缓存管理器 CLI 用法)**
+- **README 位置**: 第 184-198 行
+- **状态**: 
+  - 脚本 `scripts/cache-manager.sh` 存在
+  - 但 README 中的命令示例与实际脚本接口可能不匹配
+- **建议**: 验证 CLI 命令示例的准确性
+
+#### 3. **Conversation Context CLI Usage (对话上下文 CLI 用法)**
+- **README 位置**: 第 168-182 行
+- **状态**: 
+  - 脚本 `scripts/intent-learner.sh` 存在
+  - 但 README 中提到的 `session` 子命令需要验证是否实现
+- **建议**: 验证 `intent-learner.sh` 是否支持 `session new/resume/list/clear` 命令
+
+#### 4. **Complexity Script Name Mismatch (复杂度脚本名称不匹配)**
+- **README 位置**: 未明确指定脚本名称
+- **状态**: 
+  - `src/tool-handlers.ts:112` 调用 `complexity.sh`
+  - 但脚本目录中可能不存在该文件（需要确认）
+- **建议**: 确认 `complexity.sh` 是否存在，或更新工具处理器
+
+---
+
+### 三、建议修订点
+
+#### 高优先级
+
+1. **添加 Pattern Learning 完整文档**
+   - 在 Features 列表保留现有条目
+   - 在 MCP Tools 表格添加 `ci_pattern_learn` 工具
+   - 添加使用说明章节（类似 Semantic Anomaly Detection 的格式）
+   - 在 `src/server.ts` 中实现 MCP 工具
+
+2. **添加 Context Layer 文档**
+   - 在 Features 列表添加条目
+   - 添加使用说明章节
+   - 考虑添加 MCP 工具
+
+3. **补充 Cache Manager 文档**
+   - 在 Features 列表添加条目
+   - 验证现有 CLI 使用说明的准确性
+   - 考虑添加 MCP 工具
+
+4. **添加 LLM Provider 配置文档**
+   - 在 Configuration 章节添加 LLM Provider 说明
+   - 说明如何配置 `config/llm-providers.yaml`
+   - 列出支持的提供商
+
+#### 中优先级
+
+5. **添加 Reranker 文档**
+   - 在 Features 列表添加条目
+   - 在 Configuration 章节说明 `llm_rerank` 配置
+
+6. **添加 Performance Regression 文档**
+   - 在 Features 列表添加条目
+   - 添加使用说明
+
+7. **验证 CLI 命令准确性**
+   - 验证 `intent-learner.sh session` 命令
+   - 验证 `cache-manager.sh` 命令
+   - 验证 `complexity.sh` 是否存在
+
+#### 低优先级
+
+8. **添加架构说明**
+   - 说明脚本的模块化设计
+   - 列出核心脚本和辅助模块的关系
+
+9. **添加 Show Context 文档**
+   - 简要说明 `show-context.sh` 的用途
+
+---
+
+### 四、总结
+
+**缺失功能数量**: 11 个主要功能/脚本未在 README 中充分记录
+
+**过时引用数量**: 4 个潜在的文档与实现不匹配问题
+
+**关键问题**:
+- Pattern Learning 功能在 Features 列表中提及，但缺少使用说明和 MCP 工具实现
+- 多个重要脚本（Context Layer、Cache Manager、LLM Provider、Reranker）完全未记录
+- 模块化架构未在文档中说明
+
+**建议优先处理**:
+1. Pattern Learning 完整文档 + MCP 工具实现
+2. Context Layer 文档
+3. Cache Manager 文档补充
+4. LLM Provider 配置文档

@@ -1,0 +1,7 @@
+# LLM Rerank with Ollama provider
+features:
+  llm_rerank:
+    enabled: true
+    provider: ollama
+    model: llama2
+    endpoint: http://localhost:11434

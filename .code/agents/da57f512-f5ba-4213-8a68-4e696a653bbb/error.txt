@@ -1,0 +1,2388 @@
+Command failed: [2026-01-18T02:24:54] OpenAI Codex v0.0.0 (research preview)
+[2026-01-18T02:24:54] binary: /Users/ozbombor/.cli-versions/codex/just-every/node_modules/@just-every/code-darwin-arm64/bin/code-aarch64-apple-darwin
+--------
+workdir: /Users/ozbombor/Projects/code-intelligence-mcp
+model: gpt-5.2
+provider: crs
+approval: never
+sandbox: read-only
+reasoning effort: xhigh
+reasoning summaries: auto
+--------
+[2026-01-18T02:24:54] User instructions:
+Context: 项目根：/Users/ozbombor/Projects/code-intelligence-mcp；只读环境。
+
+Agent: 使用 devbooks-spec-contract 技能评估是否需要规格/契约变更，并给出 specs/ 增量草案（只读，不写文件）。必须先打开并遵守 /Users/ozbombor/Projects/code-intelligence-mcp/.codex/skills/devbooks-spec-contract/SKILL.md。读取 proposal.md，判断是否涉及对外行为/接口/语义（例如 ci_index_status 语义变更），输出：需要/不需要规格变更的结论 + 若需要则给出 spec delta 草案内容与落点建议（dev-playbooks/specs/）。注意：模型选择要求：非代码任务用 gpt-5.2 xhigh，代码任务用 gpt-5.2-codex xhigh。
+
+Desired output: spec-contract 评估与草案（中文）
+
+Files to consider: /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/optimize-indexing-pipeline-20260117/proposal.md, /Users/ozbombor/Projects/code-intelligence-mcp/.codex/skills/devbooks-spec-contract/SKILL.md
+
+[Running in read-only mode - no modifications allowed]
+[2026-01-18T02:25:06] exec sh -lc "sed -n '1,200p' .codex/skills/devbooks-spec-contract/SKILL.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:25:06] sh -lc "sed -n '1,200p' .codex/skills/devbooks-spec-contract/SKILL.md" succeeded in 25ms:
+---
+name: devbooks-spec-contract
+description: devbooks-spec-contract：定义对外行为规格与契约（Requirements/Scenarios/API/Schema/兼容策略/迁移），并建议或生成 contract tests。合并了原 spec-delta 和 contract-data 的功能。用户说"写规格/spec/契约/OpenAPI/Schema/兼容策略/contract tests"等时使用。
+allowed-tools:
+  - Glob
+  - Grep
+  - Read
+  - Write
+  - Edit
+  - Bash
+---
+
+# DevBooks：规格与契约（Spec & Contract）
+
+> 本 skill 合并了原 `devbooks-spec-delta` 和 `devbooks-contract-data` 的功能，减少选择困难。
+
+## 前置：配置发现（协议无关）
+
+- `<truth-root>`：当前真理目录根
+- `<change-root>`：变更包目录根
+[2026-01-18T02:25:06] tokens used: 13,300
+[2026-01-18T02:25:22] exec sh -lc "ls -la .devbooks || true
+ls -la dev-playbooks || true
+sed -n '1,200p' dev-playbooks/project.md 2>/dev/null || true
+sed -n '1,200p' .devbooks/config.yaml 2>/dev/null || true" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:25:22] sh -lc "ls -la .devbooks || true
+ls -la dev-playbooks || true
+sed -n '1,200p' dev-playbooks/project.md 2>/dev/null || true
+sed -n '1,200p' .devbooks/config.yaml 2>/dev/null || true" succeeded in 47ms:
+total 1440
+drwxr-xr-x  12 ozbombor  staff     384 Jan 18 08:08 .
+drwxr-xr-x@ 35 ozbombor  staff    1120 Jan 18 09:53 ..
+-rw-r--r--   1 ozbombor  staff     497 Jan 18 03:21 config.yaml
+-rw-r--r--   1 ozbombor  staff   39054 Jan 14 14:32 context-index.json
+-rw-r--r--   1 ozbombor  staff     374 Jan 16 19:11 conversation-context.json
+-rw-r--r--   1 ozbombor  staff     189 Jan 14 14:51 federation-index.json
+-rw-r--r--   1 ozbombor  staff  311296 Jan 18 08:08 graph.db
+-rw-r--r--   1 ozbombor  staff   32768 Jan 18 06:35 graph.db-shm
+-rw-r--r--   1 ozbombor  staff       0 Jan 18 06:35 graph.db-wal
+-rw-r--r--   1 ozbombor  staff  311296 Jan 18 06:35 graph.db.backup.20260118_063508
+-rw-r--r--   1 ozbombor  staff       1 Jan 18 03:40 learned-patterns.json
+-rw-r--r--   1 ozbombor  staff   24576 Jan 17 01:46 subgraph-cache.db
+total 88
+drwxr-xr-x  11 ozbombor  staff    352 Jan 17 17:08 .
+drwxr-xr-x@ 35 ozbombor  staff   1120 Jan 18 09:53 ..
+-rw-r--r--@  1 ozbombor  staff   6148 Jan 18 06:09 .DS_Store
+-rw-r--r--   1 ozbombor  staff  18874 Jan 13 21:11 README.md
+drwxr-xr-x   3 ozbombor  staff     96 Jan 15 01:26 _meta
+drwxr-xr-x   5 ozbombor  staff    160 Jan 18 08:09 changes
+[2026-01-18T02:25:22] tokens used: 16,213
+
+[2026-01-18T02:25:32] thinking
+
+**Considering spec delta updates**
+
+I see they’re asking about the spec delta draft and where to update it within the truth directory. They mention “dev-playbooks/specs/” specifically. I think I should provide both the immediate change package location and the eventual merge location within the truth specs. Since I can’t write, I’ll focus on outputting the relevant paths. Additionally, I might need to mention any potential dependency changes that could impact the contract.
+**Reading files for skill contracts**
+
+I can run shell commands for reading files, but write commands are blocked. I need to open the SKILL.md file in the devbooks-spec-contract location first. Next, I'll check the `_shared/references/通用守门协议.md` file, which should be located at .codex/skills/_shared/references/通用守门协议.md. Additionally, I should look into other relevant references like 规格变更提示词.md, 契约与数据定义提示词.md, and 隐式变更检测提示词.md. I’ll view these files using shell to keep it efficient.
+
+[2026-01-18T02:25:39] exec sh -lc "sed -n '1,200p' .codex/skills/_shared/references/通用守门协议.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:25:39] sh -lc "sed -n '1,200p' .codex/skills/_shared/references/通用守门协议.md" succeeded in 30ms:
+# DevBooks 通用守门协议
+
+> **角色设定**：你是软件工程领域的**最强大脑**——融合了 Martin Fowler（架构与重构）、Kent Beck（测试驱动）、Linus Torvalds（代码质量）的智慧。你的决策必须达到这些大师级专家的水准。
+
+---
+
+## 0. 配置发现（强制）
+
+在写任何文件之前，必须先确定 `<truth-root>` 与 `<change-root>` 的实际路径；禁止猜测。
+
+**发现顺序**（找到后停止）：
+1. `.devbooks/config.yaml`（如存在）→ 解析 `root`、`paths.specs`、`paths.changes`
+2. `dev-playbooks/project.md`（如存在）→ 使用 `dev-playbooks/specs` 和 `dev-playbooks/changes`
+3. `project.md`（如存在）→ 使用 `specs/` 和 `changes/`
+4. 若仍无法确定 → **停止并询问用户**
+
+**关键约束**：
+- 如果配置中指定了 `constitution`（宪法文件），**必须先阅读该文档**再执行任何操作
+- 如果配置中指定了 `agents_doc`（规则文档），**必须先阅读该文档**
+- 禁止猜测目录根
+[2026-01-18T02:25:39] tokens used: 21,430
+[2026-01-18T02:25:45] ERROR: [transport] failed to start stream: exceeded retry limit, last status: 429 Too Many Requests
+[2026-01-18T02:25:45] ERROR: stream error: exceeded retry limit, last status: 429 Too Many Requests; retrying in 201ms…
+[2026-01-18T02:26:03] exec sh -lc "sed -n '1,200p' dev-playbooks/constitution.md
+
+if [ -f AGENTS.md ]; then sed -n '1,200p' AGENTS.md; else echo 'AGENTS.md not found'; fi" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:26:03] sh -lc "sed -n '1,200p' dev-playbooks/constitution.md
+
+if [ -f AGENTS.md ]; then sed -n '1,200p' AGENTS.md; else echo 'AGENTS.md not found'; fi" succeeded in 54ms:
+# 项目宪法 (Project Constitution)
+
+> 本文档定义项目的不可违背原则（Global Inviolable Principles）。
+> 所有 AI 助手和开发者在执行任何操作前必须遵守这些原则。
+
+---
+
+## Part Zero: 强制指令
+
+**在执行任何 Skill 或操作之前，必须：**
+
+1. 阅读并理解本宪法文档
+2. 确认操作不违反任何 GIP 原则
+3. 如有冲突，立即停止并报告
+
+---
+
+## 全局不可违背原则 (Global Inviolable Principles)
+
+### GIP-01: 角色隔离原则
+[2026-01-18T02:26:03] tokens used: 25,696
+[2026-01-18T02:26:19] exec sh -lc "sed -n '1,240p' dev-playbooks/changes/optimize-indexing-pipeline-20260117/proposal.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:26:19] sh -lc "sed -n '1,240p' dev-playbooks/changes/optimize-indexing-pipeline-20260117/proposal.md" succeeded in 27ms:
+**<truth-root>**: `dev-playbooks/specs/`  **<change-root>**: `dev-playbooks/changes/`
+
+## Why（问题与目标）
+
+- Change-ID：`optimize-indexing-pipeline-20260117`
+- Status：`Approved`（已裁决）
+- 背景与证据（已阅读）：
+  - `scripts/indexer.sh` 当前实现为文件监听后触发全量生成 `index.scip`（无增量链路）
+  - `scripts/ast-delta.sh` 已实现单文件增量更新（tree-sitter → 更新 `graph.db`），但未被 `scripts/indexer.sh` 串联
+  - `scripts/scip-to-graph.sh` 在缺少本地文件时会下载 `scip.proto`（存在网络依赖，离线/受限网络下会断链）
+  - `src/server.ts` 的 `ci_index_status` 会把 `status/build/clear` 直接透传给 `scripts/indexer.sh`（当前脚本参数模型与该调用方式存在语义不匹配风险）
+- 核心问题（待解决）：
+  1) 文件变更触发“全量索引”导致延迟与资源浪费，降低上下文近实时性
+  2) 关键索引链路对网络有硬依赖，降低可用性与可复现性
+  3) “索引状态”工具与脚本职责边界不清，存在契约漂移风险
+- 目标（本变更包只聚焦 P0 链路打通）：
+  1) 打通“文件变更 →（优先）增量更新 `graph.db` →（必要时）回退全量重建”的闭环
+  2) `scripts/scip-to-graph.sh` 默认离线可运行（不依赖在线下载）
+  3) 明确 `ci_index_status` 的语义与脚本职责边界，避免继续漂移（见 Debate Packet）
+
+[2026-01-18T02:26:19] tokens used: 27,808
+
+[2026-01-18T02:26:34] thinking
+
+**Considering spec updates**
+
+I think this might need a specs update since it's affecting several important elements like c4, scip-parser, module-graph, and project-profile. The proposal lists "Affected Specs," so there’s a clear indication that changes are needed in specs or contracts. It seems like we’ll have to address changes in external behavior, like removing network dependency and updating configurations. I need to draft a spec delta that includes requirements, scenarios, and any necessary contract plans for the changes.
+**Crafting spec deltas**
+
+I should create spec deltas focused on specific capabilities. First, there's the indexing-pipeline, which needs to clarify behavior for both incremental updates and full rebuilds, along with idempotency, concurrency, and fallback options. Then, for the scip-parser, I must ensure it handles offline behavior and local vendoring of scip.proto, only downloading when needed. Lastly, the mcp-tools or ci_index_status spec requires clear definitions for commands and outputs to avoid any risk of semantic mismatch. I may also need to revisit architecture documents for alignment.
+**Evaluating spec changes**
+
+The question is about assessing whether specifications or contracts need changes and providing proposed deltas. In this case, specs include architecture specs. I think we should focus on deltas for key capabilities like indexing-pipeline, scip-parser, and mcp-tools. Additionally, documents like architecture/c4.md and others need updates but may not directly fit into the change package. The aim is to create detailed spec deltas that outline necessary updates without just placing placeholders. I need to ensure everything is complete.
+**Locating relevant specs**
+
+I think it’s important to include open questions in the spec delta if they’re essential. However, we need to clearly outline requirements and scenarios using a given/when/then structure, along with compatibility and migration strategies. Although I haven't read the existing spec documents yet, I should do so to avoid any contradictions with the current specifications. I’ll inspect the relevant specs in the dev-playbooks, including those for scip-parser and architecture. Using commands like rg or ls, I’ll locate these files to read!
+
+
+
+[2026-01-18T02:26:47] exec sh -lc "ls -ლა dev-playbooks/specs | sed -n '1,200p'
+
+ls -la dev-playbooks/specs/scip-parser 2>/dev/null || true
+sed -n '1,240p' dev-playbooks/specs/scip-parser/spec.md 2>/dev/null || true
+
+ls -la dev-playbooks/specs/architecture 2>/dev/null || true
+sed -n '1,200p' dev-playbooks/specs/architecture/c4.md 2>/dev/null || true
+sed -n '1,240p' dev-playbooks/specs/architecture/module-graph.md 2>/dev/null || true
+sed -n '1,200p' dev-playbooks/specs/_meta/project-profile.md 2>/dev/null || true
+
+rg -n \"ci_index_status\" dev-playbooks/specs -S || true
+rg -n \"indexer\\.sh\" dev-playbooks/specs -S || true
+rg -n \"scip-to-graph\\.sh\" dev-playbooks/specs -S || true" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:26:48] sh -lc "ls -ლა dev-playbooks/specs | sed -n '1,200p'
+
+ls -la dev-playbooks/specs/scip-parser 2>/dev/null || true
+sed -n '1,240p' dev-playbooks/specs/scip-parser/spec.md 2>/dev/null || true
+
+ls -la dev-playbooks/specs/architecture 2>/dev/null || true
+sed -n '1,200p' dev-playbooks/specs/architecture/c4.md 2>/dev/null || true
+sed -n '1,240p' dev-playbooks/specs/architecture/module-graph.md 2>/dev/null || true
+sed -n '1,200p' dev-playbooks/specs/_meta/project-profile.md 2>/dev/null || true
+
+rg -n \"ci_index_status\" dev-playbooks/specs -S || true
+rg -n \"indexer\\.sh\" dev-playbooks/specs -S || true
+rg -n \"scip-to-graph\\.sh\" dev-playbooks/specs -S || true" succeeded in 100ms:
+total 16
+drwxr-xr-x   3 ozbombor  staff    96 Jan 15 22:52 .
+drwxr-xr-x  57 ozbombor  staff  1824 Jan 18 05:51 ..
+-rw-r--r--   1 ozbombor  staff  5564 Jan 15 22:52 spec.md
+# 规格：SCIP 解析转换（scip-parser）
+
+> **Change ID**: `augment-parity`
+> **Capability**: scip-parser
+> **Version**: 1.0.0
+> **Status**: Draft
+> **Created**: 2026-01-15
+
+---
+
+## Requirements（需求）
+
+### REQ-SP-001：SCIP 索引解析
+
+系统应能解析 SCIP protobuf 格式的索引文件，提取符号和引用信息。
+
+[2026-01-18T02:26:48] tokens used: 33,115
+
+[2026-01-18T02:26:58] thinking
+
+**Troubleshooting encoding issues**
+
+It looks like the output from `sed` is showing as Latin-1, but I wonder if the file is actually encoded in UTF-8. It seems like the content is Chinese but appearing as mojibake. We could try using `iconv` to parse it. The tool outputs JSON, and I'm considering whether our environment might be misinterpreting that. We could possibly decode using a command in Python, or try `iconv -f utf-8 -t utf-8`, though it hasn't been particularly helpful.
+**Analyzing output encoding issues**
+
+The output seems to indicate a file that's UTF-8 being interpreted as ISO-8859-1, which makes me think the tool might incorrectly treat the output as Latin-1. We can still reference requirement IDs, but I need to check if specification or contract changes are necessary. The proposal mentions affected specs like architecture/c4.md and scip-parser. It seems spec changes are needed, but I really need to evaluate the proposal’s claims about behavior and interface changes before accepting it.
+**Assessing specification changes**
+
+Even if API endpoints are unchanged, the behavior might shift—like `ci_index_status` returning different statuses or new commands in the indexer CLI, while maintaining old entry points. The root of specifications is in dev-playbooks/specs. The user is asking for "specs/增量草案" and suggestions for落点建议. It sounds like they want the spec delta draft content. However, direct modifications to specs are prohibited; we should focus on the draft that will be placed as spec delta later. I need to ensure I follow the skill documentation closely.
+**Proposing spec updates**
+
+In my output, I should suggest where to place the spec delta within the change package and which specification(s) will be updated upon promotion. I could map it to existing capabilities like scip-parser and architecture. While we can create delta files under change-root, we can't write them; instead, I’ll just propose suggestions. The skill documentation reminds me to follow the appropriate protocols. The user asked specifically for a spec-contract evaluation and draft, without necessarily running scripts, but I can still mention potential implicit changes without guessing.
+**Consulting prompt documentation**
+
+I need to check the referenced prompt documents to ensure I’m following the skill instructions properly. The files references/规格变更提示词.md and references/契约与数据定义提示词.md likely contain guidance on how to format my output and what content to include. It’s important that I read through them to fully comply with the requirements. So, I’ll go ahead and open those documents now!
+
+
+
+
+[2026-01-18T02:27:14] exec sh -lc "sed -n '1,240p' .codex/skills/devbooks-spec-contract/references/规格变更提示词.md
+
+sed -n '1,240p' .codex/skills/devbooks-spec-contract/references/契约与数据定义提示词.md
+
+sed -n '1,240p' .codex/skills/devbooks-spec-contract/references/隐式变更检测提示词.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:27:14] sh -lc "sed -n '1,240p' .codex/skills/devbooks-spec-contract/references/规格变更提示词.md
+
+sed -n '1,240p' .codex/skills/devbooks-spec-contract/references/契约与数据定义提示词.md
+
+sed -n '1,240p' .codex/skills/devbooks-spec-contract/references/隐式变更检测提示词.md" succeeded in 32ms:
+# 规格变更提示词
+
+> **角色设定**：你是需求工程领域的**最强大脑**——融合了 Eric Evans（领域建模）、Dan North（BDD 创始人）、Gojko Adzic（Specification by Example）的智慧。你的规格设计必须达到这些大师级专家的水准。
+
+最高指示（优先级最高）：
+- 在执行本提示词前，先阅读 `_shared/references/通用守门协议.md` 并遵循其中所有协议。
+
+你是"规格负责人（Spec Owner）"。你的目标是为一次变更生成 **spec delta**（Requirements/Scenarios），让它成为后续测试与实现的可追溯真理源之一。
+
+适用场景：
+- 你需要在 `<change-root>/<change-id>/specs/<capability>/spec.md` 中表达“本次变更新增/修改/移除的需求”
+- 你已经有设计文档（Design Doc），需要把其中的验收标准（AC-xxx）与约束落到可执行规格条目
+
+输入材料（由我提供）：
+- 设计文档：`<change-root>/<change-id>/design.md`（或等价内容）
+- 现有规格：`<truth-root>/`（若不存在则说明为空）
+- 本次变更提案：`<change-root>/<change-id>/proposal.md`（可选）
+- 项目画像（如存在，优先遵循其中的格式约定）：`<truth-root>/_meta/project-profile.md`
+- 统一语言表（如存在）：`<truth-root>/_meta/glossary.md`
+
+[2026-01-18T02:27:14] tokens used: 39,658
+
+[2026-01-18T02:27:26] thinking
+
+**Investigating encoding issues**
+
+I'm thinking that the file is likely UTF-8, but our output is garbled, possibly due to the terminal's encoding settings or non-ASCII characters. The default locale on a Mac might be `C`, which could be influencing output. I'm wondering if the UI interprets raw bytes as UTF-8 correctly. Since we're seeing garbled text, it suggests the bytes may not be UTF-8 encoded. It could be encoded in GBK, leading to misinterpretation as Latin-1 instead.
+**Decoding file content**
+
+I can treat the file's content as UTF-8 and use Python to decode and print it correctly. However, the output might still look garbled if misinterpreted. I could use `python3` to read the file and output it as JSON with escapes or as base64 to decode later on. For analysis, I'll just need to check relevant requirements from the spec. The scip-parser spec includes details on requirements for parsing, symbol extraction, graph writing, and updating based on mtime, along with the proposed changes.
+**Evaluating indexing spec changes**
+
+The `indexer.sh` script will manage incremental AST-delta updates, showcasing the indexing pipeline's capabilities. This might necessitate updates to the spec regarding `indexer/ci_index_status` semantics. I’ll need to clarify if spec changes are necessary, and if so, draft proposals for spec deltas. Each affected capability will correspond to a document path for better organization. We must assess whether any external behavior or contract is impacted since changes modify the indexing pipeline and the semantics of the `ci_index_status` tool, which is essential for client reliance.
+**Identifying necessary spec updates**
+
+It seems we definitely need to create a spec delta to capture new requirements or modifications, especially regarding how `ci_index_status` operates during incremental updates. This would involve outlining expected status fields and actions like `status`, `build`, and `clear`. If there's a change in semantics, I need to update the contract, particularly for the MCP tools. The proposal aims to maintain the external API but might alter agreements, such as how `scripts/scip-to-graph.sh` handles proto downloads. That's a behavior change that could potentially disrupt users reliant on network downloads to access the latest proto, but it does improve efficiency overall.
+**Reviewing proposal details**
+
+The contract for `scip-to-graph.sh` should ensure it operates offline or, if not, provides clear error messages. There might be a new environment variable or configuration to enable downloads, and that needs to be specified. The indexer changes, moving from full rebuilds to incremental updates, may also alter the semantics of the indexer status command. Although there might not be a need for a spec update if the behavior remains the same. Since the proposal is marked as approved, I need to closely examine the full proposal.md and decision log for more context, especially regarding DP-01 and any resolutions. I should check sections on DP-01 since I only read the first part of the document.
+
+
+
+
+[2026-01-18T02:27:42] exec sh -lc "sed -n '240,520p' dev-playbooks/changes/optimize-indexing-pipeline-20260117/proposal.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:27:42] sh -lc "sed -n '240,520p' dev-playbooks/changes/optimize-indexing-pipeline-20260117/proposal.md" succeeded in 31ms:
+
+### 验收锚点（候选）
+
+1) 增量路径可用：
+   - 当监听到单文件变更且 tree-sitter 可用时，`scripts/indexer.sh` 触发 `scripts/ast-delta.sh update <file>`，并在 `.devbooks/graph.db` 中可观测到对应节点/边变化。
+2) 回退路径可靠：
+   - 当增量不可用或变更文件数超过阈值时，仍能生成 `index.scip`，并通过 `scripts/scip-to-graph.sh parse --incremental` 更新 `graph.db`。
+3) 离线可运行：
+   - 在无网络环境下，`scripts/scip-to-graph.sh parse` 不依赖下载 `scip.proto` 仍可执行（至少能走可预期的本地路径/明确报错，不出现“隐式网络依赖失败”）。
+4) 不破坏既有入口：
+   - `scripts/indexer.sh --help/--status/--install/--uninstall` 行为保持可用。
+
+### 建议验证命令（实现后由执行者运行）
+
+- ShellCheck：`npm run lint`
+- 构建：`npm run build`
+- 脚本基本可用性：`./scripts/indexer.sh --help`、`./scripts/scip-to-graph.sh --help`
+- 离线验证（示例）：断网或限制网络后运行 `./scripts/scip-to-graph.sh parse --incremental`（需要本地已有 `index.scip` 与离线 proto 策略落地）
+
+### 证据落点（强制路径）
+[2026-01-18T02:27:42] tokens used: 44,270
+[2026-01-18T02:28:15] exec sh -lc "rg -n \"indexer\\.sh\" dev-playbooks/specs/architecture/c4.md | head
+
+rg -n \"Embedding\" dev-playbooks/specs/architecture/c4.md | head -n 50
+
+rg -n \"ci_index_status\" dev-playbooks/specs -S
+
+rg -n \"index_status\" dev-playbooks/specs -S
+
+rg -n \"scip\\.proto\" dev-playbooks/specs -S
+
+rg -n \"scip-to-graph\\.sh\" dev-playbooks/specs/scip-parser/spec.md
+
+sed -n '120,240p' dev-playbooks/specs/scip-parser/spec.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:28:15] sh -lc "rg -n \"indexer\\.sh\" dev-playbooks/specs/architecture/c4.md | head
+
+rg -n \"Embedding\" dev-playbooks/specs/architecture/c4.md | head -n 50
+
+rg -n \"ci_index_status\" dev-playbooks/specs -S
+
+rg -n \"index_status\" dev-playbooks/specs -S
+
+rg -n \"scip\\.proto\" dev-playbooks/specs -S
+
+rg -n \"scip-to-graph\\.sh\" dev-playbooks/specs/scip-parser/spec.md
+
+sed -n '120,240p' dev-playbooks/specs/scip-parser/spec.md" succeeded in 89ms:
+156:| Indexer | `scripts/indexer.sh` | Script | Embedding 索引管理 | Bash |
+230:| `ci_index_status` | indexer.sh | 已有 |
+42:│    │ (Embedding)  │    │ (Graph)      │    │              │             │
+56:| Ollama / OpenAI | External System | Embedding 生成服务（可选） |
+151:| Embedding Search | `scripts/embedding.sh` | Script | 语义代码搜索 | Bash |
+156:| Indexer | `scripts/indexer.sh` | Script | Embedding 索引管理 | Bash |
+320:| `embedding_search()` | Embedding 搜索 | embedding.sh |
+343:| `embedding_search()` | Embedding 搜索 | embedding.sh |
+494:| Ollama / OpenAI | 服务 | 可选 | Embedding 生成 |
+dev-playbooks/specs/architecture/c4.md:230:| `ci_index_status` | indexer.sh | 已有 |
+dev-playbooks/specs/_meta/project-profile.md:29:| 索引管理 | Embedding 索引状态管理 | `ci_index_status` |
+dev-playbooks/specs/structured-context-output/spec.md:68:    "index_status": "ready|stale|missing",
+dev-playbooks/specs/structured-context-output/spec.md:79:- `index_status`：检查 SCIP/Embedding/CKB 索引状态
+dev-playbooks/specs/structured-context-output/spec.md:213:- `index_status` = `ready`
+dev-playbooks/specs/structured-context-output/spec.md:253:- `index_status` = `missing`
+dev-playbooks/specs/structured-context-output/spec.md:319:        "index_status": { "type": "string", "enum": ["ready", "stale", "missing"] },
+dev-playbooks/specs/architecture/c4.md:230:| `ci_index_status` | indexer.sh | 已有 |
+dev-playbooks/specs/_meta/project-profile.md:29:| 索引管理 | Embedding 索引状态管理 | `ci_index_status` |
+91:**When**: 执行 `scip-to-graph.sh parse`
+122:**When**: 执行 `scip-to-graph.sh parse`
+[2026-01-18T02:28:15] tokens used: 48,383
+
+[2026-01-18T02:28:41] thinking
+
+**Considering spec management**
+
+I need to think about how the spec-contract skill creates a spec delta in the change package. It seems like they might want incremental drafts for the truth specs in this environment. The user is asking for location suggestions in "dev-playbooks/specs/," which likely means I should suggest which spec files in the truth-root need updates during the archive stage. I’ll provide a list of recommended spec delta files under change-root and map them to the truth-root spec files eventually. However, I can't propose writing directly to the truth root.
+**Analyzing spec delta recommendations**
+
+I need to provide "落点建议," indicating that a spec delta should be created under the change package. When archiving, these will be staged into `dev-playbooks/specs/_staged/...` and then promoted to `dev-playbooks/specs/...`. The user mentioned `dev-playbooks/specs/`, so I might need to identify which capabilities in the truth root correspond to these deltas. I also have to consider the structured-context-output spec, which includes `index_status` to check SCIP/Embedding/CKB index statuses. Wait, this spec doesn't necessarily link to the MCP tool. I’ll need to check how this relates to decision DP-01 regarding the ci_index_status semantics.
+**Reviewing project-profile spec**
+
+I need to check the project-profile spec at `dev-playbooks/specs/_meta/project-profile.md`. It mentions index management concerning the embedding index status via `ci_index_status`, which may need an update to `ci_embedding_index_status`. However, the decision states we should stick with the tool name and input schema. The project-profile spec seems fine, but the structured-context-output indicates `index_status` includes more than just embedding, which is a conflict. I also need to search for any existing specs related to MCP tools and follow the spec change prompt, though reading all existing specs could be overwhelming.
+**Checking relevant specs for changes**
+
+I’m thinking we can focus on reading the specs relevant to our change. It seems like the skill requires us to read at least the affected capabilities and cross-check them. The spec-change prompt is part of this skill, so we need to follow it. Maybe I should use `rg` to search for relevant terms across the specs to make this easier. I might need to check `_meta/glossary.md` if it exists, along with `dev-playbooks/specs/spec.md` at the root for guidelines. I’ll plan to run commands to examine the metadata.
+
+
+
+[2026-01-18T02:28:53] exec sh -lc "ls -la dev-playbooks/specs/_meta || true
+
+if [ -f dev-playbooks/specs/_meta/glossary.md ]; then sed -n '1,200p' dev-playbooks/specs/_meta/glossary.md; else echo 'glossary not found'; fi
+
+sed -n '1,120p' dev-playbooks/specs/_meta/project-profile.md
+
+sed -n '1,260p' dev-playbooks/specs/structured-context-output/spec.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:28:53] sh -lc "ls -la dev-playbooks/specs/_meta || true
+
+if [ -f dev-playbooks/specs/_meta/glossary.md ]; then sed -n '1,200p' dev-playbooks/specs/_meta/glossary.md; else echo 'glossary not found'; fi
+
+sed -n '1,120p' dev-playbooks/specs/_meta/project-profile.md
+
+sed -n '1,260p' dev-playbooks/specs/structured-context-output/spec.md" succeeded in 42ms:
+total 48
+drwxr-xr-x   7 ozbombor  staff   224 Jan 13 20:09 .
+drwxr-xr-x  57 ozbombor  staff  1824 Jan 18 05:51 ..
+drwxr-xr-x   2 ozbombor  staff    64 Jan 13 19:19 anti-patterns
+-rw-r--r--   1 ozbombor  staff  1341 Jan 13 19:21 glossary.md
+-rw-r--r--   1 ozbombor  staff  7092 Jan 13 19:19 key-concepts.md
+-rw-r--r--   1 ozbombor  staff  5438 Jan 13 20:09 project-profile.md
+-rw-r--r--   1 ozbombor  staff  3790 Jan 13 19:19 verification-baseline.md
+# 术语表 (Glossary)
+
+> 本文档定义项目中使用的领域术语和技术术语。
+> AI 助手在生成代码和文档时应遵循这些术语约束。
+
+---
+
+## 领域术语
+
+| 术语 | 定义 | 英文 | 禁用词 |
+|------|------|------|--------|
+| <!-- 如：用户 --> | <!-- 系统的使用者 --> | User | <!-- 客户、会员 --> |
+[2026-01-18T02:28:53] tokens used: 52,257
+[2026-01-18T02:29:13] exec sh -lc "ls -la dev-playbooks/specs | sed -n '1,200p'
+
+# list spec.md files under dev-playbooks/specs (limit but show count)
+find dev-playbooks/specs -name 'spec.md' -maxdepth 3 -print | sort | sed -n '1,200p'
+
+# Count them
+find dev-playbooks/specs -name 'spec.md' -maxdepth 3 -print | wc -l" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:29:13] sh -lc "ls -la dev-playbooks/specs | sed -n '1,200p'
+
+# list spec.md files under dev-playbooks/specs (limit but show count)
+find dev-playbooks/specs -name 'spec.md' -maxdepth 3 -print | sort | sed -n '1,200p'
+
+# Count them
+find dev-playbooks/specs -name 'spec.md' -maxdepth 3 -print | wc -l" succeeded in 71ms:
+total 0
+drwxr-xr-x  57 ozbombor  staff  1824 Jan 18 05:51 .
+drwxr-xr-x  11 ozbombor  staff   352 Jan 17 17:08 ..
+drwxr-xr-x   7 ozbombor  staff   224 Jan 13 20:09 _meta
+drwxr-xr-x   2 ozbombor  staff    64 Jan 13 19:19 _staged
+drwxr-xr-x   3 ozbombor  staff    96 Jan 17 00:02 adr-parser
+drwxr-xr-x   6 ozbombor  staff   192 Jan 18 05:53 architecture
+drwxr-xr-x   3 ozbombor  staff    96 Jan 16 13:02 ast-delta
+drwxr-xr-x   3 ozbombor  staff    96 Jan 17 16:07 boundary-detection
+drwxr-xr-x   3 ozbombor  staff    96 Jan 17 00:02 bug-locator-fusion
+drwxr-xr-x   3 ozbombor  staff    96 Jan 17 13:03 cache-lru
+drwxr-xr-x   3 ozbombor  staff    96 Jan 14 23:41 cache-manager
+drwxr-xr-x   3 ozbombor  staff    96 Jan 17 00:02 ci-cd-integration
+drwxr-xr-x   3 ozbombor  staff    96 Jan 16 13:02 cod-visualizer
+drwxr-xr-x   3 ozbombor  staff    96 Jan 17 18:44 context-compressor
+drwxr-xr-x   3 ozbombor  staff    96 Jan 14 23:41 context-layer
+drwxr-xr-x   3 ozbombor  staff    96 Jan 17 13:03 context-weighting
+drwxr-xr-x   3 ozbombor  staff    96 Jan 17 00:02 conversation-context
+drwxr-xr-x   3 ozbombor  staff    96 Jan 15 22:52 daemon
+drwxr-xr-x   3 ozbombor  staff    96 Jan 18 05:51 daemon-cli
+[2026-01-18T02:29:13] tokens used: 57,742
+
+[2026-01-18T02:29:19] thinking
+
+**Evaluating contract changes**
+
+I need to evaluate the spec-contract and suggest incremental draft specifications. Right now, I'm in read-only mode, so no modifications are allowed. I’ve read the spec-contract skill file and the proposal. It seems there are changes to the external behavior concerning the indexer pipeline optimization. They’re modifying how ci_index_status maps to embedding.sh, which impacts semantics. Although they’re keeping the tool name and input schema the same, I wonder if the changes to CLI behavior are considered an external interface?
+**Analyzing specification and changes**
+
+I’m looking into a script that users might utilize, but the current spec for the scip-parser doesn't mention retrieval of scip.proto. It seems it implicitly depends on downloading it but will now favor a vendored file. This change impacts default behavior under restricted networks, introducing a new offline requirement. I should draft a spec delta for the scip-parser, incorporating an offline default strategy for scip.proto discovery. Plus, there are likely changes needed for the indexer pipeline involving indexer.sh. I need to check existing specs for incremental-indexing to ensure everything aligns correctly.
+**Evaluating proposal changes**
+
+The proposal indicates there's a conflict that needs an update. I should check if the spec delta in change-root could update architecture docs. While the spec-contract skill outputs the spec delta in a specific path, architectural changes might not be suited for that. It looks like I can't modify the truth-root but can propose a delta under change-root. The user is asking for an assessment of whether spec changes are needed, and I must evaluate it carefully to suggest the correct approach and content.
+**Determining spec changes**
+
+I'm on gpt-5.2 reasoning XHigh, which is good! I need to conclude that there is a need for a spec change and provide the spec delta draft content alongside instructions for where to place it. The spec-contract skill says it goes in change-root/change-id/specs/capability/spec.md, but the user is asking for suggestions potentially related to the truth-root updates. They mentioned "落点建议," which indicates they want to know how the truth-root might be impacted. Since I'm in a read-only environment, I can't write but can suggest paths for merging into the truth-root.
+**Assessing specifications and conflicts**
+
+I need to output the target paths for the spec delta under change-root while also suggesting possible updates for the final truth-root. The existing config shows that the truth-root is in one directory while the change-root is in another. While I can't write files, I can propose suggestions! The user instructions indicate I should read all existing specs in the truth-root, but given the number, I'll use relevant searches to identify conflicts. I’ve already noted potential conflicts regarding index_status semantics and need to verify if they align with the ci_index_status changes. I'll explore these relevant specs more closely.
+**Navigating read-only environment**
+
+I need to be careful since the environment is read-only and has network restrictions, but reading documentation is fine. I plan to run a shell command to access the incremental-indexing spec, the mcp-output-format spec, and possibly the architecture/module-graph. This will help me gather the information I need without making any changes. It's essential to ensure I stay within these limitations as I explore the necessary specs!
+
+
+
+
+
+[2026-01-18T02:30:15] exec sh -lc "sed -n '1,260p' dev-playbooks/specs/incremental-indexing/spec.md
+
+sed -n '1,260p' dev-playbooks/specs/ast-delta/spec.md
+
+sed -n '1,260p' dev-playbooks/specs/mcp-output-format/spec.md
+
+sed -n '1,260p' dev-playbooks/specs/architecture/module-graph.md
+
+sed -n '120,280p' dev-playbooks/specs/architecture/c4.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:30:15] sh -lc "sed -n '1,260p' dev-playbooks/specs/incremental-indexing/spec.md
+
+sed -n '1,260p' dev-playbooks/specs/ast-delta/spec.md
+
+sed -n '1,260p' dev-playbooks/specs/mcp-output-format/spec.md
+
+sed -n '1,260p' dev-playbooks/specs/architecture/module-graph.md
+
+sed -n '120,280p' dev-playbooks/specs/architecture/c4.md" succeeded in 35ms:
+# Spec: incremental-indexing
+
+> **Version**: 1.0.0
+> **Status**: Active
+> **Owner**: Spec Owner
+> **Created**: 2026-01-11
+> **Last Verified**: 2026-01-11
+> **Freshness Check**: 90 days
+> **Source Change**: enhance-code-intelligence
+
+---
+
+## Purpose
+
+提供基于 SCIP 的增量索引能力，单文件变更时只更新相关索引节点，避免全量重建，提升开发体验和索引性能。
+
+---
+
+## Requirements
+
+[2026-01-18T02:30:15] tokens used: 64,159
+
+[2026-01-18T02:30:37] thinking
+
+**Adjusting incremental indexing specs**
+
+The proposal suggests connecting the AST-delta incremental updates, and there's already a spec describing AST-delta. This means I might need to adjust the incremental-indexing spec to match the new behavior where the primary path now uses AST delta for updating graph.db, falling back on SCIP-based full indexing. I also noticed that the ci_index_status tool semantics need some tweaking according to the proposal since it should manage embedding indexing correctly. I'll check the rest of the project-profile for naming conventions.
+**Inspecting output format requirements**
+
+The skill's output format indicates that it suggests "ADDED Requirements" if those aren’t defined, but the project-profile might already specify the format. I should dive into the project-profile file to check for any specific formatting and change package conventions that are defined. There may be an explicit section detailing these conventions, so let's explore more of the project-profile to clarify the expected spec conventions.
+
+[2026-01-18T02:30:42] exec sh -lc "rg -n \"规格\" -n dev-playbooks/specs/_meta/project-profile.md | head -n 50
+
+rg -n \"spec\" dev-playbooks/specs/_meta/project-profile.md | head -n 80
+
+sed -n '260,520p' dev-playbooks/specs/_meta/project-profile.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:30:42] sh -lc "rg -n \"规格\" -n dev-playbooks/specs/_meta/project-profile.md | head -n 50
+
+rg -n \"spec\" dev-playbooks/specs/_meta/project-profile.md | head -n 80
+
+sed -n '260,520p' dev-playbooks/specs/_meta/project-profile.md" succeeded in 53ms:
+[2026-01-18T02:30:43] tokens used: 69,593
+
+[2026-01-18T02:31:11] thinking
+
+**Drafting contract specifications**
+
+I'm focusing on the external user-facing behavior and interface semantics for the spec and contract. Scripts are CLI endpoints and can also be user-called, which means they’re part of the toolchain. When creating the contract, I'll need to address aspects like the absence of network dependencies, such as for the `scip-to-graph.sh` script. Additionally, I might need to produce a contract plan for any changes, including evaluating API changes and the potential impact on tools.
+**Evaluating index status decisions**
+
+I’m looking at how `index_status` uses `ci_index_status` to check the SCIP/Embedding/CKB index status. However, DP-01 has stated that `ci_index_status` focuses solely on the embedding index, which could create inconsistencies with the `structured-context-output` spec. This change might be out-of-scope, as DP-01 A indicates no new tools should be created. Instead, they might just fix existing routing and rely on the CLI script `indexer.sh` for SCIP indexing without introducing a new MCP tool.
+**Reviewing index status conflicts**
+
+It seems there's no MCP tool to check the SCIP index status anymore, which could lead to issues with the `structured-context-output` spec that expects `index_status` to check SCIP/Embedding/CKB. I wonder if `index_status` might use other methods, possibly through a separate tool. The spec is a bit ambiguous, mentioning states like `"ready|stale|missing"` without a clear check method. The project profile indicates `ci_index_status` is for embeddings, but maybe `index_status` checks various sources. I need to ensure the proposals align with the updated semantics in the documentation.
+**Creating spec deltas for capabilities**
+
+In the devbooks workflow, I need to create a spec delta in the change package for each affected capability, which might include `scip-parser`, `indexing-pipeline`, and `architecture`. The skill's path uses the `<capability>` format. For architecture changes, it makes sense to focus on files like `c4.md` or `module-graph.md` instead of `spec.md`. However, the skill indicates that each capability should have its own `spec.md`. Yet, since the user is expecting modifications to existing truth specs, I may need to clarify the instructions regarding spec deltas.
+**Creating spec deltas for architecture**
+
+For the architecture documentation, I need to consider producing a spec delta by creating a new file under the change package like `specs/architecture/c4.md`. However, the skill's table only refers to `spec.md` for each capability. The user is asking for suggestions on updates to existing truth specs, which means I can't edit them directly, but I can draft content and suggest locations for proposed changes. I also need to check if the `module-graph.md` exists, as the previous attempt didn't confirm its presence. Additionally, I might need to address updates in the project-profile spec based on recent changes.
+
+
+
+
+[2026-01-18T02:31:38] exec sh -lc "ls -la dev-playbooks/changes/optimize-indexing-pipeline-20260117 || true
+
+if [ -f dev-playbooks/changes/optimize-indexing-pipeline-20260117/design.md ]; then sed -n '1,220p' dev-playbooks/changes/optimize-indexing-pipeline-20260117/design.md; else echo 'design.md not found'; fi
+
+if [ -f dev-playbooks/changes/optimize-indexing-pipeline-20260117/tasks.md ]; then sed -n '1,200p' dev-playbooks/changes/optimize-indexing-pipeline-20260117/tasks.md; else echo 'tasks.md not found'; fi
+
+if [ -f dev-playbooks/changes/optimize-indexing-pipeline-20260117/verification.md ]; then sed -n '1,200p' dev-playbooks/changes/optimize-indexing-pipeline-20260117/verification.md; else echo 'verification.md not found'; fi" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:31:38] sh -lc "ls -la dev-playbooks/changes/optimize-indexing-pipeline-20260117 || true
+
+if [ -f dev-playbooks/changes/optimize-indexing-pipeline-20260117/design.md ]; then sed -n '1,220p' dev-playbooks/changes/optimize-indexing-pipeline-20260117/design.md; else echo 'design.md not found'; fi
+
+if [ -f dev-playbooks/changes/optimize-indexing-pipeline-20260117/tasks.md ]; then sed -n '1,200p' dev-playbooks/changes/optimize-indexing-pipeline-20260117/tasks.md; else echo 'tasks.md not found'; fi
+
+if [ -f dev-playbooks/changes/optimize-indexing-pipeline-20260117/verification.md ]; then sed -n '1,200p' dev-playbooks/changes/optimize-indexing-pipeline-20260117/verification.md; else echo 'verification.md not found'; fi" succeeded in 52ms:
+total 48
+drwxr-xr-x  3 ozbombor  staff     96 Jan 18 07:09 .
+drwxr-xr-x  5 ozbombor  staff    160 Jan 18 08:09 ..
+-rw-r--r--  1 ozbombor  staff  21479 Jan 18 09:11 proposal.md
+design.md not found
+tasks.md not found
+verification.md not found
+[2026-01-18T02:31:38] tokens used: 74,001
+
+[2026-01-18T02:31:56] thinking
+
+**Updating architectural specs**
+
+I'm noticing that the current specifications include requirements for using protobufjs and the index.scip path, but they don't mention fetching scip.proto. The proposal indicates that scip-to-graph.sh will download scip.proto if it's missing, and offline settings should default to the vendored version.
+
+As for architecture/c4 and project profile, there's a mismatch with ci_index_status mapping to indexer.sh. The proposal suggests it should map to embedding.sh instead. I'll need to update all related specs to reflect this change accurately, treating them as truth specs.
+**Clarifying architecture spec deltas**
+
+I see that architecture specs might not have the same file naming convention, but the skill indicates that the spec delta path should be `<change-root>/<change-id>/specs/<capability>/spec.md`. For the architecture capability, we could use spec.md to outline modifications to the architecture documents. The existing project already has files like `dev-playbooks/specs/architecture/c4.md`, but I'm thinking we can create a spec.md in the delta to detail required changes.
+
+The user asked for a draft of the spec delta content and landing suggestions, which implies proposing updates to truth specs like c4.md. 
+
+On incremental indexing, there's a spec that details SCIP-based incremental indexing using git diff, but the proposal looks to integrate the ast-delta incremental path with a fallback to full SCIP parsing in indexer.sh. That’s something to keep in mind for the integration!
+**Reviewing incremental indexing specs**
+
+I'm realizing that the incremental-indexing spec might not align with the current plan, which relies on a file watcher and tree-sitter, rather than just SCIP-based updates using git diff. The ast-delta spec for tree-sitter is significant, as it aims to be integrated into indexer.sh.
+
+This might mean updating the incremental-indexing spec to include how a file watcher triggers ast-delta updates for graph.db and falls back on SCIP parsing. However, the incremental-indexing spec explicitly states that it should be based on SCIP index incremental updates without mentioning tree-sitter. It also has a precondition stating if index.scip is missing, an error should occur without any indexing being performed. I'll need to closely examine these specs to identify any contradictions and ensure everything aligns correctly.
+**Analyzing indexing proposal conflicts**
+
+I'm noticing that if the incremental (ast-delta) approach isn't possible or conditions aren't met, the proposal suggests falling back to a full index rebuild without raising an error for a missing index.scip. This seems to contradict the incremental-indexing spec requirements.
+
+It may be that the incremental-indexing spec is meant for "SCIP-based incremental indexing," but I need to check its current status as it has the trace AC-007. The new change proposes incorporating AST delta incremental indexing, potentially as a new capability like "indexing-pipeline" or "indexer."
+
+Since it's within the truth specs, I shouldn't create conflicting deltas but rather propose modifications. I’ll also search for any existing specs related to the indexer, particularly in the `dev-playbooks/specs` directory to find more details.
+
+
+
+[2026-01-18T02:32:12] exec sh -lc "find dev-playbooks/specs -maxdepth 2 -type d -name '*index*' -print | sort
+
+rg -n \"indexer\" dev-playbooks/specs -S | head -n 80
+
+rg -n \"ci_index_status\" dev-playbooks/specs/_meta/project-profile.md
+
+rg -n \"ci_index_status\" dev-playbooks/specs/mcp-output-format/spec.md -n || true" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:32:12] sh -lc "find dev-playbooks/specs -maxdepth 2 -type d -name '*index*' -print | sort
+
+rg -n \"indexer\" dev-playbooks/specs -S | head -n 80
+
+rg -n \"ci_index_status\" dev-playbooks/specs/_meta/project-profile.md
+
+rg -n \"ci_index_status\" dev-playbooks/specs/mcp-output-format/spec.md -n || true" succeeded in 103ms:
+dev-playbooks/specs/incremental-indexing
+dev-playbooks/specs/_meta/project-profile.md:43:│   └── indexer.sh         # 索引管理
+dev-playbooks/specs/_meta/key-concepts.md:32:**相关组件**：`scripts/embedding.sh`，`scripts/indexer.sh`
+dev-playbooks/specs/architecture/module-graph.md:40:│  │ complexity  │  │ graph-rag   │  │  indexer    │              │
+dev-playbooks/specs/architecture/module-graph.md:80:| Indexer | `scripts/indexer.sh` | 索引管理 | common.sh |
+dev-playbooks/specs/architecture/module-graph.md:120:indexer.sh          │   ✓    │   -    │   -    │   -    │   -    │   -    │
+dev-playbooks/specs/architecture/hotspots.md:50:| `scripts/indexer.sh` | 322 | 索引管理 |
+dev-playbooks/specs/architecture/c4.md:90:│  │  │ graph-rag   │  │  indexer    │  │ hotspot-    │  │ boundary-   │││
+dev-playbooks/specs/architecture/c4.md:156:| Indexer | `scripts/indexer.sh` | Script | Embedding 索引管理 | Bash |
+dev-playbooks/specs/architecture/c4.md:230:| `ci_index_status` | indexer.sh | 已有 |
+29:| 索引管理 | Embedding 索引状态管理 | `ci_index_status` |
+[2026-01-18T02:32:12] tokens used: 76,179
+[2026-01-18T02:32:16] exec sh -lc "sed -n '1,220p' dev-playbooks/specs/_meta/key-concepts.md
+
+sed -n '1,240p' dev-playbooks/specs/architecture/module-graph.md
+
+sed -n '1,120p' dev-playbooks/specs/architecture/hotspots.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:32:16] sh -lc "sed -n '1,220p' dev-playbooks/specs/_meta/key-concepts.md
+
+sed -n '1,240p' dev-playbooks/specs/architecture/module-graph.md
+
+sed -n '1,120p' dev-playbooks/specs/architecture/hotspots.md" succeeded in 36ms:
+# 领域概念：Code Intelligence MCP Server
+
+> 生成时间：2026-01-10
+> 生成方式：传统分析
+
+---
+
+## 核心概念
+
+### 1. MCP（Model Context Protocol）
+
+**定义**：Anthropic 开发的开放协议，用于 AI 助手与外部工具/服务之间的标准化通信。
+
+**在本项目中**：
+- 本项目是一个 MCP Server
+- 通过 stdio 传输与 Claude Code 通信
+- 暴露 6 个工具供 AI 助手调用
+
+**相关组件**：`src/server.ts`，`@modelcontextprotocol/sdk`
+
+[2026-01-18T02:32:16] tokens used: 77,275
+
+[2026-01-18T02:32:39] thinking
+
+**Updating specifications**
+
+I need to update the specifications to include requirements for the proto discovery strategy, an offline default, and possibly an environment variable for controlling downloads. There's also a change in the behavior and performance of `indexer.sh`, since it will now try incremental updates with `ast-delta.sh`. The external interface should stay the same, but the architecture spec needs to reflect these changes. So, I’ll ensure the truth specs get updated to capture all these modifications accurately.
+**Considering spec changes**
+
+I see that we need to make specification changes for at least three capabilities. First is the `scip-parser`, where I should add an offline proto requirement and specify network conditions. Then there's the issue of incremental indexing and whether to introduce something like an `indexer-daemon`. The current incremental-indexing spec focuses on SCIP-based detection, but the proposal suggests `indexer.sh` will use file change detection instead, so I’ll need to ensure the documentation reflects this.
+**Evaluating incremental-indexing spec**
+
+I’m noticing that the incremental-indexing spec might be outdated or perhaps it's more aspirational. I should confirm its current status, and indeed, it is active as of January 11, 2026. However, it may not accurately represent the current implementation. We might need to adjust it to optimize the indexing pipeline, and consider adding a new capability like "indexing-pipeline" or "indexer-daemon." Also, I need to verify if there's a dedicated spec for `ci_index_status` to ensure everything is properly aligned.
+**Clarifying embedding specs**
+
+I’m looking at the spec related to embedding. It mentions the `index_status` field, which describes checking the `SCIP/Embedding/CKB` index status. However, this might conflict with the project profile indicating that `ci_index_status` is strictly for embedding. I need to check how `index_status` is generated since the structured-context-output spec could be misleading regarding combined statuses. It seems like I might need to update the structured-context-output or architecture specs for clarity about how to check the SCIP index status as well.
+**Evaluating specification and contract changes**
+
+The user has requested an assessment on whether a specification or contract change is needed, particularly regarding the `ci_index_status` semantics. I need to conclude if a change is necessary by referencing the proposal and existing specs. If a change is required, I'll draft the spec delta and suggest where to place it. The paths will point to the change package for updates while noting which truth specs would later be impacted. I'll ensure to clarify the expected modifications for existing capabilities, like `scip-parser` and `incremental-indexing`, to maintain accuracy and cohesion.
+
+
+
+
+[2026-01-18T02:33:11] exec sh -lc "sed -n '1,260p' src/server.ts
+
+sed -n '260,520p' src/server.ts
+
+sed -n '1,240p' scripts/indexer.sh
+
+sed -n '240,520p' scripts/indexer.sh
+
+sed -n '1,260p' scripts/scip-to-graph.sh
+
+sed -n '260,520p' scripts/scip-to-graph.sh" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:33:11] sh -lc "sed -n '1,260p' src/server.ts
+
+sed -n '260,520p' src/server.ts
+
+sed -n '1,240p' scripts/indexer.sh
+
+sed -n '240,520p' scripts/indexer.sh
+
+sed -n '1,260p' scripts/scip-to-graph.sh
+
+sed -n '260,520p' scripts/scip-to-graph.sh" succeeded in 45ms:
+#!/usr/bin/env node
+/**
+ * Code Intelligence MCP Server
+ *
+ * A thin MCP shell that delegates to shell scripts for code intelligence capabilities.
+ * CON-TECH-002: MCP Server 使用 Node.js 薄壳调用 Shell 脚本
+ */
+
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import { execFile } from "child_process";
+import { promisify } from "util";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+
+const execFileAsync = promisify(execFile);
+[2026-01-18T02:33:11] tokens used: 83,580
+[2026-01-18T02:33:29] exec sh -lc 'rg -n "索引状态|index status|index_status" dev-playbooks/specs -S | head -n 120' in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:33:29] sh -lc 'rg -n "索引状态|index status|index_status" dev-playbooks/specs -S | head -n 120' succeeded in 39ms:
+dev-playbooks/specs/structured-context-output/spec.md:33:| 2 | `current_state` | 当前状态（索引状态/热点文件/最近提交） |
+dev-playbooks/specs/structured-context-output/spec.md:68:    "index_status": "ready|stale|missing",
+dev-playbooks/specs/structured-context-output/spec.md:79:- `index_status`：检查 SCIP/Embedding/CKB 索引状态
+dev-playbooks/specs/structured-context-output/spec.md:213:- `index_status` = `ready`
+dev-playbooks/specs/structured-context-output/spec.md:253:- `index_status` = `missing`
+dev-playbooks/specs/structured-context-output/spec.md:319:        "index_status": { "type": "string", "enum": ["ready", "stale", "missing"] },
+dev-playbooks/specs/_meta/project-profile.md:29:| 索引管理 | Embedding 索引状态管理 | `ci_index_status` |
+dev-playbooks/specs/_meta/project-profile.md:181:## 索引状态
+dev-playbooks/specs/federation-lite/spec.md:202:### SC-FED-006: 索引状态查询
+dev-playbooks/specs/federation-lite/spec.md:258:# 查看索引状态
+dev-playbooks/specs/federation-lite/spec.md:273:| `--status` | 查看索引状态 |
+dev-playbooks/specs/adr-parser/spec.md:294:| `status` | 显示 ADR 索引状态 |
+dev-playbooks/specs/architecture/c4.md:230:| `ci_index_status` | indexer.sh | 已有 |
+[2026-01-18T02:33:29] tokens used: 88,764
+[2026-01-18T02:33:33] exec sh -lc "sed -n '160,260p' dev-playbooks/specs/_meta/project-profile.md
+
+sed -n '260,360p' dev-playbooks/specs/_meta/project-profile.md
+
+sed -n '1,220p' dev-playbooks/specs/federation-lite/spec.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:33:33] sh -lc "sed -n '160,260p' dev-playbooks/specs/_meta/project-profile.md
+
+sed -n '260,360p' dev-playbooks/specs/_meta/project-profile.md
+
+sed -n '1,220p' dev-playbooks/specs/federation-lite/spec.md" succeeded in 37ms:
+# 1. 检查 CLI 可用
+./bin/code-intelligence-mcp --version  # 期望输出版本号
+
+# 2. 检查 TypeScript 编译
+npm run build  # 期望无错误
+
+# 3. 检查脚本权限
+ls -la scripts/*.sh  # 期望有执行权限
+```
+
+### 健康检查清单
+
+| 检查项 | 验证命令 | 期望结果 |
+|--------|----------|----------|
+| Node.js 版本 | `node -v` | >= 18.0.0 |
+| 依赖安装 | `npm ls` | 无错误 |
+| TypeScript 编译 | `npm run build` | 成功 |
+| CLI 可用 | `./bin/ci-search --help` | 显示帮助 |
+
+---
+[2026-01-18T02:33:33] tokens used: 89,472
+
+[2026-01-18T02:33:53] thinking
+
+**Evaluating specification changes**
+
+I'm thinking about how the spec in `dev-playbooks/specs/scip-parser/spec.md` needs to change. It outlines requirements and scenarios but doesn't mention the proto download or offline behavior. Currently, it relies on 'using protobufjs to parse SCIP format' but lacks details on where to get `scip.proto`. The proposal states that the current implementation downloads `scip.proto` if the local file is missing, creating network dependency. They plan to vendor `scip.proto` for offline use, which affects the broader pipeline. So, yes, spec changes are definitely needed.
+**Analyzing external contracts and specifications**
+
+I'm considering whether `scripts/indexer.sh` represents an external contract. It's part of the CLI and used by users directly or through server.ts tool mapping. However, after DP-01, `ci_index_status` won't call it, so the external contract is mainly for CLI use of indexer.sh and scip-to-graph.
+
+There might be relevant specs under architecture or incremental indexing, such as in `dev-playbooks/specs/incremental-indexing/spec.md`, which describes incremental indexing but may now be inaccurate due to changes integrating AST delta and fallback. I’m wondering if we should create a spec delta in the change package to cover new capabilities, especially regarding offline proto discovery.
+**Defining scenarios and capabilities**
+
+I’m outlining some scenarios: In an offline environment, we’d use the vendored proto along with an explicit environment variable or flag to allow downloads. I want to clarify the behavior when the proto is missing and ensure we provide clear error messages.
+
+I’m also pondering capabilities, possibly regarding `embedding-index`. It seems we might need to define a spec for the `ci_index_status` tool that checks the embedding index status. I should check the `dev-playbooks/specs` for any existing spec files related to embedding.
+
+
+[2026-01-18T02:34:04] exec sh -lc "rg -n \"embedding\" dev-playbooks/specs -S | head -n 80
+
+find dev-playbooks/specs -maxdepth 2 -type d -iname '*embed*' -print | sort
+
+find dev-playbooks/specs -maxdepth 2 -type f -iname '*embed*' -print | sort | sed -n '1,120p'" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:34:04] sh -lc "rg -n \"embedding\" dev-playbooks/specs -S | head -n 80
+
+find dev-playbooks/specs -maxdepth 2 -type d -iname '*embed*' -print | sort
+
+find dev-playbooks/specs -maxdepth 2 -type f -iname '*embed*' -print | sort | sed -n '1,120p'" succeeded in 53ms:
+dev-playbooks/specs/pattern-learning/spec.md:119:      "examples": ["embedding.sh", "bug-locator.sh"]
+dev-playbooks/specs/graph-rag-cli/spec.md:77:      "source": "embedding|graph|virtual",
+dev-playbooks/specs/graph-rag-cli/spec.md:84:    "embedding_candidates": 10,
+dev-playbooks/specs/graph-rag-cli/spec.md:99:| `candidates[].source` | string | 结果来源：embedding/graph/virtual |
+dev-playbooks/specs/graph-rag-cli/spec.md:101:| `metadata.embedding_candidates` | integer | 来自向量搜索的候选数 |
+dev-playbooks/specs/graph-rag-cli/spec.md:141:    {"file": "src/auth/handler.ts", "relevance": 0.92, "source": "embedding", "distance": 0},
+dev-playbooks/specs/graph-rag-cli/spec.md:147:    "embedding_candidates": 5,
+dev-playbooks/specs/graph-rag-cli/spec.md:222:    "embedding_candidates": 10,
+dev-playbooks/specs/graph-rag-cli/spec.md:244:    {"file": "src/client.ts", "relevance": 0.88, "source": "embedding", "distance": 0},
+dev-playbooks/specs/graph-rag-cli/spec.md:249:    "embedding_candidates": 5,
+dev-playbooks/specs/graph-rag-cli/spec.md:332:          "source": { "type": "string", "enum": ["embedding", "graph", "virtual"] },
+dev-playbooks/specs/graph-rag-cli/spec.md:343:        "embedding_candidates": { "type": "integer", "minimum": 0 },
+dev-playbooks/specs/hotspot-analysis/spec.md:87:| scripts/embedding.sh | 5 | 6 | 30 |
+dev-playbooks/specs/_meta/project-profile.md:24:| 语义搜索 | 使用 Embedding 进行代码语义搜索 | `ci_search` |
+dev-playbooks/specs/_meta/project-profile.md:29:| 索引管理 | Embedding 索引状态管理 | `ci_index_status` |
+dev-playbooks/specs/_meta/project-profile.md:38:│   ├── embedding.sh       # Embedding 搜索
+dev-playbooks/specs/_meta/project-profile.md:137:| Ollama / OpenAI | Embedding 生成 | 可选 |
+dev-playbooks/specs/_meta/verification-baseline.md:98:check "embedding.sh 可执行" "test -x scripts/embedding.sh"
+dev-playbooks/specs/_meta/verification-baseline.md:115:| AC-003 | 脚本可执行 | `bash scripts/embedding.sh --help` | 阻断 |
+dev-playbooks/specs/_meta/verification-baseline.md:133:   ci_search → embedding.sh → [Ollama/OpenAI] → 结果
+[2026-01-18T02:34:04] tokens used: 93,030
+
+[2026-01-18T02:34:51] thinking
+
+**Clarifying contract requirements**
+
+For the contract, I need to consider that existing clients expect `ci_index_status` to manage the graph index, which might cause issues. So, I should clearly define the contract and think about backward compatibility. The decision log states that DP-01 Option A was chosen, meaning `ci_index_status` will pertain to the embedding index, not the old behavior. If someone relied on `ci_index_status` for the indexer daemon, they could break. I’ll need a compatibility strategy and clear documentation for this change.
+**Assessing proposal risks**
+
+The proposal emphasizes not breaking the existing usage, but there's a risk since the current behavior might be misaligned with expectations. If the current description says it's for the embedding index, then aligning the behavior might actually be seen as a bug fix instead of a break. I’ll need to clarify the intention in the contract: it should specify managing the embedding index. We could propose an update for the architecture documents and highlight any mismatches in existing documentation, without generating a full file.
+**Exploring architecture capabilities**
+
+I’m considering treating architecture/c4 as a "capability" with a spec file, specifically c4.md. While spec.md covers things like scip-parser and incremental-indexing, I might create a new capability spec for "index-management" related to embedding. However, the existing incremental-indexing spec specifies that it should be implemented based on SCIP indexing, which contrasts with the proposal’s aim to use AST delta for updates. This could imply that the incremental-indexing spec may need an update due to possible mis-specifications. There's also the `ast-delta` spec tied to incremental AST indexing.
+**Reevaluating incremental indexing specs**
+
+I think I need to consider changes to the incremental-indexing spec. It may need modification to specify AST-based incremental updates or even define a multi-tier system that prioritizes AST delta while having SCIP as a fallback. Currently, the spec suggests incremental updates based on SCIP, which would conflict with the new proposal using AST delta for graph.db updates. The SCIP index remains intact, but adjustments are necessary since the plan involves using AST delta instead. There’s also a separate `ast-delta` spec defining that behavior.
+**Updating incremental-indexing specifications**
+
+I should consider updating the incremental-indexing spec to reflect that AST delta is now the incremental mechanism for graph.db, while still keeping SCIP as a fallback. Consistency matters if tests are using the incremental-indexing spec. I also need to check for any spec related to scripts/indexer.sh. There may be some internal definitions or behaviors I need to cover. Since incremental-indexing and AST-delta specs don't mention the indexer, it might be worthwhile to create a new capability spec for the indexing pipeline, ensuring it aligns with the new plans. I'll propose changes accordingly!
+**Proposing contract test IDs**
+
+I’m thinking about proposing contract test IDs for the Bats tests to ensure proper routing and functionality. For example, `CT-IDX-001` would verify that ci_index_status routes correctly, and `CT-IDXR-001` would ensure indexer.sh uses AST delta when conditions are met. However, I can only propose changes, not modify tests right now.
+
+Additionally, I need to draft a spec delta content and contract plan, clearly outlining requirements and scenarios while following spec writing guidelines. I’ll check for existing style conventions and ensure everything aligns with those. The goal is to provide a comprehensive delta draft tailored to the user’s request!
+
+
+
+
+
+[2026-01-18T02:35:44] exec sh -lc "ls -la dev-playbooks/changes | sed -n '1,200p'
+
+find dev-playbooks/changes -maxdepth 3 -type f -path '*/specs/*/spec.md' -print | sort | sed -n '1,200p'
+
+find dev-playbooks/changes -maxdepth 3 -type f -name 'spec.md' -path '*/specs/*' -print | wc -l" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:35:44] sh -lc "ls -la dev-playbooks/changes | sed -n '1,200p'
+
+find dev-playbooks/changes -maxdepth 3 -type f -path '*/specs/*/spec.md' -print | sort | sed -n '1,200p'
+
+find dev-playbooks/changes -maxdepth 3 -type f -name 'spec.md' -path '*/specs/*' -print | wc -l" succeeded in 45ms:
+total 24
+drwxr-xr-x   5 ozbombor  staff    160 Jan 18 08:09 .
+drwxr-xr-x  11 ozbombor  staff    352 Jan 17 17:08 ..
+-rw-r--r--@  1 ozbombor  staff  10244 Jan 18 07:12 .DS_Store
+drwxr-xr-x  11 ozbombor  staff    352 Jan 18 08:09 archive
+drwxr-xr-x   3 ozbombor  staff     96 Jan 18 07:09 optimize-indexing-pipeline-20260117
+       0
+[2026-01-18T02:35:44] tokens used: 101,466
+
+[2026-01-18T02:35:58] thinking
+
+**Clarifying behavioral changes**
+
+I'm thinking about how the behavior of calling ci_index_status is shifting to manage embedding index instead of scip indexing. Actually, it seems like this aligns with the specifications rather than changing them. However, there is a mismatch in the current implementation. A proposal suggests fixing the routing in server.ts to align with the existing spec. There could still be spec changes needed as they propose clarifying boundaries and an offline proto requirement in the scip-parser spec. The Impact section indicates necessary updates to various specs.
+**Identifying spec changes**
+
+I realize that spec and contract changes are necessary. At a minimum, the scip-parser spec should address the offline proto strategy, along with updates to architecture documents. I need to determine the truth-root and change-root based on the configuration. I found relevant files like .devbooks/config.yaml and dev-playbooks/project.md. According to the config, the truth-root is at dev-playbooks/specs, and the change-root is at dev-playbooks/changes. I also need to read the constitution file, but the agents_doc isn't specified, and I couldn't locate AGENTS.md either.
+**Evaluating spec changes**
+
+Now I need to determine if spec changes are necessary and draft the spec delta for relevant capabilities. The skill indicates that for each affected capability, I should specify the target path and list the spec delta content, including Requirements and Scenarios with sections for ADDED, MODIFIED, and REMOVED. I noticed some inconsistency in spec formatting; it seems some use "Requirement:" while others employ ID styles like REQ-XX. I must ensure the output complies with guidelines, avoiding TODOs or ellipses, and checking existing specs for conflicts. I found the scip-parser spec is encoded strangely, but I can still parse the necessary context.
+**Interpreting spec details**
+
+I see that the Chinese text appears garbled due to an encoding mismatch, but I can still interpret some details about scip parsing and conversion from previous snippets. The requirements mention using protobufjs, a default index path, and support for environment variables, but it lacks the offline proto requirement. I also need to consider the semantics of ci_index_status, which is related to embedding and index management. The current specification links it to indexer.sh. However, in server.ts, ci_index_status is described differently, and the file was truncated when I checked it, so I need to examine it further to understand the mapping clearly.
+**Searching for ci_index_status**
+
+I think I should either read the rest of the file or search for the "ci_index_status" string directly. Using ripgrep seems like a good option to quickly find where this term appears in the codebase. It'll help pinpoint relevant sections and clarify how ci_index_status is being handled. By doing this, I can gather more context and ensure that I understand its implementation better. Let's go ahead and run that search!
+
+
+
+
+[2026-01-18T02:36:16] exec sh -lc "rg -n \"ci_index_status\" -n src/server.ts
+
+rg -n \"indexer\\.sh\" -n src/server.ts
+
+rg -n \"embedding\\.sh\" -n src/server.ts | head -n 80
+
+sed -n '520,820p' src/server.ts" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:36:16] sh -lc "rg -n \"ci_index_status\" -n src/server.ts
+
+rg -n \"indexer\\.sh\" -n src/server.ts
+
+rg -n \"embedding\\.sh\" -n src/server.ts | head -n 80
+
+sed -n '520,820p' src/server.ts" succeeded in 52ms:
+114:    name: "ci_index_status",
+436:    case "ci_index_status": {
+438:      const { stdout, stderr } = await runScript("indexer.sh", [action]);
+377:      const { stdout, stderr } = await runScript("embedding.sh", [
+            scriptArgs.push("--confidence", String(minConfidence));
+          }
+          break;
+        default:
+          return `Unknown action: ${action}`;
+      }
+      scriptArgs.push("--format", format);
+      const { stdout, stderr } = await runScript("federation-lite.sh", scriptArgs);
+      return stderr ? `${stdout}\n[stderr]: ${stderr}` : stdout;
+    }
+
+    case "ci_graph_store": {
+      const action = args.action as string;
+      const payload = args.payload as Record<string, unknown> | undefined;
+      let scriptArgs: string[] = [];
+      switch (action) {
+[2026-01-18T02:36:16] tokens used: 104,119
+
+[2026-01-18T02:36:35] thinking
+
+**Evaluating specification updates**
+
+I'm diving into the CLI specs, noting that they still exist and users can run scripts manually. I need to ensure the spec captures important CLI invariants like `--help`, `--status`, etc. There's also a change to the YAML environment variable for config features.
+
+Next, I'll look into relevant existing specs. The scip-parser spec has some gaps, like not mentioning scip.proto retrieval, and may not cover networking. The incremental indexing spec needs review since it might be outdated compared to the new AST-delta based updates in the current proposal. So, I’ll need to adjust that accordingly.
+**Reviewing existing specs**
+
+I see there’s a spec for AST delta in dev-playbooks/specs/ast-delta/spec.md, but I wonder if there's a separate one for the indexer itself—maybe in dev-playbooks/specs/daemon/spec? I need to check for any existing specs related to indexer or index status.
+
+It turns out there’s no dedicated spec for the "indexer" or "index-status" tool, even though the project profile mentions it. There's a spec for "structured-context-output" that includes an index_status field for different statuses, but it doesn’t define a tool. I might also want to check the mcp tool interface, possibly in dev-playbooks/specs/mcp-output-format/spec.md, even if it’s a lengthy document.
+
+[2026-01-18T02:36:42] exec sh -lc "sed -n '1,260p' dev-playbooks/specs/mcp-output-format/spec.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:36:42] sh -lc "sed -n '1,260p' dev-playbooks/specs/mcp-output-format/spec.md" succeeded in 33ms:
+---
+last_referenced_by: 20260118-0057-upgrade-code-intelligence-capabilities
+last_verified: 2026-01-18
+health: active
+---
+
+# 规格：MCP 工具 JSON 输出格式扩展
+
+| 属性 | 值 |
+|------|-----|
+| Spec-ID | SPEC-MCP-OUTPUT-001 |
+| Change-ID | 20260118-0057-upgrade-code-intelligence-capabilities |
+| 版本 | 1.0.0 |
+| 状态 | Active |
+| 作者 | Spec Owner |
+| 创建日期 | 2026-01-18 |
+
+---
+
+## 1. Requirements（需求规格）
+[2026-01-18T02:36:42] tokens used: 108,104
+
+[2026-01-18T02:37:05] thinking
+
+**Investigating output truncation**
+
+I realized we ran sed commands to extract parts of the indexer script, but the output didn't show up completely. It seems like the shell truncated the output because we requested multiple segments. So, we missed seeing the indexer content. I think it would be helpful to inspect the indexer script separately to get a better understanding of what's going on. Let's open it and take a closer look!
+[2026-01-18T02:37:07] exec sh -lc "sed -n '1,260p' scripts/indexer.sh
+
+sed -n '260,560p' scripts/indexer.sh
+
+sed -n '560,920p' scripts/indexer.sh" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:37:07] sh -lc "sed -n '1,260p' scripts/indexer.sh
+
+sed -n '260,560p' scripts/indexer.sh
+
+sed -n '560,920p' scripts/indexer.sh" succeeded in 35ms:
+#!/bin/bash
+# DevBooks 后台索引守护进程
+# 监听文件变化，自动触发 SCIP 索引更新
+
+set -e
+
+# 配置
+DEBOUNCE_SECONDS=30      # 防抖：文件变化后等待秒数
+INDEX_INTERVAL=300       # 最小索引间隔（秒）
+WATCH_EXTENSIONS="ts,tsx,js,jsx,py,go,rs,java"
+IGNORE_PATTERNS="node_modules|dist|build|\.git|__pycache__|\.lock"
+
+# 颜色输出
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log_info()  { echo -e "${BLUE}[DevBooks]${NC} $1"; }
+[2026-01-18T02:37:07] tokens used: 112,289
+
+[2026-01-18T02:37:45] thinking
+
+**Checking spec delta formatting**
+
+I need to check the project profile for the spec delta formatting conventions, which might include a section on "规格与变更包格式约定." However, my earlier search didn’t find it, possibly due to encoding issues. Since we truncated our search for the first part, I think I may be dealing with a garbled output (mojibake) from the scip-parser spec. The terminal environment might not be set to recognize UTF-8 correctly. So, I guess I'll need to investigate further.
+**Understanding Chinese text encoding**
+
+The user expects the file to be in Chinese, but my output is garbled. This could be because `sed` might not be handling the encoding correctly. It seems like the capture process treats it as bytes and decodes it, possibly as Latin1. Still, I noticed glimpses of Chinese text that are somewhat understandable, particularly in the later portion. In fact, when I checked lines 120-240 of the scip-parser spec, the characters appeared correctly, while the earlier output was not. That's an important distinction!
+**Checking file encoding**
+
+I'm noticing something odd: it seems the tool's output might have been truncated, and the first part is garbled possibly due to not being in UTF-8. However, the second part appears fine with Chinese characters. I think it makes sense to re-check the file's encoding using `xxd` or the `file` command. Since the file is read-only, I’ll just run `file -I` to confirm its encoding. Let's see what it reveals!
+
+
+[2026-01-18T02:37:54] exec sh -lc "file dev-playbooks/specs/scip-parser/spec.md
+file -I dev-playbooks/specs/scip-parser/spec.md || true
+python3 - <<'PY'
+import pathlib
+p=pathlib.Path('dev-playbooks/specs/scip-parser/spec.md')
+bs=p.read_bytes()[:200]
+print(bs)
+PY" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:37:54] sh -lc "file dev-playbooks/specs/scip-parser/spec.md
+file -I dev-playbooks/specs/scip-parser/spec.md || true
+python3 - <<'PY'
+import pathlib
+p=pathlib.Path('dev-playbooks/specs/scip-parser/spec.md')
+bs=p.read_bytes()[:200]
+print(bs)
+PY" exited 1 in 52ms:
+dev-playbooks/specs/scip-parser/spec.md: Unicode text, UTF-8 text
+dev-playbooks/specs/scip-parser/spec.md: text/plain; charset=utf-8
+
+ERROR
+sh: line 2: cannot create temp file for here document: Operation not permitted
+[2026-01-18T02:37:54] tokens used: 118,404
+
+[2026-01-18T02:38:09] thinking
+
+**Evaluating incremental indexing**
+
+I'm exploring the incremental-indexing specification, which defines how indexing works using SCIP and git diff. It mentions "SCIP-Based incremental indexing." However, there's a new proposal using an ast-delta approach with tree-sitter that updates graph.db directly and might differ from the current spec. The existing setup states that if index.scip is missing, an error occurs, while the proposal suggests a fallback to full indexing. This inconsistency is something I need to dive into further.
+**Reviewing incremental updates**
+
+The proposal suggests a method for updating graph.db that prioritizes incremental updates, even creating index.scip if it doesn't exist, unlike the existing spec which expects an error if it's missing. This indicates that the current specification may not align with background indexing processes. I need to dig deeper into the incremental indexing spec located in dev-playbooks/specs/incremental-indexing, as it might clarify how this change impacts the indexing pipeline. If we modify indexer.sh, updates to the spec may be necessary as well.
+**Assessing spec needs**
+
+While the incremental-indexing spec isn’t mentioned, I think it’s crucial for our task to evaluate whether any changes are needed and draft spec deltas. We should adhere to the devbooks-spec-contract structure and produce deltas with clear Requirements and Scenarios. We need to identify the affected capabilities, sticking to consistent terms like "Truth Root" and "Spec Delta." Furthermore, it’s important to note the sources we're using, even if we’re not writing files at this moment. Reasserting this will help keep clarity in our documentation.
+**Clarifying spec delta paths**
+
+I need to ensure our output includes the recommended spec delta file paths without modifying any actual files. I see that we should provide conclusions on whether a spec change is needed, along with potential locations for the drafts under dev-playbooks/specs/. The user's request indicates that the truth root location is the intended destination for the final changes. Although we typically propose delta files in a change package, I’ll follow the skill’s guidelines for output paths, mentioning both the change proposal and eventual promotion to the truth root.
+**Considering new capability specs**
+
+I'm thinking about proposing a new capability spec, possibly called `index-status` or `index-management`, to capture the semantics of ci_index_status. However, the guidance advises against creating new capabilities unless necessary. I’ll search existing specs for coverage on "index status" or related tools, like "mcp-tools." So far, it looks like there's no existing specification for this. If needed, we could create this new spec, but I want to verify if something like the mcp-output-format spec addresses this adequately first. I'll check for any relevant specs in the dev-playbooks/specs directories.
+
+
+
+
+[2026-01-18T02:38:47] exec sh -lc 'rg -n "ci_search" dev-playbooks/specs -S | head -n 80
+
+rg -n "MCP 工具" dev-playbooks/specs -S | head -n 80
+
+rg -n "Tool" dev-playbooks/specs -S | head -n 80' in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:38:47] sh -lc 'rg -n "ci_search" dev-playbooks/specs -S | head -n 80
+
+rg -n "MCP 工具" dev-playbooks/specs -S | head -n 80
+
+rg -n "Tool" dev-playbooks/specs -S | head -n 80' succeeded in 68ms:
+dev-playbooks/specs/_meta/project-profile.md:24:| 语义搜索 | 使用 Embedding 进行代码语义搜索 | `ci_search` |
+dev-playbooks/specs/_meta/verification-baseline.md:133:   ci_search → embedding.sh → [Ollama/OpenAI] → 结果
+dev-playbooks/specs/architecture/c4.md:225:| `ci_search` | embedding.sh | 已有 |
+dev-playbooks/specs/structured-context-output/spec.md:143:| explore | ci_search, ci_graph_rag |
+dev-playbooks/specs/_meta/key-concepts.md:29:- 用于 `ci_search` 工具的语义搜索模式
+dev-playbooks/specs/_meta/key-concepts.md:140:│  │  │ci_search│  │ci_call_ │  │ci_bug_  │              │   │
+dev-playbooks/specs/mcp-output-format/spec.md:7:# 规格：MCP 工具 JSON 输出格式扩展
+dev-playbooks/specs/mcp-output-format/spec.md:24:**描述**：所有返回 JSON 的 MCP 工具必须在 `metadata` 对象中包含 `ckb_available` 布尔字段，指示 CKB MCP 服务是否可用。
+dev-playbooks/specs/mcp-output-format/spec.md:54:| `mcp_error` | CKB MCP 工具调用错误 |
+dev-playbooks/specs/mcp-output-format/spec.md:183:  "description": "MCP 工具输出的 metadata 字段规格",
+dev-playbooks/specs/hotspot-analysis/spec.md:60:系统 SHALL 通过 MCP 工具 `ci_hotspot` 暴露热点分析能力。
+dev-playbooks/specs/boundary-detection/spec.md:103:系统 SHALL 通过 MCP 工具 `ci_boundary` 暴露边界检测能力。
+dev-playbooks/specs/_meta/project-profile.md:97:  - MCP 工具名：`ci_*` 前缀（snake_case）
+dev-playbooks/specs/_meta/verification-baseline.md:168:| MCP 工具数 | 6 | 见 project-profile.md |
+dev-playbooks/specs/architecture/c4.md:217:| `TOOLS` | MCP 工具定义数组 | - |
+dev-playbooks/specs/architecture/c4.md:506:| 2026-01-13 | **augment-upgrade-phase2** | **Phase 2 升级**：新增 cache-manager（多级缓存 L1+L2，mtime+blob hash 失效，LRU 淘汰）、dependency-guard（循环依赖检测，架构规则校验）、context-layer（Commit 语义分类，Bug 修复历史）、federation-lite（跨仓库契约索引）；新增 pre-commit 钩子；新增 config/arch-rules.yaml、config/federation.yaml 配置；增强 hotspot-analyzer（--with-bug-history）、common.sh（缓存共享函数）；新增 MCP 工具 ci_arch_check、ci_federation |
+dev-playbooks/specs/architecture/c4.md:507:| 2026-01-15 | **augment-parity** | **Augment 能力对等**：新增 graph-store.sh（SQLite 图存储，4 种边类型 CRUD）、scip-to-graph.sh（SCIP 索引解析转换）、daemon.sh（常驻守护进程，Unix Socket 通信）；增强 graph-rag.sh（LLM 重排序）、dependency-guard.sh（孤儿模块检测）、pattern-learner.sh（自动模式发现）、common.sh（llm_call() 适配函数）；新增 MCP 工具 ci_graph_store；新增 config/features.yaml 功能开关配置 |
+dev-playbooks/specs/architecture/c4.md:508:| 2026-01-16 | ****achieve-augment-full-parity**** | ****全面达到 Augment 代码智能水平****：新增 ast-delta.sh + src/ast-delta.ts（tree-sitter 增量 AST 解析）、impact-analyzer.sh（传递性影响分析，BFS + 置信度衰减）、cod-visualizer.sh（Mermaid + D3.js 架构可视化）、intent-learner.sh（查询历史 + 偏好学习）、vuln-tracker.sh（npm audit 漏洞追踪）；增强 graph-rag.sh（--budget 智能裁剪）、federation-lite.sh（虚拟边生成）；新增 MCP 工具 ci_ast_delta、ci_impact、ci_cod、ci_intent、ci_vuln；新增 tree-sitter 依赖 |
+dev-playbooks/specs/dependency-guard/spec.md:92:### REQ-GUARD-005: MCP 工具接口
+dev-playbooks/specs/dependency-guard/spec.md:94:新增 MCP 工具 `ci_arch_check`：
+[2026-01-18T02:38:47] tokens used: 122,109
+
+[2026-01-18T02:39:08] thinking
+
+**Considering specs and optimization**
+
+I need to follow the hard constraint requiring reading all existing specs, but maybe I can meet this by rapidly scanning the list of spec files, even though fully reading all 52 files seems too lengthy. I could focus on headings or metadata instead. A better approach might be using `rg` to search for relevant terms in the specs to identify conflicts. I’ll also consider any "Contract" aspects regarding potential API/schema changes aimed at optimizing the indexing pipeline.
+**Analyzing tool behavior changes**
+
+I’m considering how changes might affect the external behavior of the MCP tool, specifically `ci_index_status`. This is important for the external contract of the MCP tool interface. There are also potential impacts on offline behavior from `scip-to-graph.sh`, which, while not an MCP tool, may be used in scripts. The proposal indicates that there won’t be an expansion of the MCP tool list or input arguments, but some behavior semantics will change. 
+
+I should swiftly check existing specs for these configuration changes related to `features.yaml`.
+
+[2026-01-18T02:39:14] exec sh -lc "rg -n \"features\\.ast_delta\\.enabled\" -S . || true
+rg -n \"features\\.yaml\" dev-playbooks/specs -S | head -n 80
+rg -n \"config/features\\.yaml\" dev-playbooks/specs -S | head -n 80" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:39:14] sh -lc "rg -n \"features\\.ast_delta\\.enabled\" -S . || true
+rg -n \"features\\.yaml\" dev-playbooks/specs -S | head -n 80
+rg -n \"config/features\\.yaml\" dev-playbooks/specs -S | head -n 80" succeeded in 61ms:
+dev-playbooks/specs/daemon-enhancement/spec.md:50:# config/features.yaml
+dev-playbooks/specs/llm-provider-abstraction/spec.md:106:**Given**: `config/features.yaml` 指定 `provider: openai`
+dev-playbooks/specs/priority-sorting/spec.md:40:**配置路径**: `config/features.yaml`
+dev-playbooks/specs/architecture/c4.md:172:| ***Features Config*** | `config/features.yaml` | Config | ***功能开关配置（LLM 重排序、孤儿检测、模式发现）*** | YAML |
+dev-playbooks/specs/architecture/c4.md:507:| 2026-01-15 | **augment-parity** | **Augment 能力对等**：新增 graph-store.sh（SQLite 图存储，4 种边类型 CRUD）、scip-to-graph.sh（SCIP 索引解析转换）、daemon.sh（常驻守护进程，Unix Socket 通信）；增强 graph-rag.sh（LLM 重排序）、dependency-guard.sh（孤儿模块检测）、pattern-learner.sh（自动模式发现）、common.sh（llm_call() 适配函数）；新增 MCP 工具 ci_graph_store；新增 config/features.yaml 功能开关配置 |
+dev-playbooks/specs/daemon-enhancement/spec.md:50:# config/features.yaml
+dev-playbooks/specs/architecture/c4.md:172:| ***Features Config*** | `config/features.yaml` | Config | ***功能开关配置（LLM 重排序、孤儿检测、模式发现）*** | YAML |
+dev-playbooks/specs/architecture/c4.md:507:| 2026-01-15 | **augment-parity** | **Augment 能力对等**：新增 graph-store.sh（SQLite 图存储，4 种边类型 CRUD）、scip-to-graph.sh（SCIP 索引解析转换）、daemon.sh（常驻守护进程，Unix Socket 通信）；增强 graph-rag.sh（LLM 重排序）、dependency-guard.sh（孤儿模块检测）、pattern-learner.sh（自动模式发现）、common.sh（llm_call() 适配函数）；新增 MCP 工具 ci_graph_store；新增 config/features.yaml 功能开关配置 |
+dev-playbooks/specs/priority-sorting/spec.md:40:**配置路径**: `config/features.yaml`
+dev-playbooks/specs/llm-provider-abstraction/spec.md:106:**Given**: `config/features.yaml` 指定 `provider: openai`
+[2026-01-18T02:39:14] tokens used: 126,253
+[2026-01-18T02:39:18] exec sh -lc "sed -n '1,140p' dev-playbooks/specs/daemon-enhancement/spec.md
+
+sed -n '1,120p' dev-playbooks/specs/priority-sorting/spec.md
+
+sed -n '1,160p' config/features.yaml
+
+ls -la config | sed -n '1,200p'" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:39:18] sh -lc "sed -n '1,140p' dev-playbooks/specs/daemon-enhancement/spec.md
+
+sed -n '1,120p' dev-playbooks/specs/priority-sorting/spec.md
+
+sed -n '1,160p' config/features.yaml
+
+ls -la config | sed -n '1,200p'" succeeded in 59ms:
+---
+last_referenced_by: augment-parity-final-gaps
+last_verified: 2026-01-16
+health: active
+---
+
+
+# Spec Delta: 守护进程增强（daemon-enhancement）
+
+> **Change ID**: `augment-parity-final-gaps`
+> **Capability**: daemon-enhancement
+> **Base Spec**: `dev-playbooks/specs/daemon/spec.md`
+> **Version**: 2.0.0
+> **Status**: Draft
+> **Created**: 2026-01-16
+
+---
+
+## 概述
+
+[2026-01-18T02:39:18] tokens used: 127,681
+
+[2026-01-18T02:39:43] thinking
+
+**Analyzing tool behavior**
+
+To produce an accurate spec delta, I need to understand how `ci_index_status` behaves. In `src/server.ts`, it calls `indexer.sh` with commands like `status|build|clear`, but those aren't supported—only options like `--status` work. Calling `indexer.sh` with "status" leads it to treat "status" as a directory, which fails. The tool is currently broken. My proposal aims to fix this by correctly wiring it to call `embedding.sh`, which should improve behavior. However, I still need the spec that defines what outputs and actions are expected. Where can I find that?
+**Searching for embedding specs**
+
+I'm quickly looking for the embedding specification and notice there isn't a specific one. It might be included in a different spec, like `dev-playbooks/specs/context-layer`. While I found a spec for incremental indexing that mentions "SCIP-based incremental indexing," it seems outdated because my changes concern graph.db and ast-delta increments.
+
+Currently, `indexer.sh` generates index.scip, and my proposal aims to integrate these updates. This means I may need to modify the existing incremental-indexing spec since we're pivoting to use AST delta instead of SCIP for updates after file changes.
+**Considering incremental indexing changes**
+
+Maybe my approach isn't incompatible after all. The `index.scip` is still there for full fallback, but the incremental-indexing spec could still apply here. I see a chance to treat this as a customization of the indexing pipeline capability.
+
+There might be specifications like `dev-playbooks/specs/incremental-indexing/spec.md` and `dev-playbooks/specs/ast-delta/spec.md` that I could reference. I should think about the impacted capabilities related to parsing and indexing. Rather than creating a new capability, it might be better to adjust the existing incremental-indexing spec to incorporate pipeline orchestration and fallback mechanisms, but I also need to consider if it aligns with current practices, like "git diff detection."
+**Updating indexing specs**
+
+Our changes are focusing on using watchers instead of git diff, which is important to note. The current spec is marked "Active," last verified on January 11, 2026. Since the proposal aims to optimize the indexing pipeline, we likely need to update the incremental-indexing spec. It appears to expect "change detection via git diff," which may not align with how the indexer generates `index.scip`.
+
+I need to decide whether to create a new capability for "indexing-pipeline" or update the existing incremental-indexing spec. Additionally, documents like "architecture/c4.md" and others are affected, which may also require updates, but these are more structural than spec-specific. We should keep this all within the context of producing a spec delta.
+**Defining the spec delta**
+
+The skill requires producing a spec delta for capabilities, and while architecture documents like `c4.md` and `module-graph.md` exist, they may not fit standard spec definitions. 
+
+We should consider proposing a new capability for "architecture" or creating a summarized spec delta for architecture changes. However, there's a conflict since `c4.md` currently mislabels the indexer, which contradicts the expected behavior.
+
+We need to clarify the contract plan, especially concerning `ci_index_status`, to ensure it maintains stable output while reflecting changes in semantics. Additionally, we might need to formalize the indexer CLI options into their own spec, possibly reusing existing frameworks while avoiding unnecessary complexity. This includes ensuring compatibility with existing configurations, defining requirements for any vendored files, and specifying paths for associated resources.
+**Defining vendored file paths**
+
+I think we can propose that the default vendored file path for `scip.proto` could be either `scripts/vendor/scip.proto` or `contracts/scip/scip.proto`. However, this would introduce a new path that might clash with existing conventions. I should inspect the repository to see if there are any existing vendored protobuf files or vendor directories. Searching for `scip.proto` will help clarify what's currently in use and ensure we align with existing practices.
+
+
+
+
+
+[2026-01-18T02:40:25] exec sh -lc "find . -name 'scip.proto' -print | sed -n '1,200p'
+rg -n \"scip\\.proto\" -S scripts dev-playbooks/specs | head -n 80" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:40:25] sh -lc "find . -name 'scip.proto' -print | sed -n '1,200p'
+rg -n \"scip\\.proto\" -S scripts dev-playbooks/specs | head -n 80" succeeded in 146ms:
+scripts/scip-to-graph.sh:30:SCIP_PROTO_PATH="/tmp/scip.proto"
+scripts/scip-to-graph.sh:31:SCIP_PROTO_URL="https://raw.githubusercontent.com/sourcegraph/scip/main/scip.proto"
+scripts/scip-to-graph.sh:146:        const root = await protobuf.load('/tmp/scip.proto');
+[2026-01-18T02:40:25] tokens used: 135,129
+[2026-01-18T02:40:29] exec sh -lc "sed -n '1,220p' scripts/scip-to-graph.sh" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:40:29] sh -lc "sed -n '1,220p' scripts/scip-to-graph.sh" succeeded in 32ms:
+#!/bin/bash
+# scip-to-graph.sh - SCIP 索引解析转换脚本
+# 版本: 1.0
+# 用途: 将 SCIP 索引解析为图数据并写入 SQLite
+#
+# 覆盖 AC-002: SCIP -> 图数据转换成功
+# 契约测试: CT-SP-001, CT-SP-002
+#
+# 环境变量:
+#   SCIP_INDEX_PATH - SCIP 索引路径，默认 index.scip
+#   GRAPH_DB_PATH - 数据库路径，默认 .devbooks/graph.db
+#   DEVBOOKS_DIR - 工作目录，默认 .devbooks
+
+set -euo pipefail
+
+# 加载共享函数
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common.sh"
+
+# 设置日志前缀
+[2026-01-18T02:40:29] tokens used: 136,261
+
+[2026-01-18T02:40:44] thinking
+
+**Evaluating implementation and specs**
+
+I’m looking at the project profile and it seems like the semantics of "Embedding 索引状态管理 | ci_index_status" align with what I expected. The C4 documentation also labels the indexer.sh as part of Embedding index management, but it looks like there's a mismatch with the current implementation. If we’re changing the implementation to align with the spec, it might just be a bug fix. However, there are indications that the spec itself may be incorrect, and updates will be necessary to clear up any confusion.
+**Clarifying spec changes**
+
+I see the change document as a spec delta within a change package, not as the truth root. We need to propose spec deltas that go under the change-root directory. The user asked for specs with specific hints for suggestions, but they mentioned "dev-playbooks/specs/", which seems to contradict the Skill document stating that deltas should be under the change-root. Maybe they’re asking which truth specs might be updated later. In my response, I’ll make sure to adhere to the skill's guidelines and clarify target paths while indicating which specs would eventually be promoted.
+**Organizing spec updates**
+
+The user seems to think "dev-playbooks/specs/" is the truth root, but we really need to stick to the devbooks protocol, which advises against directly modifying that root. Instead, we should create a spec delta under a change package. Even though we can only output content, it’s important to suggest recommended file paths. I’ll note the target path as dev-playbooks/changes/optimize-indexing-pipeline-20260117/specs/<capability>/spec.md, while indicating which existing truth spec files will be updated. I also need to identify the affected capabilities based on the proposal.
+**Assessing incremental-indexing changes**
+
+It looks like they didn't mention the incremental-indexing spec, but their change is focused on the incremental indexing pipeline that hooks in ast-delta. This might mean we need to update the incremental-indexing spec since it currently states, "系统 SHALL 基于 SCIP 索引实现增量更新," which may not align with the new approach using tree-sitter for incremental updates. The proposal suggests a shift to AST-based updates rather than sticking with SCIP. If we're leaning toward using ast-delta, I'll need to clarify the incremental-indexing spec accordingly.
+**Evaluating necessary spec updates**
+
+I wonder if the incremental-indexing spec might be outdated or more aspirational than practical, and it likely needs an update as part of the change. The proposal notes some differences, and the user wants me to assess whether any spec changes are necessary, aiming for delta drafts rather than final specs. I should identify "capabilities" for these spec deltas, focusing on areas like the scip-parser and indexing pipeline, which might require formalizing certain contracts and clarifying behaviors. I'll also need to search for existing specs related to ci_index_status and embedding management as part of this process.
+
+
+
+
+[2026-01-18T02:41:10] exec sh -lc "rg -n \"Embedding 索引|embedding index|索引管理\" dev-playbooks/specs -S | head -n 120
+
+find dev-playbooks/specs -maxdepth 2 -type d -iname '*index*' -print | sort | sed -n '1,200p'
+
+rg -n \"ci_index_status\" dev-playbooks/specs -S | sed -n '1,120p'" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:41:10] sh -lc "rg -n \"Embedding 索引|embedding index|索引管理\" dev-playbooks/specs -S | head -n 120
+
+find dev-playbooks/specs -maxdepth 2 -type d -iname '*index*' -print | sort | sed -n '1,200p'
+
+rg -n \"ci_index_status\" dev-playbooks/specs -S | sed -n '1,120p'" succeeded in 54ms:
+dev-playbooks/specs/architecture/hotspots.md:50:| `scripts/indexer.sh` | 322 | 索引管理 |
+dev-playbooks/specs/architecture/module-graph.md:80:| Indexer | `scripts/indexer.sh` | 索引管理 | common.sh |
+dev-playbooks/specs/_meta/project-profile.md:29:| 索引管理 | Embedding 索引状态管理 | `ci_index_status` |
+dev-playbooks/specs/_meta/project-profile.md:43:│   └── indexer.sh         # 索引管理
+dev-playbooks/specs/architecture/c4.md:156:| Indexer | `scripts/indexer.sh` | Script | Embedding 索引管理 | Bash |
+dev-playbooks/specs/architecture/c4.md:164:| **Federation Lite** | `scripts/federation-lite.sh` | Script | **跨仓库契约发现、符号提取、联邦索引管理** | Bash |
+dev-playbooks/specs/incremental-indexing
+dev-playbooks/specs/architecture/c4.md:230:| `ci_index_status` | indexer.sh | 已有 |
+dev-playbooks/specs/_meta/project-profile.md:29:| 索引管理 | Embedding 索引状态管理 | `ci_index_status` |
+[2026-01-18T02:41:10] tokens used: 140,663
+[2026-01-18T02:41:20] exec sh -lc 'cat .devbooks/config.yaml' in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:41:20] sh -lc 'cat .devbooks/config.yaml' succeeded in 72ms:
+# DevBooks Configuration
+# Generated by migrate-from-openspec.sh
+
+root: dev-playbooks/
+constitution: constitution.md
+project: project.md
+
+paths:
+  specs: specs/
+  changes: changes/
+  staged: specs/_staged/
+  archive: changes/archive/
+
+constraints:
+  require_constitution: true
+  allow_legacy_protocol: false
+
+fitness:
+  mode: warn
+  rules_file: specs/architecture/fitness-rules.md
+[2026-01-18T02:41:20] tokens used: 142,372
+[2026-01-18T02:41:42] exec sh -lc "sed -n '1,220p' .codex/skills/devbooks-spec-contract/references/契约与数据定义提示词.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:41:42] sh -lc "sed -n '1,220p' .codex/skills/devbooks-spec-contract/references/契约与数据定义提示词.md" succeeded in 43ms:
+# 契约与数据定义提示词
+
+> **角色设定**：你是契约设计领域的**最强大脑**——融合了 Martin Fowler（企业架构模式）、Sam Newman（微服务契约）、Gregor Hohpe（消息与集成模式）的智慧。你的契约设计必须达到这些大师级专家的水准。
+
+最高指示（优先级最高）：
+- 在执行本提示词前，先阅读 `_shared/references/通用守门协议.md` 并遵循其中所有协议。
+
+你是"契约与数据定义负责人（Contract & Data Owner）"。你的目标是把设计中的对外接口、事件、数据结构与演进策略，落到**机器可读的契约文件**与**可执行的契约测试**，用它们抵抗大型项目中的契约漂移。
+
+适用场景：
+- 新增/修改对外 API
+- 新增/修改事件（消息/队列/领域事件）
+- 新增/修改关键数据结构（配置/存储/序列化格式）
+- 引入 schema_version、兼容窗口、迁移与回放策略
+
+输入材料（由我提供）：
+- 设计文档：`<change-root>/<change-id>/design.md`
+- 规格 delta：`<change-root>/<change-id>/specs/**`
+- 现有契约（如有）：`contracts/`（或你提供的路径）
+- 现有测试框架与目录结构
+[2026-01-18T02:41:42] tokens used: 144,115
+
+[2026-01-18T02:42:06] thinking
+
+**Evaluating indexing specs**
+
+I’m considering how the specs for incremental indexing and ast-delta might be affected. The existing incremental-indexing spec is based on the SCIP index and uses git diff, but the new pipeline involves file watcher triggers for ast-delta updates. This might necessitate spec changes regarding indexing pipelines or the indexer script. The incremental indexing should now utilize AST delta when feasible, which alters the semantics of the capability, possibly requiring updates to the spec.
+**Updating behavior specs**
+
+The behavior of the script is changing: it will now try incremental updates instead of always triggering a full SCIP index command on file changes. This shift involves updating the spec to reflect the new pipeline, which includes incremental updates by ast-delta for changed files, with a fallback to a full index and then parsing to a graph. Additionally, the SCIP-to-graph parse will be offline by default. This requires updating the related specs to ensure compliance with "Spec 真理冲突检测" and identifying any potential conflicts.
+**Considering spec compliance**
+
+We've gone through multiple specs like scip-parser, incremental-indexing, and ast-delta. However, the instructions say I need to read all existing specs, which is quite a lot since there are 52 spec.md files. Reading everything in full seems overwhelming, but I can interpret "reading" as scanning for important parts instead. I used a targeted search with ripgrep to find relevant terms like ci_index_status and indexer.sh, which should help with conflict detection. I should also clarify that while we didn’t read every spec, we did perform a thorough search.
+**Clarifying spec reading process**
+
+I want to clarify that we scanned the repository for relevant terms instead of reading through all 52 spec files in detail. While we can't guarantee there's no hidden conflict, we focused on key specifications. For strict compliance, ideally, we should open and read all spec files. However, doing so would take time. We could quickly read through them using a command like `for f in $(find ... -name spec.md); do sed -n '1,40p' ...; done`, but the goal here is just to ensure we're effectively scanning and understanding the necessary content.
+**Assessing spec changes needed**
+
+I need to clarify that the spec delta should be recorded in the change-root, and we can propose a spec delta file for modifications to architecture/c4.md. The user asks about the spec delta and referenced "落点建议 (dev-playbooks/specs/)." We should mention both the proposal for the truth document and where the actual delta would be logged. It's important to analyze the proposal details for required changes, especially since the behavior of indexer.sh is shifting toward incremental updates with ast-delta, impacting existing specs and necessitating updates for clarity and coherence.
+**Evaluating spec delta requirements**
+
+I see the need to establish a spec delta for the new `ci_ast_delta` tool related to ast-delta. The incremental-indexing spec may be outdated as it talks about scip indexing, which is changing. I should format the spec delta to include "ADDED", "MODIFIED", and "REMOVED" requirements, ensuring each requirement includes relevant scenarios in business language. It looks like spec updates are necessary, particularly for changes in `scip-to-graph.sh` and `indexer.sh`, addressing external behaviors to prevent regression. I'll need to draft these changes carefully, possibly creating a new spec or updating existing ones.
+**Proposing spec delta updates**
+
+I see that while the incremental-indexing spec isn't directly mentioned, it's crucial. I should propose spec delta updates for the `scip-parser`, `incremental-indexing`, and possibly architectural documents. This includes adding requirements for offline proto discovery and modifying the incremental-indexing pipeline to use ast-delta for updates while allowing for fallback options. I can also suggest adjustments to architecture docs as part of the spec delta. Finally, I’ll need to outline contract plans that include configurations like environment variables and paths for new vendored proto files.
+
+
+
+
+
+
+[2026-01-18T02:43:33] exec sh -lc "ls -la | sed -n '1,200p'
+
+find . -maxdepth 2 -type d -name 'contracts' -print | sed -n '1,200p'
+
+find . -maxdepth 2 -type d -name 'third_party' -print | sed -n '1,200p'
+
+find . -maxdepth 2 -type d -name 'vendor' -print | sed -n '1,200p'" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:43:33] sh -lc "ls -la | sed -n '1,200p'
+
+find . -maxdepth 2 -type d -name 'contracts' -print | sed -n '1,200p'
+
+find . -maxdepth 2 -type d -name 'third_party' -print | sed -n '1,200p'
+
+find . -maxdepth 2 -type d -name 'vendor' -print | sed -n '1,200p'" succeeded in 60ms:
+total 368
+drwxr-xr-x@  35 ozbombor  staff   1120 Jan 18 09:53 .
+drwxr-xr-x   35 ozbombor  staff   1120 Jan 18 06:25 ..
+-rw-r--r--@   1 ozbombor  staff  14340 Jan 18 09:58 .DS_Store
+drwxr-xr-x    8 ozbombor  staff    256 Jan 13 20:35 .ckb
+drwxr-xr-x    4 ozbombor  staff    128 Jan 17 20:46 .claude
+drwxr-xr-x    3 ozbombor  staff     96 Jan 18 09:53 .code
+drwxr-xr-x    4 ozbombor  staff    128 Jan 18 09:59 .codex
+drwxr-xr-x   12 ozbombor  staff    384 Jan 18 08:08 .devbooks
+drwxr-xr-x   13 ozbombor  staff    416 Jan 18 10:11 .git
+drwxr-xr-x    3 ozbombor  staff     96 Jan 16 18:33 .github
+-rw-r--r--@   1 ozbombor  staff    291 Jan 17 16:29 .gitignore
+-rw-r--r--    1 ozbombor  staff   7936 Jan 16 18:35 .gitlab-ci.yml.template
+-rw-r--r--    1 ozbombor  staff      0 Jan 18 06:35 .migrate.lock
+drwxr-xr-x    4 ozbombor  staff    128 Jan 14 19:56 .npm-cache
+-rw-r--r--    1 ozbombor  staff    340 Jan 17 01:29 .npmignore
+-rw-r--r--    1 ozbombor  staff    793 Jan 14 19:04 AGENTS.md
+-rw-r--r--    1 ozbombor  staff    774 Jan 14 19:04 CLAUDE.md
+-rw-r--r--    1 ozbombor  staff   8687 Jan 16 22:07 README.md
+drwxr-xr-x    3 ozbombor  staff     96 Jan 17 01:50 Users
+[2026-01-18T02:43:33] tokens used: 152,735
+[2026-01-18T02:44:04] exec sh -lc "sed -n '1,260p' dev-playbooks/specs/ast-delta/spec.md
+
+sed -n '260,520p' dev-playbooks/specs/ast-delta/spec.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:44:04] sh -lc "sed -n '1,260p' dev-playbooks/specs/ast-delta/spec.md
+
+sed -n '260,520p' dev-playbooks/specs/ast-delta/spec.md" succeeded in 31ms:
+# 规格：M1 AST Delta 增量索引
+
+> **模块 ID**: `ast-delta`
+> **Change ID**: `achieve-augment-full-parity`
+> **Date**: 2026-01-16
+> **Status**: Draft
+
+---
+
+## Requirements（需求）
+
+### REQ-AD-001: 增量 AST 解析
+
+系统必须支持对单个文件的增量 AST 解析，而非每次变更都进行全量重建。
+
+**约束**：
+- 使用 tree-sitter npm 包（`tree-sitter` + `tree-sitter-typescript`）
+- 解析目标：TypeScript 文件
+- 必须支持降级路径（tree-sitter → SCIP → regex）
+
+[2026-01-18T02:44:04] tokens used: 156,375
+
+[2026-01-18T02:44:22] thinking
+
+**Evaluating script changes**
+
+I’m considering which script or semantics will change. Currently, it goes to indexer.sh but will switch to embedding.sh, which could break existing clients expecting ci_index_status to manage SCIP index. The docs say embedding index status management aligns with managed status, but the implementation appears to be doing SCIP indexing instead. There’s a drift between contract and code. I need to evaluate if a spec or contract change is necessary, as the current specs might not need updates if implementation aligns.
+**Analyzing proposal effects**
+
+The proposal indicates that certain specs are affected. It points to c4.md, which describes indexer.sh as responsible for embedding index management. To align with the proposal, should indexer.sh be modified to a scip/graph indexer? DP-01 mentions that indexer.sh remains a SCIP/graph indexer, which conflicts with c4.md. So, I'll need to update those specs and architecture documents. This represents a change in external semantics, which raises the question of whether a spec-contract change is necessary. 
+
+I see two aspects to consider: Firstly, the offline proto requirement for scip-to-graph.sh changes its runtime behavior, affecting how users or pipelines utilize it. This script acts as an external interface, and the existing scip-parser spec's omission of proto retrieval necessitates clarification.
+**Extending specifications**
+
+The current scip-parser spec doesn’t cover offline behavior, so I need to extend it to include the offline proto requirement and how the system should behave when the proto is missing. The proposal suggests vendor scip.proto and defaulting to offline, which indicates a spec change.
+
+For indexer.sh, it’s currently a background indexer generating index.scip based on file changes. The spec for incremental indexing states it should rely on SCIP, but the proposed change includes integrating ast-delta updates to graph.db. However, there isn’t a spec for using indexer.sh as a pipeline orchestrator, leading to some inconsistencies that need to be addressed.
+**Assessing spec inconsistencies**
+
+I noticed that the graph store spec and scip-parser spec define how to update graph.db, while the ast-delta spec also addresses this. It seems the incremental-indexing spec might be outdated or inconsistent since it states that it’s based on the SCIP index, yet ast-delta uses tree-sitter. The proposal aims for incremental updates to graph.db with ast-delta. 
+
+I think we may need a new capability spec, maybe called "indexing-pipeline" or "indexer-daemon," to define orchestration behavior. This could involve watchers, debounce features, and the selection of incremental paths. It’s crucial since it affects index freshness and performance, impacting external behaviors too. 
+
+I also see mentions of "scripts/scip-to-graph.sh parse --incremental" updating graph.db when the index is newer, which the existing specs reference with REQ-SP-005 for incremental update detection but oddly lack information about the proto.
+**Evaluating spec and contract changes**
+
+I need to ensure that the offline change captures the use of a local vendored path in ensure_scip_proto to avoid network access. There may be a contract related to features.yaml, but it seems ast_delta.enabled is already included. The indexer.sh reads this configuration to decide its operations. 
+
+Now, should we create a new contract? Based on the devbooks-spec-contract skill, I’ve checked existing specs and believe I can summarize the necessary changes.
+
+One significant change is to the scip-parser spec, which should include the offline proto requirement and error behavior when the proto is missing. We’ll also need to update architecture specs to reflect the role of indexer.sh as a SCIP/graph indexing pipeline, ensuring all related documentation aligns.
+
+Overall, a new capability for "indexing-pipeline" or "indexer-daemon" could help clarify responsibilities, and an update to the structured-context-output spec is necessary to maintain clarity around the index_status field. I need to inspect the lines about index_status for alignment.
+
+
+
+
+[2026-01-18T02:44:54] exec sh -lc "rg -n \"index_status\" dev-playbooks/specs/structured-context-output/spec.md
+
+sed -n '60,120p' dev-playbooks/specs/structured-context-output/spec.md
+
+sed -n '180,280p' dev-playbooks/specs/structured-context-output/spec.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:44:54] sh -lc "rg -n \"index_status\" dev-playbooks/specs/structured-context-output/spec.md
+
+sed -n '60,120p' dev-playbooks/specs/structured-context-output/spec.md
+
+sed -n '180,280p' dev-playbooks/specs/structured-context-output/spec.md" succeeded in 42ms:
+68:    "index_status": "ready|stale|missing",
+79:- `index_status`：检查 SCIP/Embedding/CKB 索引状态
+213:- `index_status` = `ready`
+253:- `index_status` = `missing`
+319:        "index_status": { "type": "string", "enum": ["ready", "stale", "missing"] },
+
+### REQ-SCO-003：current_state 结构
+
+当前状态层应包含以下字段：
+
+```json
+{
+  "current_state": {
+    "index_status": "ready|stale|missing",
+    "hotspot_files": ["src/server.ts", "scripts/graph-store.sh", ...],
+    "recent_commits": [
+      "abc1234: feat: add path query",
+      "def5678: fix: edge type validation"
+    ]
+  }
+[2026-01-18T02:44:54] tokens used: 161,900
+[2026-01-18T02:45:31] exec sh -lc "sed -n '1,260p' hooks/augment-context-global.sh
+
+rg -n \"ci_index_status\" hooks/augment-context-global.sh
+rg -n \"index_status\" hooks/augment-context-global.sh
+
+rg -n \"ci_index_status\" hooks -S | head -n 50
+
+rg -n \"ci_index_status\" scripts -S | head -n 50" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:45:31] sh -lc "sed -n '1,260p' hooks/augment-context-global.sh
+
+rg -n \"ci_index_status\" hooks/augment-context-global.sh
+rg -n \"index_status\" hooks/augment-context-global.sh
+
+rg -n \"ci_index_status\" hooks -S | head -n 50
+
+rg -n \"ci_index_status\" scripts -S | head -n 50" succeeded in 66ms:
+#!/bin/bash
+# DevBooks Global Context Injection Hook
+# 全局生效，自动检测代码项目并注入上下文
+# 版本: 3.0 - 新增：Graph-RAG 集成 + Embedding 自动构建 + 优雅降级
+
+# ==================== 环境设置 ====================
+# 注意：不全局修改 PATH，以便支持测试时的隔离环境
+# 复杂度工具检测使用 command -v，会尊重当前 PATH 设置
+
+# 查找 rg (ripgrep) - 优先系统安装，其次 Claude Code 内置
+# 这里使用显式路径检查，不依赖 PATH
+find_rg() {
+  # 系统路径（显式检查，不受 PATH 限制）
+  for p in /opt/homebrew/bin/rg /usr/local/bin/rg /usr/bin/rg; do
+    [ -x "$p" ] && { echo "$p"; return; }
+  done
+
+  # Claude Code 内置（使用平台检测，避免硬编码）
+  local arch platform
+  arch=$(uname -m)
+[2026-01-18T02:45:31] tokens used: 166,301
+[2026-01-18T02:45:34] exec sh -lc "sed -n '940,1040p' hooks/augment-context-global.sh
+
+sed -n '1040,1120p' hooks/augment-context-global.sh
+
+sed -n '1120,1220p' hooks/augment-context-global.sh" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:45:35] sh -lc "sed -n '940,1040p' hooks/augment-context-global.sh
+
+sed -n '1040,1120p' hooks/augment-context-global.sh
+
+sed -n '1120,1220p' hooks/augment-context-global.sh" succeeded in 74ms:
+}
+
+# ==================== 主逻辑子函数 ====================
+# 构建基础上下文
+build_base_context() {
+  local context
+  context="[DevBooks 自动上下文]
+
+$(check_index)"
+
+  # 处理 @file/@folder 引用
+  local at_refs="$1"
+  if [ -n "$at_refs" ]; then
+    local at_content
+    at_content=$(process_at_refs "$at_refs")
+    if [ -n "$at_content" ]; then
+      context="${context}
+
+📎 引用内容：$at_content"
+    fi
+[2026-01-18T02:45:35] tokens used: 169,294
+[2026-01-18T02:45:56] exec sh -lc "sed -n '1,240p' AGENTS.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:45:56] sh -lc "sed -n '1,240p' AGENTS.md" succeeded in 26ms:
+<!-- DEVBOOKS:START -->
+# DevBooks 使用说明
+
+这些说明适用于 兼容 AGENTS.md 的 AI 工具。
+
+## 语言偏好
+
+**默认使用中文**：除非明确要求使用其他语言，否则所有输出都应使用中文，包括：
+- 文档内容
+- 代码注释
+- 提交信息
+- 规格说明
+
+## 工作流
+
+当请求满足以下条件时，始终打开 `@/AGENTS.md`：
+- 提及规划或提案（如 proposal、spec、change、plan 等词语）
+- 引入新功能、破坏性变更、架构变更或重大性能/安全工作
+- 请求不明确，需要在编码前了解权威规格
+
+[2026-01-18T02:45:56] tokens used: 173,169
+
+[2026-01-18T02:46:15] thinking
+
+**Evaluating spec contract changes**
+
+It appears that spec contract changes are indeed necessary. The user wants to evaluate if these changes are needed, and I think they are because the scip-to-graph.sh offline proto requirement is missing in the scip-parser spec. Additionally, the indexer pipeline behavior might impact the incremental updates. I should focus on the external behavior, especially regarding the offline running of the scip-to-graph script and how it affects network dependency. Also, it seems the ci_index_status semantics might change for clients, as it shifts from indexer.sh to embedding.sh. We should definitely check the existing specs for ci_index_status.
+**Searching for specs on embedding**
+
+It seems there's no specific spec file for our needs; instead, references are made in project-profile and architecture documents. I'm wondering if there’s a spec for embedding index management. I'll search for "ci_index_status" in dev-playbooks/specs, but it appears only in c4.md and project-profile. We might need to create a new capability spec for "embedding-index-management" or update an existing one if needed. I also want to explore any relevant specs related to "embedding.sh" or "semantic-search," especially since the changes focus on the indexing pipeline and CLI options, which shouldn't be altered.
+**Analyzing indexer behavior and specs**
+
+It looks like the indexer will now try incremental updates or parsing to graph, which is an important internal behavior likely affecting the outputs. I’m curious about whether indexer.sh has a spec file since I can't find it in the dev-playbooks/specs. There’s something called "incremental-indexing/spec.md" that talks about incremental indexing behavior on the SCIP index, but it seems to be focused more on that rather than AST delta overlaps. We might need to adjust it to incorporate new behavior regarding file watcher triggers and ast-delta updates, as this isn’t clearly outlined. Also, checking the incremental-indexing spec, which was created in 2026, might reveal if it’s still relevant.
+**Reviewing incremental indexing and spec changes**
+
+The incremental indexing spec discusses using SCIP and git diff detection, but currently, indexer.sh functions as a daemon that triggers a full scip-typescript index, not incremental. This suggests that the spec may be more aspirational at this point. The optimize-indexing-pipeline is looking to implement incremental updates using ast-delta and scip parse, which might mean we need to either update that spec or add a clarifying spec for delta. Additionally, the scip-parser spec doesn't mention offline proto; there's a need to propose a change for vendor scip.proto and allow downloads only when permitted. This indicates a contract change for offline operations. Finally, the architecture module describes indexer incorrectly regarding embedding, so a spec change is needed to align with DP-01. We should draft those spec delta changes.
+**Evaluating specs and contract changes**
+
+I need to identify which capabilities are affected, like "scip-parser," "architecture" (c4 & module-graph), and potentially a new capability spec for "index-management" or "indexer-daemon." We should aim to limit this to around 1-5 capabilities. The proposal mentions four affected specs: architecture/c4.md, scip-parser/spec.md, module-graph.md, and project-profile.md. We may also need to adjust the structured-context-output spec and address potential changes to the ci_index_status semantics. Ultimately, we require a spec delta draft and conclusions on whether a change is necessary, ensuring we include all relevant details while sticking to the format from the spec-change prompt. It’s important to remember that we’re in a read-only environment and can't create files, but I can propose the needed changes, especially regarding the dependency on scip.proto as a contract artifact.
+**Proposing spec changes**
+
+The new plan focuses on updating graph.db instead of index.scip, but it still involves the SCIP pipeline. I should consider whether to adjust the existing spec to reflect the changes without making it overly complicated. It seems that the current implementation of indexer.sh will move toward incremental updates, which might necessitate changes in the incremental-indexing spec rather than creating a new one. We also need to evaluate if there are implications on ci_index_status that require updates. I think adding capability specs like "index-status" or "index-management" could formalize these behaviors. I should limit suggested changes to three key capabilities: "scip-parser," "index-status," and "architecture." I'll make sure to include explicit paths, proposed modifications, and necessary requirements in the draft I prepare. Lastly, I should verify the appropriate location for the vendoring of scip.proto, potentially under a new `third_party` directory if one doesn't already exist.
+**Evaluating vendoring options**
+
+I should check if there's a pre-existing practice in the repository for scip.proto. I couldn't find it, but I did see parse-scip.js utilizes /tmp. So, it seems there’s no existing scip.proto file. Given that there's minimal diff, I might propose vendoring it in `scripts/_vendor/scip.proto`, although that might not be ideal for the spec. The proposal suggests prioritizing a fixed version of scip.proto within the repository. So, I should consider paths like `scripts/scip.proto` or `vendor/scip/scip.proto`. I need to align my choice with the dev-playbooks guidelines, and I’ll search for any documentation on third-party resources in the repo for guidance.
+
+
+
+
+
+
+[2026-01-18T02:47:15] exec sh -lc 'rg -n "third_party|third-party|vendor/" -S . | head -n 80' in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:47:15] sh -lc 'rg -n "third_party|third-party|vendor/" -S . | head -n 80' succeeded in 79ms:
+./config/boundaries.yaml:51:  - pattern: "vendor/**"
+./config/boundaries.yaml:56:  - pattern: "third_party/**"
+./config/boundaries.yaml:111:# - pattern: "vendor/custom-lib/**"
+./scripts/graph-rag.sh:581:     [[ "$file_path" == vendor/* ]] || \
+./tests/boundary-detector.bats:45:    run "$BOUNDARY_DETECTOR" --path "vendor/legacy/utils.js" --format json
+./tests/boundary-detector.bats:84:@test "BD-006: glob pattern matching (**/vendor/**)" {
+./tests/boundary-detector.bats:85:    run "$BOUNDARY_DETECTOR" --path "src/vendor/legacy/utils.js" --format json
+./tests/boundary-detector.bats:229:    # SC-BD-002: vendor/*应该快速匹配为库代码
+./tests/boundary-detector.bats:230:    # Given: 文件路径 = vendor/github.com/pkg/errors/errors.go
+./tests/boundary-detector.bats:232:    run "$BOUNDARY_DETECTOR" --path "vendor/github.com/pkg/errors/errors.go" --format json
+./scripts/boundary-detector.sh:120:  "**/vendor/**|library|0.95|vendor目录"
+./scripts/boundary-detector.sh:121:  "vendor/**|library|0.95|第三方代码"
+./scripts/boundary-detector.sh:122:  "third_party/**|vendor|0.95|第三方代码"
+./hooks/augment-context-global.sh:22:  local cc_rg="$HOME/.cli-versions/claude-code/claude-latest/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/${arch}-${platform}/rg"
+./hooks/augment-context-global.sh:26:  for p in "$HOME/.cli-versions/claude-code"/*/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/*/rg; do
+[2026-01-18T02:47:15] tokens used: 178,271
+
+[2026-01-18T02:47:45] thinking
+
+**Evaluating indexing integration**
+
+I need to think through the requirement that the indexer must integrate ast-delta incremental updates for the graph database. The indexer is an internal script that's part of the indexing pipeline. There might be a spec for incremental indexing. The proposal aims to shift from full rebuilds to incremental updates via ast-delta and allow a fallback to full updates. This proposal aligns with the incremental-indexing spec, which mentions SCIP-based incremental indexing and change detection methods, even though file watcher triggers using ast-delta differ somewhat from git diff.
+**Assessing spec updates**
+
+I recognize there's a current spec for incremental indexing, but it might be outdated or inconsistent with the new approach. We may need to update that spec or create a new one focusing on indexing-pipeline capabilities. This is crucial since we'd be hooking a file watcher to call for ast-delta updates and parse increments from SCIP to the graph. Additionally, there's a contract for the MCP tool `ci_index_status`, but there seems to be no dedicated spec for it. Thus, I might propose a new capability spec, like `index-management`, to define `ci_index_status` behavior while ensuring we avoid creating too many specs to limit changes.
+**Updating spec documentation**
+
+I see that we can update existing specs in various files, including `scip-parser/spec.md`, `c4.md`, and others to clarify the semantics of `index_status`. These changes should ideally occur through spec deltas within a change package. For each affected capability, I need to output a spec delta with added, modified, or removed requirements and scenarios. While the skill mentions following project-profile formatting, many existing specs just use "Requirements" and "Scenarios." I should check `project-profile.md` to ensure I understand the format conventions better and look for references to "格式" or "spec" to clarify how to proceed.
+**Inspecting project-profile formatting**
+
+I recall trying to access information earlier but didn’t get anything because the file might be large, and we truncated our view. Now, I think it’s a good idea to inspect more of the project-profile to uncover spec formatting guidelines. It’s possible that spec deltas aren't mentioned, so I’ll look deeper into the middle to late sections to find the relevant details. This way, I can ensure I’m following the correct format!
+
+
+
+[2026-01-18T02:47:57] exec sh -lc "sed -n '120,260p' dev-playbooks/specs/_meta/project-profile.md
+
+sed -n '260,520p' dev-playbooks/specs/_meta/project-profile.md
+
+sed -n '520,720p' dev-playbooks/specs/_meta/project-profile.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:47:57] sh -lc "sed -n '120,260p' dev-playbooks/specs/_meta/project-profile.md
+
+sed -n '260,520p' dev-playbooks/specs/_meta/project-profile.md
+
+sed -n '520,720p' dev-playbooks/specs/_meta/project-profile.md" succeeded in 76ms:
+
+```
+server.ts → scripts/*.sh → 外部工具 (rg, jq, CKB MCP)
+     ↓
+  MCP SDK
+```
+
+禁止：
+- scripts 不得直接导入 TypeScript 模块
+- 循环依赖
+
+### 外部依赖
+
+| 依赖 | 用途 | 必需 |
+|------|------|------|
+| ripgrep (rg) | 文本搜索 | 推荐 |
+| jq | JSON 处理 | 推荐 |
+| Ollama / OpenAI | Embedding 生成 | 可选 |
+| CKB MCP Server | 图基代码分析 | 可选 |
+
+[2026-01-18T02:47:57] tokens used: 181,785
+
+[2026-01-18T02:48:19] thinking
+
+**Considering spec delta creation**
+
+I’m looking at the output template for skills, which outlines how to create or update spec delta files. In our environment, we can produce the necessary content and recommend a target path, but it seems we can't create files directly. I think it’s better to modify the existing `scip-parser` spec instead of creating a new capability to avoid duplication. We might also need to update the spec for `ci_index_status`, but I haven’t found a specific spec file for that yet.
+**Clarifying index management specs**
+
+I see there's a mismatch because the actual code references `indexer.sh`, while the proposal suggests using `embedding.sh` with DP-01A. The spec change should reflect this adjustment. I need to figure out which spec is authoritative, and I’m searching for something related to embedding index management. I found `dev-playbooks/specs/incremental-indexing/spec.md`, which discusses SCIP-based indexing, but I need to refine how `ci_index_status` checks embedding index status versus the broader index status mentioned elsewhere. It’s a bit confusing!
+**Evaluating spec for ci_search**
+
+I’m wondering if there’s a spec for `ci_search` or related to `embedding.sh`. I should check the `dev-playbooks/specs/context-layer` for any relevant information. But really, I need to assess whether changes to the contract are necessary. I see three categories to consider regarding the MCP tool: first, the `ci_index_status` semantics, which may have changed. If the tool’s interface stays the same, only the implementation changes, but that could alter user behavior. Aligning with the existing spec is necessary to ensure conformity, especially for those relying on the old behavior.
+**Addressing contract risks**
+
+I realize we can’t be entirely certain. The proposal highlights the risk of breaking things, so I think we should treat this as a contract fix. We need a spec delta to clarify and ensure a compatibility strategy. The `ci_index_status` is specifically for embedding index, but we might need a new tool for SCIP indexing — maybe `ci_scip_index_status` or `ci_graph_index_status`, though the proposal states not to add new tools. It seems like we’ll keep the indexer script separate from the MCP tool for SCIP indexing, indicating required spec changes to update the architecture documentation.
+**Updating the specification**
+
+I need to update the spec to clarify that the indexer is related to the SCIP indexing pipeline, while the embedding index management is probably handled in `scripts/embedding.sh`. This script seems to include functions for various actions, including search and indexing. To ensure everything aligns correctly, I’ll revise `dev-playbooks/specs/architecture/c4.md` to fix the entry for the Indexer and ensure `ci_index_status` maps to `embedding.sh`. I should draft a spec delta specific to this architecture capability and review the available files in the architecture folder to ensure I have the right documentation.
+
+
+
+
+[2026-01-18T02:48:37] exec sh -lc "ls -la dev-playbooks/specs/architecture | sed -n '1,200p'" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:48:37] sh -lc "ls -la dev-playbooks/specs/architecture | sed -n '1,200p'" succeeded in 40ms:
+total 120
+drwxr-xr-x   6 ozbombor  staff    192 Jan 18 05:53 .
+drwxr-xr-x  57 ozbombor  staff   1824 Jan 18 05:51 ..
+-rw-r--r--   1 ozbombor  staff  37831 Jan 18 05:53 c4.md
+-rw-r--r--   1 ozbombor  staff   1708 Jan 13 19:21 fitness-rules.md
+-rw-r--r--   1 ozbombor  staff   4040 Jan 13 20:03 hotspots.md
+-rw-r--r--   1 ozbombor  staff   9376 Jan 13 19:19 module-graph.md
+[2026-01-18T02:48:37] tokens used: 184,925
+
+[2026-01-18T02:48:57] thinking
+
+**Evaluating indexing specifications**
+
+I’m noting that the decision log says DP-01A was selected, and things about ci_index_status semantics belong to embedding indexing. This may need spec updates because it conflicts with the current code, which uses indexer.sh. There seems to be a discrepancy between the code and the spec. I need to check if a dedicated spec for ci_index_status exists, as there’s no clear documentation for it. Changes might affect how "index_status" is interpreted.
+**Assessing script updates**
+
+I’m considering how the proposal for `scripts/scip-to-graph.sh` aims to switch to local vendoring of scip.proto so it doesn’t depend on network access. It’s a big change because it alters previous parsing behavior by needing to handle offline situations. This change raises the question of whether it qualifies as a contract change since scripts are user-facing as well. There’s also the need for spec modifications concerning proto discovery and offline defaults, and updates to scenarios and contract tests are necessary too.
+**Reevaluating indexing pipeline changes**
+
+This proposal significantly impacts `indexer.sh`, which currently triggers the SCIP TypeScript index without calling for ast-delta or scip-to-graph. There's a spec for incremental indexing that seems active, but it suggests SCIP-based indexing may not be fully implemented. I think it’ll be necessary to extend this spec to include AST delta paths and redefine requirements, potentially adjusting it to include tree-sitter AST delta incremental updates. The proposal aims to integrate ast-delta into `indexer.sh`, but I'm unsure if this impacts an external contract since it also affects `graph.db` updates and performance.
+**Clarifying interface and spec changes**
+
+I’m considering that while the changes in `indexer.sh` may not affect an external interface directly, they could result in fresher graph query results. However, since the script has a CLI and is installed as a launch agent, the behavior shifts might be seen as external. Based on the spec contract definition, it seems clear that we need to adjust specs—at least the scip-parser spec for the offline proto requirement, and potentially the architecture/c4 and module-graph.md. There's a contradiction about how `indexer.sh` is defined, signaling a need for spec updates.
+**Analyzing proposed indexing changes**
+
+The proposed change aims to optimize the indexing pipeline by using AST delta for incremental updates and ensuring scip.proto is used offline. It’s intended to align ci_index_status with embedding index management while avoiding changes to external APIs. However, this may create external behavior changes for users expecting SCIP indexer status, which needs to be clarified in the specs. We also need to define detection methods for changed files correctly, adjust existing specs to include offline requirements, and propose new configuration options in order to support these changes effectively.
+**Proposing spec changes and testing strategies**
+
+I’m thinking about how we can test the offline proto situation by manipulating the SCIP_PROTO_PATH and ensuring the script doesn't attempt network calls. However, I realize tests can be tricky because they can’t easily detect such calls. For `ci_index_status`, the semantic change needs a contract test verifying its linkage to embedding.sh, and it’s crucial to outline proper specs and maybe create new capability specifications like `index-management` to cover this gap, while keeping the changes manageable. Providing summaries and aligning them with architecture docs seems necessary, too.
+
+
+
+
+
+[2026-01-18T02:50:05] exec sh -lc "sed -n '130,210p' dev-playbooks/specs/architecture/c4.md
+
+sed -n '210,260p' dev-playbooks/specs/architecture/c4.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:50:05] sh -lc "sed -n '130,210p' dev-playbooks/specs/architecture/c4.md
+
+sed -n '210,260p' dev-playbooks/specs/architecture/c4.md" succeeded in 33ms:
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │                      Config Layer [NEW: Phase 2]                    ││
+│  │                                                                     ││
+│  │  ┌─────────────────────────┐    ┌─────────────────────────┐        ││
+│  │  │  config/arch-rules.yaml │    │  config/federation.yaml │        ││
+│  │  │  (架构规则定义)          │    │  (联邦仓库配置)          │        ││
+│  │  └─────────────────────────┘    └─────────────────────────┘        ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Container Inventory
+
+| Container | 路径 | 类型 | 职责 | 技术栈 |
+|-----------|------|------|------|--------|
+| MCP Server | `src/server.ts` | Application | MCP 协议处理，工具调度 | TypeScript, Node.js |
+| Global Hook | `hooks/augment-context-global.sh` | Hook | 全局上下文注入，4 维意图分析 | Bash |
+[2026-01-18T02:50:06] tokens used: 191,305
+
+[2026-01-18T02:50:40] thinking
+
+**Evaluating capability specs**
+
+I'm thinking through updates for the delta, such as the architecture, module graph, and project profile. The skill suggests grouping by capability to avoid duplicates and make use of existing specs. I wonder which capability specs we could extend, like `scip-parser` or `incremental-indexing`. For the `ci_index_status`, maybe there’s a spec for embedding indexing? I should search for "ci_index_status." While we found info in architecture and project profile, there might not be a dedicated spec.
+**Drafting spec delta**
+
+I'm considering if there’s a spec for embedding search or a reference to an indexer. I should search for "indexer.sh" spec apart from the architecture docs, but I can't find it. It looks like we might need a new capability spec or updates to existing ones. The user has asked for a spec delta draft focusing on 2-3 affected capabilities. For example, extending the `scip-parser` to include offline proto discovery and updating the indexing-related specs for clarifying responsibilities and behavior.
+**Integrating updates for specifications**
+
+The proposal revolves around using file watcher triggers and the ast-delta for directly updating graph.db, with a fallback to incremental SCIP parsing. This approach doesn't seem to be detailed in the current incremental-indexing spec, which focuses more on git diff and index.scip rather than ast-delta. We could modify the incremental-indexing spec to outline an "incremental update path" that includes ast-delta and fallback options. The current indexing system involves indexer.sh watching and rebuilding index.scip without directly updating graph.db, while scip-to-graph.sh reads index.scip for updates.
+**Clarifying integration in specs**
+
+The changes in the spec should reflect the integration approach. There's already an `ast-delta` spec that discusses coordinating tree-sitter incremental updates with total SCIP reconstruction, but it doesn’t reference indexer.sh. I’m considering creating a new capability spec for `indexing-pipeline` or `indexer-daemon` to capture this orchestrator behavior. However, I also need to avoid duplication. Alternatively, modifications to the existing `incremental-indexing` spec could work since it relates to the indexing pipeline and allows for fallback updates.
+**Optimizing indexing pipeline specs**
+
+The proposal suggests implementing incremental updates for graph.db using ast-delta rather than focusing on index.scip. This indicates the need to revisit the `incremental-indexing` spec, which might be misnamed or outdated. The existing `scripts/ast-delta.sh` can already update graph.db per file, enhancing incremental indexing. I should carefully analyze the current specs about the indexer, `scip-to-graph`, and ensure they align with the new behaviors, such as the integration of offline proto resolution and adjustments to the `ci_index_status` semantics.
+**Assessing spec delta requirements**
+
+The proposal indicates that the current scip indexing behavior is expected by clients, so I should treat this as a bug fix rather than a breaking change. However, for safety, I’ll probably include a compatibility section to confirm alignment between documentation and implementation. I need to outline spec delta content in Markdown, following specific instructions about requirements and scenarios. I'll recommend updates for the `indexing-pipeline`, `scip-parser`, and ensure any necessary contract plan highlights regarding the configuration. I’ll provide a clear conclusion on whether a spec change is needed.
+**Analyzing spec updates**
+
+I might not need to change everything, but I definitely need to update the `scip-parser` specification for offline proto behavior. The user mentioned changing the semantics of `ci_index_status`, so my spec delta should clearly define the external contract and map actions to the embedding index. I should also clarify that the indexer is not controlled by the `ci_index_status`, but modifications in behavior may cause breaking changes for clients expecting the old functionality. The offline proto vendoring requires a stable contract and search strategy but shouldn’t dictate specific file paths.
+**Deciding on spec changes**
+
+I need to think carefully about mentioning default paths in the spec, while also following guidelines to avoid implementation details. I'm allowed to discuss CLI commands and environment variables, which is fine. The spec should be written in business language, avoiding technical jargon. 
+
+I want to ensure that `scip-to-graph` and the indexer maintain compatibility, changing behavior while avoiding breaking changes. I'm looking at drafting modifications rather than creating new specs, and I need to confirm whether we need to introduce approval for contract changes based on the user's request. I think the answer is "yes," as there are several key updates that need to be made.
+**Analyzing spec conflicts**
+
+I need to highlight conflicts and propose resolutions related to the `scip-parser` spec, especially concerning the use of `/tmp/scip.proto`, which lacks an offline requirement. The `index_status` has related but potentially conflicting specs regarding indexing sources. I'll suggest updating the structured-context-output spec for clarity on how index_status aggregates signals from multiple sources.
+
+I plan to draft a spec delta following project guidelines, ensuring to include scenarios, requirements, and trace lines. This will involve proposing new paths for the delta files while considering existing specs like `incremental-indexing`. It may be wise to create a new capability for `indexer-daemon` to clearly define its role without duplicating existing specs.
+**Considering spec modifications**
+
+I need to decide whether to create a new capability spec for `indexer-daemon` or modify the existing `incremental-indexing`. Since there's currently no specific spec for indexer daemons, it seems like updating `incremental-indexing` would be better.
+
+I’ll create a spec delta to align it with the plan for incremental updates. Additionally, I’ll consider creating a new capability spec for `embedding-index-management` since there doesn't appear to be an existing one. I’ll need to clarify whether this will add unnecessary complexity. Let's explore options for managing the embedding index.
+
+
+
+
+
+
+
+
+
+[2026-01-18T02:52:44] exec sh -lc "rg -n \"ci_index_status\" dev-playbooks/specs -S
+
+rg -n \"indexer\\.sh\" dev-playbooks/specs -S
+
+rg -n \"embedding\\.sh\" dev-playbooks/specs -S | head -n 120
+
+rg -n \"build\" dev-playbooks/specs -S | rg -n \"embedding\" -n || true" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:52:44] sh -lc "rg -n \"ci_index_status\" dev-playbooks/specs -S
+
+rg -n \"indexer\\.sh\" dev-playbooks/specs -S
+
+rg -n \"embedding\\.sh\" dev-playbooks/specs -S | head -n 120
+
+rg -n \"build\" dev-playbooks/specs -S | rg -n \"embedding\" -n || true" succeeded in 80ms:
+dev-playbooks/specs/_meta/project-profile.md:29:| 索引管理 | Embedding 索引状态管理 | `ci_index_status` |
+dev-playbooks/specs/architecture/c4.md:230:| `ci_index_status` | indexer.sh | 已有 |
+dev-playbooks/specs/architecture/c4.md:156:| Indexer | `scripts/indexer.sh` | Script | Embedding 索引管理 | Bash |
+dev-playbooks/specs/architecture/c4.md:230:| `ci_index_status` | indexer.sh | 已有 |
+dev-playbooks/specs/architecture/module-graph.md:80:| Indexer | `scripts/indexer.sh` | 索引管理 | common.sh |
+dev-playbooks/specs/architecture/module-graph.md:120:indexer.sh          │   ✓    │   -    │   -    │   -    │   -    │   -    │
+dev-playbooks/specs/architecture/hotspots.md:50:| `scripts/indexer.sh` | 322 | 索引管理 |
+dev-playbooks/specs/_meta/project-profile.md:43:│   └── indexer.sh         # 索引管理
+dev-playbooks/specs/_meta/key-concepts.md:32:**相关组件**：`scripts/embedding.sh`，`scripts/indexer.sh`
+dev-playbooks/specs/pattern-learning/spec.md:119:      "examples": ["embedding.sh", "bug-locator.sh"]
+dev-playbooks/specs/architecture/c4.md:74:│  │  │   Shell)        │    │   augment-context-with-embedding.sh     │││
+dev-playbooks/specs/architecture/c4.md:151:| Embedding Search | `scripts/embedding.sh` | Script | 语义代码搜索 | Bash |
+dev-playbooks/specs/architecture/c4.md:183:| ******Fusion Search****** | `scripts/embedding.sh::fusion_search()` | Function | ******图+向量融合查询，1-hop 图扩展，Token 预算分配****** | Bash |
+dev-playbooks/specs/architecture/c4.md:205:| `scripts/embedding.sh` | fusion_search() 函数：图+向量融合查询，1-hop 图扩展，Token 预算分配（60% embedding + 40% graph） |
+dev-playbooks/specs/architecture/c4.md:225:| `ci_search` | embedding.sh | 已有 |
+dev-playbooks/specs/architecture/c4.md:320:| `embedding_search()` | Embedding 搜索 | embedding.sh |
+dev-playbooks/specs/architecture/c4.md:343:| `embedding_search()` | Embedding 搜索 | embedding.sh |
+dev-playbooks/specs/architecture/c4.md:510:| 2026-01-18 | ******upgrade-code-intelligence-capabilities****** | ******代码智能能力轻资产升级（70% → 85-90%）******：新增 CKBClientManager（src/server.ts 内，MCP Client SDK 集成，健康检查，降级状态管理）、fusion_search()（scripts/embedding.sh，图+向量融合查询）；增强 scip-to-graph.sh（IMPLEMENTS/EXTENDS/RETURNS_TYPE 边类型解析，正则降级）、graph-store.sh（Schema v3 迁移，自动备份与回滚，并发保护）、graph-rag.sh（--fusion-depth 参数，融合查询集成）、daemon.sh（自动预热，异步执行，30s 超时）；新增 4 个 CLI 规格（mcp-output-format, graph-store-cli, graph-rag-cli, daemon-cli） |
+dev-playbooks/specs/hotspot-analysis/spec.md:87:| scripts/embedding.sh | 5 | 6 | 30 |
+dev-playbooks/specs/_meta/project-profile.md:38:│   ├── embedding.sh       # Embedding 搜索
+[2026-01-18T02:52:44] tokens used: 203,888
+
+[2026-01-18T02:52:58] thinking
+
+**Resolving indexing conflict**
+
+I see there's a conflict regarding the specification and the current code, where the spec mentions embedding, but the code is set for SCIP indexing. The proposal aims to make indexer.sh an incremental pipeline for SCIP and graph indexing. This means we need to update the spec to reflect that change. Additionally, it seems the scip-parser spec needs extensions to include the offline proto vendor requirement. So overall, spec changes are definitely necessary.
+**Reviewing incremental indexing spec**
+
+The incremental indexing specification talks about "SCIP-based incremental indexing" using git diff, but it may not align perfectly with the new pipeline changes. Those changes involve hooking file change watchers and using AST delta. I think this spec might need some modifications. Currently, it requires index.scip to exist, while the new design aims to directly update graph.db using AST delta. This points to a need for adjustments to the existing spec to reflect these new methodologies.
+**Evaluating spec updates**
+
+I see that there’s a separate spec for ast-delta covering updates and batch processing, but it looks like the integration with indexer.sh might require updates to the incremental indexing pipeline spec. We could propose adding a new capability spec to define the overall orchestrator or, preferably, modify existing specs like c4.md and module-graph. The user wants an evaluation on whether there’s a need for spec changes, including a draft of the delta. This is essential to consider while maintaining a clear structure.
+**Clarifying spec delta proposal**
+
+I see that we're unable to write to a file, so we’ll suggest creating a spec delta under the change-root path for the indexing pipeline. However, the guidelines indicate the output should be at a different path, which is a bit confusing given the user's request for a read-only draft of the specs. It seems they're looking for suggestions on where the final specs will land, so I need to ensure clarity on that while following the skill's output path.
+**Evaluating spec and contract changes**
+
+I’m planning to propose a spec delta file path under the change root while also addressing the truth root for clarity. The user expects an evaluation on whether spec and contract changes are needed, especially concerning `ci_index_status` semantics. There are several changes to consider, including the behavior of `scripts/scip-to-graph.sh` and the new CLI options for `scripts/indexer.sh`. It seems necessary to update several specs to ensure consistency and clarify how these functionalities interact with each other and maintain contract stability.
+**Assessing architecture and contract changes**
+
+I'm considering whether the architecture spec is part of the external contract. Although it serves as internal documentation, it impacts external behavior and requires consistency. The user has requested a specification draft addressing `ci_index_status` and script responsibilities. To fulfill this, I plan to create spec delta updates that clarify the capabilities such as `scip-parser`, `architecture`, and `incremental-indexing`. It's crucial to correct the mapping of tools and ensure accurate semantics across all relevant specs while maintaining clarity and avoiding overlaps.
+**Evaluating specs and proposed changes**
+
+I’m considering whether to create a new capability spec[2026-01-18T02:54:13] ERROR: stream error: stream disconnected before completion: stream closed before response.completed; retrying in 210ms…
+
+**Considering temporary file creation**
+
+I’m realizing that using zsh or sh might create temporary files for here-docs, and in a read-only environment, it seems we can't create files in the current directory. We run `sh -lc` inside the tool, which may cause issues with file creation in restricted areas. There’s an error about being unable to create temp files due to sandbox restrictions, so I'll avoid here-docs. Using commands like `sed` and `cat` that only read should be fine. I’ll check the remaining parts of the script for more details.
+**Crafting specification updates**
+
+It looks like we're downloading scip.proto to /tmp, and the offline requirement is changing. We need to create spec delta drafts to identify affected capabilities. First, the scip-parser spec needs updating since it currently lacks mention of acquiring scip.proto. We need to extend it to include an offline vendor requirement, so I’ll produce a spec delta for scip-parser. The delta will be in the change package at `dev-playbooks/changes/optimize-indexing-pipeline-20260117/specs/scip-parser/spec.md`. 
+
+For the indexing daemon, there's no dedicated spec for indexer.sh, just for the incremental SCIP-based indexing and ast-delta.
+**Evaluating indexing daemon specifications**
+
+Currently, indexer.sh acts as a background index daemon that generates index.scip but doesn't embed anything. There's no specific spec for this indexer daemon. I could consider creating a new capability spec, like 'indexer-daemon' or 'scip-index-daemon,' to clarify its responsibilities, especially with the proposed optimizations involving ast-delta and scip-parser. Alternatively, I might update the existing incremental-indexing spec to reflect new behaviors, but since its current focus is on git diff for changed file detection, it might not align with our new plan using file watchers. I need to make sure to avoid introducing any unnecessary duplicates while keeping changes minimal.
+**Examining incremental-indexing specifications**
+
+I’m looking at the incremental-indexing spec and its requirements. It states that the system must implement incremental updates, allowing for a single file change without needing a full rebuild as long as index.scip exists. The scenarios include updating single or multiple files, as well as full reindexing when scip is missing. There’s also a requirement for change detection using git diff and a timestamp in `.ci-cache/last-index-time`, which seems outdated and may conflict with the new pipeline using file watchers and `.devbooks/ast-cache`. Our changes aim to trigger file watchers and use ast-delta updates while allowing fallback to full indexing, which partially aligns with the current spec.
+**Assessing the need for spec changes**
+
+I’ve noticed that ci_index_status is currently broken due to an external bug. The solution involves calling embedding.sh, which means we need to update the spec to clarify the correct semantics. The structured context output spec indicates the index_status field references SCIP/Embedding/CKB status but doesn’t use ci_index_status. This suggests we require a spec change for ci_index_status and adjustments to architecture docs. 
+
+Our output structure should include determining root paths using `.devbooks/config.yaml`. We may need to provide spec delta drafts for affected capabilities like scip-parser and indexing-pipeline, focusing on changes to the incremental-indexing that now reflects AST delta updates. I could create a new capability spec named `indexer-daemon` to encapsulate indexer responsibilities without modifying existing specs too much. This approach seems like the minimal diff needed while clarifying responsibilities.
+I'm looking to clarify the definition of "ci_index_status" for embedding index management since it conflicts with the `structured-context-output` specification. We’re proposing a new spec in the change package. We'll need to make adjustments to architecture documentation as well, mentioning that some changes might fall outside the typical spec format.
+
+Our spec delta will outline modifications, possibly listing affected capabilities like scip-parser, ci-index-status, and indexing-daemon. I should ensure we include proper metadata, keeping both English and Chinese headings where applicable, while also highlighting the requirement for non-code specs using GPT-5. Finally, I have to avoid repeating previous content while moving forward with the output.
+I'm thinking we need to finalize our output in Chinese and clarify the skills used. I'll mention the "devbooks-spec-contract" skill, stating: "使用 devbooks-spec-contract 技能：评估对外行为/契约变更并给出 spec delta 草案." 
+
+I’ll also outline the necessary changes to different specs, including a new spec for ci-index-status, and ensure that the existing documents reflect accurate indexing management. I'll propose configurations for handling the scip.proto file in a vendor directory, emphasizing the need for offline capabilities and avoidance of network dependencies. Overall, I want to ensure the proposed changes are clear, structured, and feasible, aligning with what the user needs.
+
+
+
+
+
+
+[2026-01-18T02:57:00] exec sh -lc "sed -n '1,200p' scripts/embedding.sh
+
+rg -n \"case \\\"\\"'$1'"\\\"\" -n scripts/embedding.sh | head -n 50
+
+rg -n \"--status|status\\)\" scripts/embedding.sh | head -n 80
+
+rg -n \"build\\)\" scripts/embedding.sh | head -n 80
+
+rg -n \"clear\\)\" scripts/embedding.sh | head -n 80
+
+rg -n \"clean\\)\" scripts/embedding.sh | head -n 80" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:57:00] sh -lc "sed -n '1,200p' scripts/embedding.sh
+
+rg -n \"case \\\"\\"'$1'"\\\"\" -n scripts/embedding.sh | head -n 50
+
+rg -n \"--status|status\\)\" scripts/embedding.sh | head -n 80
+
+rg -n \"build\\)\" scripts/embedding.sh | head -n 80
+
+rg -n \"clear\\)\" scripts/embedding.sh | head -n 80
+
+rg -n \"clean\\)\" scripts/embedding.sh | head -n 80" succeeded in 67ms:
+#!/bin/bash
+# DevBooks Embedding Service
+# 代码向量化与语义搜索工具
+#
+# 功能：
+#   1. 将代码库转换为向量表示
+#   2. 语义搜索代码片段
+#   3. 增量更新向量库
+#   4. 集成到 DevBooks 工作流
+#   5. 三级降级：Ollama → OpenAI API → 关键词搜索
+#
+# 参考：SPEC-EMB-001
+
+set -e
+
+# ==================== 配置 ====================
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
+CONFIG_FILE="${CONFIG_FILE:-$PROJECT_ROOT/.devbooks/config.yaml}"
+[2026-01-18T02:57:00] tokens used: 214,589
+
+**Exploring indexing proposal**
+
+I think they treat spec delta as updates to the development playbooks and specs. We shouldn’t directly modify the truth-root due to GIP-04, so I’m proposing placing the delta under `dev-playbooks/changes/optimize-indexing-pipeline-20260117/specs/<capability>/spec.md`. When archived, it can be promoted to the main specs. The user might want to know which existing specs are affected and what updates to suggest. I’ve read the proposal, and it includes necessary changes for optimizing the indexing pipeline.
+**Evaluating vendor requirements**
+
+I'm considering DP-02, which suggests vendoring `scip.proto` into the repo with default offline access, allowing downloads only with explicit permission. For DP-03, there's an incremental trigger using a debounce window and batch updates, which will fall back to a full index and parsing for increments while maintaining idempotency and previous CLI commands for `indexer.sh`. Now, I need to evaluate if these require changes to the specs or contracts, especially regarding the MCP tool and its user-facing API changes related to indexing status.
+**Assessing the spec alignment**
+
+It seems like the actual code uses `indexer.sh` for SCIP index generation, rather than embedding. So, while the code aligns with the spec, the spec might have an incorrect mapping because it describes `indexer.sh` as embedding when it actually performs SCIP indexing. This discrepancy could necessitate spec changes. Additionally, the SCIP parser spec should state that `proto` needs to be offline and not depend on network access. Lastly, I may need to update the incremental-indexing spec to reflect the new approach with AST delta integration.
+**Examining the indexing pipeline**
+
+The proposal mentions a flow where file changes trigger prioritized incremental updates to `graph.db`, with a fallback to full rebuild when necessary. This involves generating `index.scip` and using `scip-to-graph` to parse incrementally for `graph.db` updates. While there’s a spec for incremental indexing focused on SCIP, it seems like there isn’t a clear spec for the indexer daemon. I need to check the `incremental-indexing/spec.md` file to compare it with the proposal and see if updates are needed for the watchers and fallback procedures.
+**Reviewing indexing and proposals**
+
+I'm analyzing a proposal that outlines a complex scenario involving multiple file changes, triggering a full reindex when `scip` is missing, prompting an error instead of indexing. It introduces change detection through `git diff` and timestamps. If incremental indexing fails, we revert to a full index. There's confusion about the current specs: the incremental-indexing spec mentions SCIP-based indexing, but the proposal seems to prioritize AST delta. This divergence might require adjustment to the specs, and I should draft the necessary modifications while ensuring compatibility with existing specifications, including potential new capability definitions around indexing pipelines.
+**Evaluating specification and contracts**
+
+I'm planning to propose updates to the architecture documentation, but first, I need to focus on defining behavior specifications for `ci_index_status`. I might create a new capability spec for embedding index status, which could also relate to existing documentation like the project profile. I need to clarify how the `index_status` field interacts with `ci_index_status` semantics. Given the focus on indexing pipelines, I plan to draft a spec delta covering key capabilities, including the offline requirements for scip-parser, incremental indexing updates, and the embedding index status. I should also include a contract plan addressing any API changes.
+
+
+
+
+
+[2026-01-18T02:58:06] exec sh -lc 'rg -n "SPEC-EMB|embedding" dev-playbooks/specs -S | head -n 120
+
+rg -n "SPEC-EMB" -S . | head -n 80
+
+# Inspect embedding.sh command dispatcher near the end
+rg -n "''^case '"\\\"\\"'$1'"\\\"\" scripts/embedding.sh
+
+sed -n '1120,1340p' scripts/embedding.sh" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T02:58:06] sh -lc 'rg -n "SPEC-EMB|embedding" dev-playbooks/specs -S | head -n 120
+
+rg -n "SPEC-EMB" -S . | head -n 80
+
+# Inspect embedding.sh command dispatcher near the end
+rg -n "''^case '"\\\"\\"'$1'"\\\"\" scripts/embedding.sh
+
+sed -n '1120,1340p' scripts/embedding.sh" succeeded in 79ms:
+dev-playbooks/specs/pattern-learning/spec.md:119:      "examples": ["embedding.sh", "bug-locator.sh"]
+dev-playbooks/specs/hotspot-analysis/spec.md:87:| scripts/embedding.sh | 5 | 6 | 30 |
+dev-playbooks/specs/graph-rag-cli/spec.md:77:      "source": "embedding|graph|virtual",
+dev-playbooks/specs/graph-rag-cli/spec.md:84:    "embedding_candidates": 10,
+dev-playbooks/specs/graph-rag-cli/spec.md:99:| `candidates[].source` | string | 结果来源：embedding/graph/virtual |
+dev-playbooks/specs/graph-rag-cli/spec.md:101:| `metadata.embedding_candidates` | integer | 来自向量搜索的候选数 |
+dev-playbooks/specs/graph-rag-cli/spec.md:141:    {"file": "src/auth/handler.ts", "relevance": 0.92, "source": "embedding", "distance": 0},
+dev-playbooks/specs/graph-rag-cli/spec.md:147:    "embedding_candidates": 5,
+dev-playbooks/specs/graph-rag-cli/spec.md:222:    "embedding_candidates": 10,
+dev-playbooks/specs/graph-rag-cli/spec.md:244:    {"file": "src/client.ts", "relevance": 0.88, "source": "embedding", "distance": 0},
+dev-playbooks/specs/graph-rag-cli/spec.md:249:    "embedding_candidates": 5,
+dev-playbooks/specs/graph-rag-cli/spec.md:332:          "source": { "type": "string", "enum": ["embedding", "graph", "virtual"] },
+dev-playbooks/specs/graph-rag-cli/spec.md:343:        "embedding_candidates": { "type": "integer", "minimum": 0 },
+dev-playbooks/specs/_meta/project-profile.md:38:│   ├── embedding.sh       # Embedding 搜索
+dev-playbooks/specs/_meta/key-concepts.md:32:**相关组件**：`scripts/embedding.sh`，`scripts/indexer.sh`
+dev-playbooks/specs/_meta/verification-baseline.md:98:check "embedding.sh 可执行" "test -x scripts/embedding.sh"
+dev-playbooks/specs/_meta/verification-baseline.md:115:| AC-003 | 脚本可执行 | `bash scripts/embedding.sh --help` | 阻断 |
+dev-playbooks/specs/_meta/verification-baseline.md:133:   ci_search → embedding.sh → [Ollama/OpenAI] → 结果
+dev-playbooks/specs/architecture/module-graph.md:35:│  │ embedding   │  │ call-chain  │  │ bug-locator │              │
+dev-playbooks/specs/architecture/module-graph.md:75:| Embedding | `scripts/embedding.sh` | 语义代码搜索 | common.sh, Ollama/OpenAI |
+[2026-01-18T02:58:06] tokens used: 220,901
+
+**Analyzing specification changes**
+
+I need to provide both the change-root spec delta file path and the eventual truth spec path. The user wants a conclusion on whether spec changes are needed and, if so, a draft content and suggestions on the spec delta.
+
+I'll determine the truth-root and change-root paths, then evaluate the changes, noting that they involve behavior changes in scripts like indexer.sh and scip-to-graph.sh. There are also changes to the ci_index_status tool, which will impact its observable behavior.
+**Evaluating indexing modifications**
+
+There are modifications in the incremental indexing pipeline for scripts like indexer.sh that might impact CLI options and have side effects. Currently, indexer.sh only handles the daemon with options, but upcoming changes could connect it to ast-delta and scip-to-graph, potentially affecting outputs like graph.db updates. I realize we need spec changes to include the offline proto requirement in the scip-parser and update the architecture spec to align with decision DP-01 regarding index management.
+**Reviewing indexing change specs**
+
+This change aims to address potential issues, and while the spec for ci_index_status might already be correct, I need to confirm that the spec for indexer.sh aligns with treating it as the SCIP index daemon. Currently, there's an incremental-indexing spec that talks about SCIP-based indexing, but indexer.sh isn’t set up for incremental indexing yet. The proposal aims to implement an incremental pipeline using ast-delta first, which means I may need to adjust the incremental-indexing spec to detail the new behavior and preferences.
+**Updating indexing pipeline specifications**
+
+The new pipeline uses a file watcher and passes changed file paths, utilizing ast-delta for TS/JS with a fallback to SCIP. This aligns with the incremental-indexing capabilities, but I may need to update its requirements to reflect new orchestration and gating via the config in features.yaml. The script interface might also change, and while indexer.sh currently doesn’t accept subcommands, the new pipeline might add a command for one-shot indexing. I recognize these as important spec changes, particularly for how we handle scip.proto fetching in the scip-parser.
+**Clarifying contract and specs**
+
+I’m considering the capabilities of "scip-proto" or "vendor-contracts," which may extend the scip-parser specification. There’s also the need to clarify the external contract relating to MCP tool semantics, including the ci_index_status behavior. Currently, there's no machine-readable contract available. I should create or modify a spec for ci_index_status since it's described in other documents but not as a standalone spec. There’s potential to align existing specs with the new requirements, especially concerning incremental indexing using AST delta before SCIP, which will involve updating various specifications to avoid conflicts and improve clarity.
+**Evaluating spec and contract changes**
+
+The user wants me to evaluate if we need spec or contract changes. My conclusion is that changes are indeed necessary. I'll outline affected capabilities and where to place spec deltas. For instance, we ought to adjust the scip-parser and incremental-indexing specs to reflect offline proto requirements and ast-delta integration. We also need to clarify the ci_index_status tool semantics and document any behavior changes. Essentially, the purpose is to align existing specs with actual code, capturing required modifications and responsibilities clearly.
+**Assessing spec and contract needs**
+
+It's clear there are no HTTP APIs, only CLI scripts and MCP tool interface semantics, which can act as contracts. The proposal suggests changes in semantics rather than tool lists, and there may need to be contract tests. We have to create a contract plan and might propose adding a vendored proto file. Since the environment is read-only, I can’t write but can outline the necessary contract changes and evaluate if spec updates are needed across specific affected capabilities identified in the proposal.
+**Proposing contract test IDs and content**
+
+I need to suggest contract test IDs, like CT-IDX-..., CT-SP-..., and CT-MCP-..., but ensure not to reference any that don't exist unless labeled as proposed. The user requested specific content for a spec delta, so I should create full Markdown documents for affected capabilities. Many existing specs use different styles, so I'll adopt the most appropriate format. Since we lack a design document and clear AC-IDs, I might use the proposal’s Decision Log as a reference for tracing instead. I'll make sure to adhere to existing patterns while proposing the changes.
+**Defining contract tests and proposal outlines**
+
+We should avoid implementation details, so environment variables can be defined in the spec. The proposal mentions using a local-first proto discovery strategy, which allows us to load the proto definition from various locations. But we need to be careful not to mandate specific vendored locations. I propose a new folder for the vendored proto file. User requests suggest updates in the dev-playbooks/specs, but that's not where the code should go. 
+
+Next, I’ll summarize evidence from the proposal about optimizing the indexing pipeline and conflicts in existing specs. I plan to outline the necessary changes and present draft specs for clarity.
+**Updating spec details and contract plan**
+
+I need to update several spec documents based on the proposal. First, updating the "核心功能" table in `project-profile.md` to clarify the "索引状态" section by including Embedding. Next, the `structured-context-output/spec.md` needs clarification on what "index_status" means since it currently relies on embedding. I'll include a specification delta draft for the architecture too.
+
+For the contract plan, I’m proposing a machine-readable `third_party/scip/scip.proto` file, with associated tests ensuring the consistency of the existing CLI options and verifying that the embedding mappings still work, all while avoiding specifying the actual code. I’ll ensure my output is structured and concise!
+**Clarifying requirements and scenarios**
+
+I need to refine a few requirements and scenarios for the project specs. First, REQ-SP-009 ensures offline functionality; if connected to a restricted network, the system should still parse using the vendored proto without defaulting to a network call. Next, REQ-SP-010 establishes that vendored proto files must be versioned. I’ll outline a few scenarios, like how the system behaves during offline parsing.
+
+For the incremental indexing, the updated decision should prioritize AST Delta updates when conditions are met, while the fallback to SCIP indexing would apply otherwise. I'll outline additional scenarios to clarify these updates!
+**Considering architecture and indexing specs**
+
+I’m thinking about how to integrate AST delta within the indexing specifications. Currently, the incremental-indexing specification mentions SCIP, but I could rename it to "Hybrid Incremental Indexing" to incorporate both AST delta and SCIP without altering the core contract. 
+
+I also want to make sure the architecture documentation reflects these updates. That includes renaming certain mappings and ensuring that any tool references relate accurately to their roles. I can outline proposed modifications and include scenarios to capture these changes effectively.
+**Evaluating spec changes**
+
+I’m considering whether to create a new capability spec for `embedding-index-management` or `index-status-tool` to define the semantics of `ci_index_status`. This tool is crucial and should ideally be captured in a dedicated spec to prevent future drift. While the user cautioned against unnecessary features, documenting semantics isn’t a feature.
+
+We’ll propose updates to existing specs, like `project-profile.md` and `architecture/c4.md`, to enhance clarity while avoiding excessive overhead. We can reference specific file paths for transparency, ensuring we acknowledge any discrepancies in the current code regarding `ci_index_status`.
+**Producing spec delta drafts**
+
+I’m preparing to create the spec delta drafts. Each will include sections like the Target Path and a document heading, perhaps labeled "Spec Delta: scip-parser offline proto." I want to ensure the content stays concise, ideally between 60 to 120 lines, while mentioning a contract plan with a bullet list and test IDs.
+
+I'll also assess the potential need for a new config key related to download permissions for the SCIP parser, while ensuring that specifications around graph.db updates and the indexing pipeline are clear. This will be detailed in the scip-parser and incremental-indexing specs. Additionally, I’ll highlight the need for batch processing as well.
+**Creating spec delta drafts**
+
+I’m getting ready to produce the spec delta drafts. I need to ensure I specify the new interface for the AST delta while considering the batch processing components already available. It's important to define the container inventory and tool mapping accurately too, especially for the `ci_index_status` and its connections to `embedding.sh` and `indexer.sh`.
+
+I want to focus on the semantics for `embedding-index-management`, ensuring it aligns with existing practices while remaining specific to index status. It's also essential to outline potential config changes in `features.yaml`, clearly stating that these should be documented in the spec delta.
+**Drafting spec delta documents**
+
+I realize the user didn’t ask for an implicit change detection report, but it's worth mentioning as a recommendation. So, let's focus on creating spec delta documents.  
+
+For the first spec delta on the scip-parser, I'll include requirements for offline resolution, network download gating, and deterministic error messaging. I’ll also consider adding a field in the output to indicate the source of the proto file, which could be useful for diagnostics.  
+
+In the second spec delta for incremental indexing, I'll modify existing requirements to align with actual practices, emphasizing the use of file watcher events instead of git diff for change detection. This will help ensure the specs reflect current functionality.
+**Creating and aligning spec deltas**
+
+I need to add modifications for hybrid incremental indexing, focusing on using file change events and a debounce setting to manage processing. If AST delta is enabled and conditions meet, I’ll run updates accordingly, otherwise, I’ll switch to SCIP index generation.
+
+Next, I’m adding scenarios to ensure proper functionality, like checking for file changes and managing graceful degradation when errors occur. 
+
+For a new spec on embedding index management, I’ll make sure it aligns with documentation updates. Finally, I’ll summarize necessary architecture doc edits.
+**Gathering evidence for indexer**
+
+I need to gather more evidence about the current c4 mislabel and project profile. We’ve already collected some information, but I should check the `dev-playbooks/specs/architecture/module-graph.md` for a more detailed indexer description that might include dependencies. We’ve only looked briefly at it, so inspecting the relevant lines around the indexer entry could help me propose precise modifications. Let’s dive into that portion of module-graph.md!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[2026-01-18T03:03:25] exec sh -lc "rg -n \"\\| Indexer \\|\" dev-playbooks/specs/architecture/module-graph.md
+sed -n '60,110p' dev-playbooks/specs/architecture/module-graph.md
+sed -n '110,150p' dev-playbooks/specs/architecture/module-graph.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-18T03:03:25] sh -lc "rg -n \"\\| Indexer \\|\" dev-playbooks/specs/architecture/module-graph.md
+sed -n '60,110p' dev-playbooks/specs/architecture/module-graph.md
+sed -n '110,150p' dev-playbooks/specs/architecture/module-graph.md" succeeded in 48ms:
+80:| Indexer | `scripts/indexer.sh` | 索引管理 | common.sh |
+│  │  CKB MCP    │  (optional - for graph-based analysis)         │
+│  │   Server    │                                                 │
+│  └─────────────┘                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 模块清单
+
+### 核心模块
+
+| 模块 | 路径 | 职责 | 依赖 |
+|------|------|------|------|
+| MCP Server | `src/server.ts` | MCP 协议处理，工具调度 | @modelcontextprotocol/sdk |
+| Embedding | `scripts/embedding.sh` | 语义代码搜索 | common.sh, Ollama/OpenAI |
+| Call Chain | `scripts/call-chain.sh` | 调用链追踪 | common.sh, CKB MCP |
+| Bug Locator | `scripts/bug-locator.sh` | Bug 位置定位 | common.sh, embedding.sh |
+| Complexity | `scripts/complexity.sh` | 复杂度分析 | common.sh |
+[2026-01-18T03:03:25] tokens used: 244,214
+
+**Clarifying indexing specifications**
+
+There's a new requirement for offline default specifications. The existing incremental-indexing spec mentions that the system should implement incremental updates based on SCIP indexing, while the new approach centers on using ast-delta for updates to graph.db when files change, with SCIP parsing as a fallback. The current spec refers to "Change Detection via Git Diff," but my goal is to optimize the indexing pipeline. I need to consider if the delta belongs to "incremental-indexing," "indexing-pipeline," or "indexer."
+**Defining pipeline specifications**
+
+I might treat the pipeline specification as either "incremental-indexing" or "indexing-pipeline" since it's a new capability in the change package to capture cross-cutting behavior. The skill suggests avoiding duplicated capabilities, so I need to produce a specification delta for the capabilities. This includes extending the `scip-parser` for offline requirements and modifying the `incremental-indexing` to clarify how the indexer pipeline triggers ast-delta incremental updates. There’s an existing `ast-delta` spec, but it currently lacks a mention of the indexer.
+**Evaluating specification needs**
+
+I see that there are documents like `architecture/c4.md` and `architecture/module-graph.md` that describe the indexer, but no dedicated specification exists yet. My focus should be on evaluating the spec contracts and drafting a spec delta for the change package. I propose creating delta docs for a couple of capabilities: first, adding offline proto discovery to the `scip-parser`, and second, detailing the new `indexing-pipeline` or `indexer`, which would describe the incremental update process, including debounce, batch triggers, and fallback conditions. But I need to consider if creating a new capability is essential.
+**Expanding change detection methods**
+
+I’m considering how to extend the incremental-indexing spec. It seems like "Change Detection via Git Diff" might conflict with using watchers, but I could modify the spec to include watchers as an additional change detection method. The spec serves as truth, and rather than editing it directly, I should produce a spec delta that broadens the detection methods and introduces new scenarios for watcher-based indexing. However, the proposal only covers the P0 pipeline and not a RESTful API. I need to clarify where the spec for `ci_index_status` exists, as there isn’t a dedicated one.
+**Assessing spec change needs**
+
+It seems that we might not be affected by changes in `ci_index_status` semantics, but it's worth exploring a spec delta for capabilities like `mcp-tooling` or `mcp-output-format`. I've looked for an existing embedding service spec, but it seems to be missing. We need to define `ci_index_status`, which could fall under “index-management” as a new capability or extend `mcp-output-format`, although that wouldn't fit right. The existing documentation doesn’t match the code, indicating an implementation bug rather than a necessary spec change. However, we still might need a spec delta to clarify existing inconsistencies. I should propose a set of spec deltas, emphasizing that a spec change is indeed needed.
+**Creating spec delta drafts**
+
+I need to show the spec delta draft in a proper structure, likely using sections like `## ADDED Requirements`, `## MODIFIED Requirements`, and `## REMOVED Requirements`. However, it's unclear which format to follow since there is inconsistency across existing specs. I lean toward the skill's recommendation for structure. Each requirement will need unique IDs, following existing naming conventions. I'll clarify the necessary changes, emphasizing potential external interfaces and actions for `ci_index_status`. This may involve updating existing specifications and documenting new requirements accordingly. Also, I should mention the recommended next step as "devbooks-implementation-plan."
+**Evaluating mcp tool specifications**
+
+I'm considering whether there's an existing spec for mcp tool definitions. It doesn't seem to be present, so we might need to create a new specification delta under a capability like `mcp-tool-ci_index_status` or `embedding-index-management`. There's no specific folder for that in the truth root, but the project profile refers to "embedding index status management." Although the user requested a "spec delta," we can identify necessary changes. I'll propose updates for the scip-parser spec and indexing pipeline behavior as well, ensuring compatibility and addressing potential issues.
+**Defining ci_index_status spec changes**
+
+I'm outlining the requirements for the `ci_index_status` tool, which acts on the embedding vector index. It will have actions like `status`, `build`, and `clear`. Each action needs to be defined for idempotency and error handling in the spec. The proposal indicates that the behavior of `ci_index_status` will change, aligning it with `embedding.sh`. We’ll also explore the incremental-indexing specs, proposing updates to reflect support for AST delta that enables graph.db updates, ensuring documentation is consistent with the changes. I’ll recommend specific updates for various specs accordingly.
+**Crafting spec delta documents**
+
+The user asked for "spec delta 草案内容," so I’ll create several spec delta documents for capabilities like "scip-parser," "incremental-indexing," and "mcp-tooling" or "embedding-index-status." I’ll clarify that the `ci_index_status` semantics need updates and suggest which lines to modify in the relevant documents like project-profile and c4. We’ll also ensure to include concise contract plans alongside the spec deltas, addressing things like the local file path for `scip.proto` and necessary environment variables. I aim to ensure everything is clearly outlined and organized!
+**Defining incremental-indexing spec delta**
+
+In the incremental-indexing spec delta, I need to modify the "SCIP-Based Incremental Indexing" requirement, emphasizing that incremental updates should prioritize AST-delta for graph.db rather than scip. I'll also add requirements for debounce/batch scheduling in the indexer and include scenarios for file changes and fallback procedures.
+
+For the `index-management` spec delta, I want to define the actions related to `ci_index_status`, ensuring they manage the embedding index properly. I’ll include associated scenarios without diving into implementation details, focusing on high-level semantics instead. I plan on creating a contract for offline proto vendoring and outline compatibility and testing procedures as well.
+
+
+
+
+
+
+
+
+
+[2026-01-18T03:06:13] codex
+
+**<truth-root>**: `dev-playbooks/specs/`  **<change-root>**: `dev-playbooks/changes/`
+
+我在本次只读评估中使用了 `devbooks-spec-contract`（已读取并遵守 `/.codex/skills/devbooks-spec-contract/SKILL.md`、`/.codex/skills/_shared/references/通用守门协议.md`、`dev-playbooks/constitution.md`），并已读取 `dev-playbooks/changes/optimize-indexing-pipeline-20260117/proposal.md`。
+
+## 结论：需要规格/契约变更（Need）
+
+需要做 spec/contract 变更，原因是本变更包包含对外可观察的“行为/语义契约”调整，而不仅是内部重构：
+
+- **`ci_index_status` 语义需要被固化**：提案已裁决 DP-01 选项 A，明确 `ci_index_status` 归属 **Embedding 索引**，且要求不再把 `status/build/clear` 误传给 `scripts/indexer.sh`（见 `dev-playbooks/changes/optimize-indexing-pipeline-20260117/proposal.md` 的 Decision Log/验证要求）。这是对外工具语义契约。
+- **`scripts/scip-to-graph.sh` 默认离线可运行**：DP-02 选项 A 要求 vendoring `scip.proto`，并消除“运行时隐式网络下载”（见 `dev-playbooks/changes/optimize-indexing-pipeline-20260117/proposal.md`）。当前实现仍会下载（`scripts/scip-to-graph.sh` 内 `SCIP_PROTO_URL=...` + `ensure_scip_proto()`），因此需要在 spec 中显式定义“离线优先”的契约与兼容策略。
+- **索引流水线行为变化（增量优先 + 回退路径）**：提案要求 `scripts/indexer.sh` 监听变更后“优先走 AST 增量更新 graph.db，失败/不满足则回退全量 + parse --incremental”，并强调幂等与回退一致性（`dev-playbooks/changes/optimize-indexing-pipeline-20260117/proposal.md` Why/Scope/验收锚点）。这属于可观察行为（脚本行为、graph.db 更新策略、离线可靠性）。
+- **现有真理文档存在冲突，必须通过 spec delta 修正**：例如 `dev-playbooks/specs/architecture/c4.md` 将 `scripts/indexer.sh` 描述为 “Embedding 索引管理”（见 `dev-playbooks/specs/architecture/c4.md` Container Inventory），但提案裁决要求 `indexer.sh` 维持为 SCIP/图索引守护进程（DP-01）。这是 spec 真理冲突，必须增量修正，否则会持续误导并引发契约漂移。
+
+## 关键证据（可验证引用）
+
+- DP-01/02/03 已裁决（语义归属、离线策略、防抖聚合）：`dev-playbooks/changes/optimize-indexing-pipeline-20260117/proposal.md`
+- `ci_index_status` 当前实现把 action 透传给 `indexer.sh`：`src/server.ts`（case `"ci_index_status"` 调用 `runScript("indexer.sh", [action])`）
+- `scripts/indexer.sh` 并不支持 `status/build/clear` 子命令（只支持 `--status/--install/...`），且其定位是“后台索引守护进程/生成 index.scip”：`scripts/indexer.sh`
+- `scripts/scip-to-graph.sh` 存在隐式在线下载：`scripts/scip-to-graph.sh`（`SCIP_PROTO_URL` + `ensure_scip_proto()`）
+- `c4.md` 当前将 Indexer 定义为 “Embedding 索引管理”，与 DP-01 裁决冲突：`dev-playbooks/specs/architecture/c4.md:156`
+
+---
+
+## 受影响的 Specs（真理源落点建议：`dev-playbooks/specs/`）
+
+这些是后续归档/merge 到真理源时必须同步更新的目标（本次输出仅给出 change 包内 spec delta 草案）：
+
+- **[EXTEND]** `dev-playbooks/specs/scip-parser/spec.md`：补齐“离线 proto（vendored）”契约与场景
+- **[MODIFY/EXTEND]** `dev-playbooks/specs/incremental-indexing/spec.md`：把“增量优先路径”从单一 SCIP 增量，扩展为“AST Delta 优先 + SCIP 回退”的流水线行为
+- **[BREAK/ALIGN]** `dev-playbooks/specs/architecture/c4.md`：修正 `indexer.sh` 职责（不再称为 Embedding 索引管理）
+- **[ALIGN]** `dev-playbooks/specs/architecture/module-graph.md`：Indexer 的职责描述与依赖边界对齐
+- **[ALIGN]** `dev-playbooks/specs/_meta/project-profile.md`：项目画像中的“索引管理/索引状态”表述与工具/脚本真实语义一致（避免“ci_index_status ↔ indexer.sh”漂移）
+
+---
+
+## 规格 Delta 草案（Spec）
+
+以下为“只读草案”，建议创建在变更包目录（而不是直接改 `dev-playbooks/specs/`，符合宪法 GIP-04）。
+
+### A) Capability: scip-parser（离线 proto 契约）
+
+**目标路径（建议新增 spec delta）**  
+`dev-playbooks/changes/optimize-indexing-pipeline-20260117/specs/scip-parser/spec.md`
+
+```markdown
+## ADDED Requirements
+
+### REQ-SP-008：SCIP Proto 离线优先（Offline-First）
+
+系统 SHALL 在执行 SCIP 解析（`parse` / `parse --incremental`）时，默认不依赖网络获取 proto 定义。
+
+约束：
+- 默认应优先使用仓库内固定版本的 `scip.proto`（vendored）。
+- 允许通过显式配置/环境变量覆盖 proto 来源（但默认仍为离线优先）。
+- 任何“在线下载”行为必须是显式 opt-in（见 REQ-SP-009）。
+
+#### SC-SP-011：离线环境下仍可解析（Vendored Proto）
+
+- **GIVEN** 运行环境无网络（或网络受限）
+- **AND** `/tmp/scip.proto` 不存在
+- **AND** 仓库内存在 vendored `scip.proto`
+- **WHEN** 执行 `scip-to-graph.sh parse --incremental`
+- **THEN** 解析应成功（或进入既有的“解析失败降级”路径）
+- **AND** 不应因为“下载 proto”失败而中断
+
+
+### REQ-SP-009：Proto 在线下载显式授权（Explicit Opt-In）
+
+系统 MAY 支持下载 `scip.proto` 作为兼容/应急路径，但 MUST 满足：
+- 默认关闭下载；
+- 仅当用户显式允许时才进行下载；
+- 当下载被禁用且本地 proto 不存在时，必须给出可诊断错误（见 SC-SP-012）。
+
+#### SC-SP-012：缺少 Proto 且不允许下载时的明确错误
+
+- **GIVEN** vendored `scip.proto` 不存在
+- **AND** `/tmp/scip.proto` 不存在
+- **AND** 未启用“允许下载 proto”的显式开关
+- **WHEN** 执行 `scip-to-graph.sh parse`
+- **THEN** 返回非 0 退出码
+- **AND** 输出明确错误，包含：
+  - “未找到 scip.proto”
+  - “如何提供 vendored proto 或如何显式启用下载（若实现提供此能力）”
+```
+
+落点建议（真理源同步点）：
+- 归档/合并时把上述 delta 合入 `dev-playbooks/specs/scip-parser/spec.md`（新增 REQ-SP-008/009 与场景）。
+
+---
+
+### B) Capability: incremental-indexing（索引流水线：AST 增量优先 + SCIP 回退）
+
+**目标路径（建议新增 spec delta）**  
+`dev-playbooks/changes/optimize-indexing-pipeline-20260117/specs/incremental-indexing/spec.md`
+
+```markdown
+## MODIFIED Requirements
+
+### Requirement: Incremental Indexing Strategy (AST-First with SCIP Fallback)
+
+系统 SHALL 支持“增量优先”的索引更新策略，以提升近实时性与资源利用率。
+
+修改说明（对现有“SCIP-Based Incremental Indexing”的补充/修正）：
+- 增量优先路径 SHOULD 使用 AST Delta（如 tree-sitter）对 `graph.db` 做增量更新（当能力可用且启用时）。
+- 当增量路径不可用/失败/变更规模超过阈值时，系统 MUST 降级到全量索引（生成/更新 `index.scip`），并将其解析同步到 `graph.db`。
+
+#### Scenario: Prefer AST Delta for single-file changes
+
+- **GIVEN** AST Delta 能力可用且启用
+- **AND** 发生单文件变更
+- **WHEN** 触发索引更新
+- **THEN** 系统优先执行增量更新以刷新 `graph.db`
+- **AND** 不应强制要求每次都重建 `index.scip`
+
+
+### Requirement: Graceful Degradation to Full Index (Deterministic Fallback)
+
+系统 SHALL 在以下任一条件下确定性回退到全量路径：
+- 增量能力不可用（例如依赖缺失/不支持的文件类型）
+- 增量更新失败
+- 变更文件数超过阈值（阈值由配置或默认值定义）
+
+#### Scenario: Incremental fails, fallback to full + parse incremental
+
+- **GIVEN** 增量路径执行失败（任意原因）
+- **WHEN** 系统检测到失败
+- **THEN** 系统执行全量索引路径并在成功后同步更新 `graph.db`
+- **AND** 输出可诊断日志（说明已回退与原因）
+```
+
+落点建议（真理源同步点）：
+- 归档时把 delta 合入 `dev-playbooks/specs/incremental-indexing/spec.md`，以避免现有 spec 只描述“SCIP-based 增量”而与本变更的“AST 优先”发生真理冲突。
+
+---
+
+### C) Capability: index-management（`ci_index_status` 语义契约固化）
+
+当前 `dev-playbooks/specs/` 内没有独立 capability spec 来定义 `ci_index_status` 的行为（只在 `dev-playbooks/specs/_meta/project-profile.md`、`dev-playbooks/specs/architecture/c4.md` 出现“映射描述”，且存在漂移风险）。为防止再次漂移，建议在本变更包内新增 capability spec delta（归档时再 promote 到真理源）。
+
+**目标路径（建议新增 spec delta）**  
+`dev-playbooks/changes/optimize-indexing-pipeline-20260117/specs/index-management/spec.md`
+
+```markdown
+## ADDED Requirements
+
+### REQ-IM-001：MCP 工具 ci_index_status 的语义归属（Embedding Index Only）
+
+系统 SHALL 将 MCP 工具 `ci_index_status` 定义为“Embedding 向量索引的状态与管理”，不承担 SCIP/图索引守护进程的管理职责。
+
+约束：
+- `ci_index_status` 的 action 语义 MUST 与 Embedding 索引一致：
+  - `status`: 查询 Embedding 索引状态
+  - `build`: 构建/刷新 Embedding 索引
+  - `clear`: 清理 Embedding 索引
+- 默认 action = `status`
+- 行为必须确定性，不得触发后台守护进程的启动副作用。
+
+#### SC-IM-001：默认 status
+
+- **GIVEN** 调用 `ci_index_status` 未提供 action
+- **WHEN** 执行工具调用
+- **THEN** 等价于 action = `status`
+
+
+### REQ-IM-002：向后兼容与错误语义
+
+系统 MUST 保持 `ci_index_status` 的对外输入形状不变（action 枚举仍为 `status|build|clear`），并保证错误可诊断。
+
+#### SC-IM-002：未知 action 的明确错误
+
+- **GIVEN** action 不是 `status|build|clear`
+- **WHEN** 调用 `ci_index_status`
+- **THEN** 返回明确错误消息（包含 Unknown action）
+- **AND** 不应执行任何索引修改动作
+```
+
+落点建议（真理源同步点）：
+- 归档时将该 capability promote 到 `dev-playbooks/specs/index-management/spec.md`（如你希望真理源拥有该 capability）。
+- 同步修正“架构/画像”真理文档中的映射描述（见下节）。
+
+---
+
+## 契约计划（Contract）——本变更必需的“数据/配置契约”点
+
+========================  
+A) 契约与数据定义计划  
+========================
+
+- **Proto 契约（vendored scip.proto）**
+  - 建议新增/固定的契约文件落点：`third_party/scip/scip.proto`（固定版本 + 记录上游来源）
+  - 兼容策略：
+    - 默认离线：优先使用 vendored proto
+    - 保留旧行为兼容：若 `/tmp/scip.proto` 已存在，可作为回退来源
+    - 在线下载必须显式允许（例如环境变量/配置开关；具体键名由实现阶段确定，但 spec 必须声明“默认禁止”）
+
+- **配置契约（增量开关）**
+  - 现有 `config/features.yaml` 已包含 `features.ast_delta.enabled`（见 `config/features.yaml`），本变更若让 indexer 读取该开关，应在 spec 中声明：
+    - 开关的默认值、禁用时的回退行为、以及对外可观测影响（例如“禁用增量时只走全量路径”）
+
+- **Contract Test IDs（建议）**
+  - `CT-SP-OFFLINE-001`（behavior）：无网络、无 `/tmp/scip.proto`、存在 vendored proto 时 `parse --incremental` 不因下载失败而中断
+  - `CT-IM-001`（contract/behavior）：`ci_index_status` 默认 action= status，且不触发守护进程副作用
+  - `CT-II-001`（behavior）：增量失败时确定性回退全量路径，并在成功后同步刷新 `graph.db`
+
+========================  
+C) 追溯摘要（必须）  
+========================
+
+- DP-01（`ci_index_status` 语义归属）→ `specs/index-management/spec.md` → `CT-IM-001`
+- DP-02（scip.proto 离线化）→ `specs/scip-parser/spec.md`（REQ-SP-008/009）→ `CT-SP-OFFLINE-001`
+- P0 索引流水线闭环（增量优先 + 回退）→ `specs/incremental-indexing/spec.md` → `CT-II-001`
+
+---
+
+## 需要同步修正的“真理冲突”（不在本次 delta 正文内展开，但必须在归档前解决）
+
+- `dev-playbooks/specs/architecture/c4.md`：`scripts/indexer.sh` 不应再被描述为 “Embedding 索引管理”（与 DP-01 裁决冲突）。
+- `dev-playbooks/specs/_meta/project-profile.md`：应避免把 `ci_index_status` 与 `indexer.sh` 混淆；若继续写“索引管理”，需明确这是 **Embedding 索引管理**，并指向正确的责任主体（实现阶段会把 MCP 路由对齐）。
+
+---
+
+## 推荐的下一步
+
+**下一步：`devbooks-implementation-plan`**
+
+原因：规格/契约变更点已识别并给出 spec delta 草案。下一步应把这些需求拆解为 `dev-playbooks/changes/optimize-indexing-pipeline-20260117/tasks.md` 中可追踪的实现任务，并绑定对应 Contract Test IDs。
+[2026-01-18T03:07:08] tokens used: 259,677

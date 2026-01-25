@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "run_id": "abtest-2",
+  "generated_at": "2026-01-23T10:50:54Z",
+  "status": "success",
+  "degraded": false,
+  "reasons": [],
+  "missing_fields": [],
+  "git": {
+    "ref_input": "HEAD",
+    "ref_resolved": "3547af120636a4f2fa8635a238dd3cc5994b5321",
+    "dirty": false,
+    "isolation": {
+      "strategy": "worktree",
+      "workdir": ".worktrees/ab-version/run-a"
+    }
+  },
+  "dataset": {
+    "queries": {
+      "path": "tests/fixtures/benchmark/queries.jsonl",
+      "line_count": 3,
+      "sha256": "92aeb057d4e22e0fd9dc44898966a3ba60f70c308ce17fc704af785572424cf8"
+    }
+  },
+  "environment": {
+    "os": "darwin",
+    "arch": "arm64",
+    "node": "v22.15.0"
+  },
+  "config": {
+    "toggles": {
+      "context_injection_mode": { "value": "on", "source": "default" },
+      "cache_mode": { "value": "cold", "source": "default" }
+    },
+    "hash": "94041ccc454bedabbe441b4a48756a2746a6d50eeb6054ea388727bae032484d",
+    "devbooks_config": {
+      "mode": "missing",
+      "path": null,
+      "sha256": null,
+      "missing": true
+    }
+  },
+  "write_boundary": {
+    "out_dir": "/Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0702-improve-demo-suite-ab-metrics/evidence/abtest-2",
+    "tmp_dir": "/Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0702-improve-demo-suite-ab-metrics/evidence/abtest-2/.tmp",
+    "allow_system_tmp": false
+  },
+  "metrics": {
+    "demo_suite": { "total_duration_ms": 133 }
+  },
+  "steps": [
+    { "id": "ab-version/run-a", "status": "success", "duration_ms": 133 }
+  ]
+}

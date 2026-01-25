@@ -1,0 +1,2 @@
+$ bats tests/benchmarks-contract.bats
+zsh:8: command not found: bats

@@ -1,0 +1,229 @@
+total 1632
+drwxr-xr-x  42 ozbombor  staff   1344 Jan 23 02:47 .
+drwxr-xr-x@ 34 ozbombor  staff   1088 Jan 23 02:42 ..
+-rw-r--r--   1 ozbombor  staff   4379 Jan 16 16:51 adr-parser.bats
+-rw-r--r--   1 ozbombor  staff  21209 Jan 23 02:53 ast-delta.bats
+-rw-r--r--   1 ozbombor  staff  16606 Jan 16 18:58 augment-context.bats
+-rw-r--r--   1 ozbombor  staff  10222 Jan 23 02:57 boundary-detector.bats
+-rw-r--r--   1 ozbombor  staff  11143 Jan 16 19:07 bug-locator.bats
+-rw-r--r--   1 ozbombor  staff  30302 Jan 23 02:49 cache-manager.bats
+-rw-r--r--   1 ozbombor  staff   4606 Jan 16 18:59 ci.bats
+-rwxr-xr-x   1 ozbombor  staff  17863 Jan 16 01:31 cod-visualizer.bats
+-rw-r--r--   1 ozbombor  staff  27349 Jan 20 19:01 context-compressor.bats
+-rw-r--r--   1 ozbombor  staff  18511 Jan 14 21:49 context-layer.bats
+-rw-r--r--   1 ozbombor  staff  25910 Jan 16 21:13 daemon.bats
+-rw-r--r--   1 ozbombor  staff  10604 Jan 23 02:59 data-flow-tracing.bats
+-rw-r--r--   1 ozbombor  staff  28795 Jan 15 03:42 dependency-guard.bats
+-rw-r--r--   1 ozbombor  staff  12266 Jan 19 21:08 drift-detector.bats
+-rw-r--r--   1 ozbombor  staff   6403 Jan 19 18:50 feature-toggle.bats
+-rw-r--r--   1 ozbombor  staff  60099 Jan 17 01:02 federation-lite.bats
+drwxr-xr-x  14 ozbombor  staff    448 Jan 19 22:23 fixtures
+-rw-r--r--   1 ozbombor  staff  28665 Jan 17 01:05 graph-rag.bats
+-rw-r--r--   1 ozbombor  staff  35945 Jan 23 02:51 graph-store.bats
+drwxr-xr-x   3 ozbombor  staff     96 Jan 16 02:14 helpers
+-rw-r--r--   1 ozbombor  staff  15255 Jan 23 02:58 hotspot-analyzer.bats
+-rw-r--r--   1 ozbombor  staff  18074 Jan 20 19:00 hybrid-retrieval.bats
+-rwxr-xr-x   1 ozbombor  staff  38311 Jan 17 01:08 impact-analyzer.bats
+-rw-r--r--   1 ozbombor  staff   7586 Jan 23 02:54 incremental-indexing.bats
+-rw-r--r--   1 ozbombor  staff  42135 Jan 19 21:12 indexer-scheduler.bats
+-rw-r--r--   1 ozbombor  staff   4176 Jan 14 20:38 intent-analysis.bats
+-rw-r--r--   1 ozbombor  staff  16967 Jan 17 01:09 intent-classification.bats
+-rw-r--r--   1 ozbombor  staff  46241 Jan 17 01:03 intent-learner.bats
+-rw-r--r--   1 ozbombor  staff   8708 Jan 17 16:57 keystroke-cancel.bats
+-rw-r--r--   1 ozbombor  staff   6904 Jan 17 16:54 llm-provider.bats
+-rw-r--r--   1 ozbombor  staff  21161 Jan 20 19:01 llm-rerank.bats
+-rw-r--r--   1 ozbombor  staff  11474 Jan 20 03:42 long-term-memory.bats
+-rw-r--r--   1 ozbombor  staff  10050 Jan 22 06:29 mcp-contract.bats
+-rw-r--r--   1 ozbombor  staff  24291 Jan 23 02:55 pattern-learner.bats
+-rw-r--r--   1 ozbombor  staff  18980 Jan 19 22:28 regression.bats
+-rw-r--r--   1 ozbombor  staff   9882 Jan 15 03:43 scip-to-graph.bats
+-rw-r--r--   1 ozbombor  staff  11455 Jan 19 22:26 semantic-anomaly.bats
+-rw-r--r--   1 ozbombor  staff   8123 Jan 14 20:43 subgraph-retrieval.bats
+-rwxr-xr-x   1 ozbombor  staff  44491 Jan 19 21:11 upgrade-capabilities.bats
+-rw-r--r--   1 ozbombor  staff  21744 Jan 16 01:31 vuln-tracker.bats
+tests/mcp-contract.bats:1:#!/usr/bin/env bats
+tests/mcp-contract.bats:2:# mcp-contract.bats - MCP Tool Contract Tests
+tests/mcp-contract.bats:5:# Depends: bats-core, node
+tests/mcp-contract.bats:6:# Run: bats tests/mcp-contract.bats
+tests/mcp-contract.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/feature-toggle.bats:1:#!/usr/bin/env bats
+tests/feature-toggle.bats:2:# feature-toggle.bats - AC-010 Feature Toggle Acceptance Tests
+tests/feature-toggle.bats:5:# Depends: bats-core, jq
+tests/feature-toggle.bats:6:# Run: bats tests/feature-toggle.bats
+tests/feature-toggle.bats:13:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/bug-locator.bats:1:#!/usr/bin/env bats
+tests/bug-locator.bats:2:# bug-locator.bats - AC-009 Bug Locator Regression Tests
+tests/bug-locator.bats:5:# Depends: bats-core (https://github.com/bats-core/bats-core)
+tests/bug-locator.bats:6:# Run: bats tests/bug-locator.bats
+tests/bug-locator.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/ast-delta.bats:1:#!/usr/bin/env bats
+tests/ast-delta.bats:2:# ast-delta.bats - AST Delta 增量索引模块测试
+tests/ast-delta.bats:19:SCRIPT_DIR="$BATS_TEST_DIRNAME/../scripts"
+tests/hotspot-analyzer.bats:1:#!/usr/bin/env bats
+tests/hotspot-analyzer.bats:2:# hotspot-analyzer.bats - AC-001 Hotspot Algorithm Acceptance Tests
+tests/hotspot-analyzer.bats:5:# Depends: bats-core (https://github.com/bats-core/bats-core)
+tests/hotspot-analyzer.bats:6:# Run: bats tests/hotspot-analyzer.bats
+tests/hotspot-analyzer.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/llm-rerank.bats:1:#!/usr/bin/env bats
+tests/llm-rerank.bats:2:# llm-rerank.bats - LLM 重排序测试
+tests/llm-rerank.bats:25:SCRIPT_DIR="$BATS_TEST_DIRNAME/../scripts"
+tests/llm-rerank.bats:29:FIXTURES_DIR="$BATS_TEST_DIRNAME/fixtures"
+tests/graph-store.bats:1:#!/usr/bin/env bats
+tests/graph-store.bats:2:# graph-store.bats - SQLite 图存储测试
+tests/graph-store.bats:38:SCRIPT_DIR="$BATS_TEST_DIRNAME/../scripts"
+tests/graph-store.bats:668:    local v3_fixture="$BATS_TEST_DIRNAME/fixtures/graph-store/v3-schema.sql"
+tests/cache-manager.bats:1:#!/usr/bin/env bats
+tests/cache-manager.bats:2:# cache-manager.bats - Cache Manager Contract Tests
+tests/cache-manager.bats:5:# Depends: bats-core, jq, git
+tests/cache-manager.bats:6:# Run: bats tests/cache-manager.bats
+tests/cache-manager.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/impact-analyzer.bats:1:#!/usr/bin/env bats
+tests/impact-analyzer.bats:2:# impact-analyzer.bats - 传递性影响分析测试
+tests/impact-analyzer.bats:24:SCRIPT_DIR="$BATS_TEST_DIRNAME/../scripts"
+tests/scip-to-graph.bats:1:#!/usr/bin/env bats
+tests/scip-to-graph.bats:2:# scip-to-graph.bats - SCIP 解析转换测试
+tests/scip-to-graph.bats:22:SCRIPT_DIR="$BATS_TEST_DIRNAME/../scripts"
+tests/scip-to-graph.bats:44:    skip_if_no_file "$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:46:    export SCIP_INDEX_PATH="$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:70:    skip_if_no_file "$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:72:    export SCIP_INDEX_PATH="$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:86:    skip_if_no_file "$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:88:    export SCIP_INDEX_PATH="$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:166:    skip_if_no_file "$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:169:    cp "$BATS_TEST_DIRNAME/../index.scip" "$TEST_TEMP_DIR/index.scip"
+tests/scip-to-graph.bats:190:    skip_if_no_file "$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:193:    cp "$BATS_TEST_DIRNAME/../index.scip" "$TEST_TEMP_DIR/index.scip"
+tests/scip-to-graph.bats:214:    skip_if_no_file "$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:216:    export SCIP_INDEX_PATH="$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:233:    skip_if_no_file "$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:235:    export SCIP_INDEX_PATH="$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:252:    skip_if_no_file "$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:255:    cp "$BATS_TEST_DIRNAME/../index.scip" "$TEST_TEMP_DIR/custom.scip"
+tests/scip-to-graph.bats:275:    skip_if_no_file "$BATS_TEST_DIRNAME/../index.scip"
+tests/scip-to-graph.bats:277:    export SCIP_INDEX_PATH="$BATS_TEST_DIRNAME/../index.scip"
+tests/boundary-detector.bats:1:#!/usr/bin/env bats
+tests/boundary-detector.bats:2:# boundary-detector.bats - AC-004 Boundary Detection Acceptance Tests
+tests/boundary-detector.bats:5:# Depends: bats-core
+tests/boundary-detector.bats:6:# Run: bats tests/boundary-detector.bats
+tests/boundary-detector.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/data-flow-tracing.bats:1:#!/usr/bin/env bats
+tests/data-flow-tracing.bats:2:# data-flow-tracing.bats - AC-003 Data Flow Tracing Acceptance Tests
+tests/data-flow-tracing.bats:5:# Depends: bats-core, rg, jq
+tests/data-flow-tracing.bats:6:# Run: bats tests/data-flow-tracing.bats
+tests/data-flow-tracing.bats:17:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/data-flow-tracing.bats:238:    local py_file="$BATS_TEST_TMPDIR/sample.py"
+tests/drift-detector.bats:1:#!/usr/bin/env bats
+tests/drift-detector.bats:16:    export PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/drift-detector.bats:19:    export FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures/drift-detector"
+tests/subgraph-retrieval.bats:1:#!/usr/bin/env bats
+tests/subgraph-retrieval.bats:2:# subgraph-retrieval.bats - AC-003 Subgraph Retrieval Acceptance Tests
+tests/subgraph-retrieval.bats:5:# Depends: bats-core
+tests/subgraph-retrieval.bats:6:# Run: bats tests/subgraph-retrieval.bats
+tests/subgraph-retrieval.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/intent-analysis.bats:1:#!/usr/bin/env bats
+tests/intent-analysis.bats:2:# intent-analysis.bats - AC-002 Intent Analysis Acceptance Tests
+tests/intent-analysis.bats:5:# Depends: bats-core
+tests/intent-analysis.bats:6:# Run: bats tests/intent-analysis.bats
+tests/intent-analysis.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/intent-learner.bats:1:#!/usr/bin/env bats
+tests/intent-learner.bats:2:# intent-learner.bats - 意图偏好学习模块测试
+tests/intent-learner.bats:25:SCRIPT_DIR="$BATS_TEST_DIRNAME/../scripts"
+tests/incremental-indexing.bats:1:#!/usr/bin/env bats
+tests/incremental-indexing.bats:2:# incremental-indexing.bats - AC-007 Incremental Indexing Acceptance Tests
+tests/incremental-indexing.bats:5:# Depends: bats-core
+tests/incremental-indexing.bats:6:# Run: bats tests/incremental-indexing.bats
+tests/incremental-indexing.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/federation-lite.bats:1:#!/usr/bin/env bats
+tests/federation-lite.bats:2:# federation-lite.bats - Federation Lite Contract Tests
+tests/federation-lite.bats:5:# Depends: bats-core, jq, git
+tests/federation-lite.bats:6:# Run: bats tests/federation-lite.bats
+tests/federation-lite.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/helpers/common.bash:30:# Note: This is a basic fail function for bats tests
+tests/helpers/common.bash:547:# Extract JSON from mixed output (stdout + stderr merged by BATS run).
+tests/context-compressor.bats:1:#!/usr/bin/env bats
+tests/context-compressor.bats:25:    export PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/context-compressor.bats:28:    export BASE_FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures/context-compressor"
+tests/context-compressor.bats:29:    export FIXTURES_DIR="${BATS_TEST_TMPDIR}/context-compressor"
+tests/context-compressor.bats:424:    local test_cache_dir="$BATS_TEST_TMPDIR/cache-cc-005"
+tests/context-compressor.bats:486:    local out_dir="$BATS_TEST_TMPDIR/concurrent"
+tests/context-compressor.bats:490:    local devbooks_dir_a="$BATS_TEST_TMPDIR/devbooks-a"
+tests/context-compressor.bats:491:    local devbooks_dir_b="$BATS_TEST_TMPDIR/devbooks-b"
+tests/pattern-learner.bats:1:#!/usr/bin/env bats
+tests/pattern-learner.bats:2:# pattern-learner.bats - Pattern Learning Acceptance Tests
+tests/pattern-learner.bats:5:# Depends: bats-core, jq
+tests/pattern-learner.bats:6:# Run: bats tests/pattern-learner.bats
+tests/pattern-learner.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/graph-rag.bats:1:#!/usr/bin/env bats
+tests/graph-rag.bats:2:# graph-rag.bats - M4: Subgraph Smart Pruning Acceptance Tests
+tests/graph-rag.bats:5:# Depends: bats-core, jq
+tests/graph-rag.bats:6:# Run: bats tests/graph-rag.bats
+tests/graph-rag.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/indexer-scheduler.bats:1:#!/usr/bin/env bats
+tests/indexer-scheduler.bats:2:# indexer-scheduler.bats - Indexing Pipeline Optimization Tests
+tests/indexer-scheduler.bats:34:# Run: bats tests/indexer-scheduler.bats
+tests/indexer-scheduler.bats:39:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/llm-provider.bats:1:#!/usr/bin/env bats
+tests/llm-provider.bats:9:    export PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/long-term-memory.bats:1:#!/usr/bin/env bats
+tests/long-term-memory.bats:19:    export PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/long-term-memory.bats:22:    export FIXTURE_DIR="${BATS_TEST_DIRNAME}/fixtures/long-term-memory"
+tests/ci.bats:1:#!/usr/bin/env bats
+tests/ci.bats:2:# ci.bats - CI/CD architecture check tests
+tests/ci.bats:8:PROJECT_ROOT="$BATS_TEST_DIRNAME/.."
+tests/hybrid-retrieval.bats:1:#!/usr/bin/env bats
+tests/hybrid-retrieval.bats:7:# Depends: bats-core, jq, sqlite3
+tests/hybrid-retrieval.bats:8:# Run: bats tests/hybrid-retrieval.bats
+tests/hybrid-retrieval.bats:29:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/semantic-anomaly.bats:1:#!/usr/bin/env bats
+tests/semantic-anomaly.bats:38:    export PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/semantic-anomaly.bats:41:    export FIXTURE_SOURCE_DIR="${BATS_TEST_DIRNAME}/fixtures/semantic-anomaly"
+tests/adr-parser.bats:1:#!/usr/bin/env bats
+tests/adr-parser.bats:2:# adr-parser.bats - ADR parsing and linking tests
+tests/adr-parser.bats:8:SCRIPT_DIR="$BATS_TEST_DIRNAME/../scripts"
+tests/cod-visualizer.bats:1:#!/usr/bin/env bats
+tests/cod-visualizer.bats:2:# cod-visualizer.bats - COD 架构可视化模块测试
+tests/cod-visualizer.bats:20:SCRIPT_DIR="$BATS_TEST_DIRNAME/../scripts"
+tests/augment-context.bats:1:#!/usr/bin/env bats
+tests/augment-context.bats:2:# augment-context.bats - Structured context output tests
+tests/augment-context.bats:8:HOOKS_DIR="$BATS_TEST_DIRNAME/../hooks"
+tests/context-layer.bats:1:#!/usr/bin/env bats
+tests/context-layer.bats:2:# context-layer.bats - Context Layer Contract Tests
+tests/context-layer.bats:5:# Depends: bats-core, jq, git
+tests/context-layer.bats:6:# Run: bats tests/context-layer.bats
+tests/context-layer.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/vuln-tracker.bats:1:#!/usr/bin/env bats
+tests/vuln-tracker.bats:2:# vuln-tracker.bats - 安全漏洞基础追踪模块测试
+tests/vuln-tracker.bats:22:SCRIPT_DIR="$BATS_TEST_DIRNAME/../scripts"
+tests/keystroke-cancel.bats:1:#!/usr/bin/env bats
+tests/keystroke-cancel.bats:9:    export PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/upgrade-capabilities.bats:1:#!/usr/bin/env bats
+tests/upgrade-capabilities.bats:2:# tests/upgrade-capabilities.bats
+tests/upgrade-capabilities.bats:303:    # bats 的 run 命令将退出码保存在 $status 变量中
+tests/upgrade-capabilities.bats:863:    # bats 的 run 命令将退出码保存在 $status 变量中
+tests/upgrade-capabilities.bats:914:    # bats 的 run 命令将退出码保存在 $status 变量中
+tests/daemon.bats:1:#!/usr/bin/env bats
+tests/daemon.bats:2:# daemon.bats - 常驻守护进程测试
+tests/daemon.bats:24:SCRIPT_DIR="$BATS_TEST_DIRNAME/../scripts"
+tests/intent-classification.bats:1:#!/usr/bin/env bats
+tests/intent-classification.bats:2:# intent-classification.bats - Intent Classification Contract Tests
+tests/intent-classification.bats:5:# Depends: bats-core, jq (optional for performance tests)
+tests/intent-classification.bats:6:# Run: bats tests/intent-classification.bats
+tests/intent-classification.bats:30:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/dependency-guard.bats:1:#!/usr/bin/env bats
+tests/dependency-guard.bats:2:# dependency-guard.bats - Dependency Guard Contract Tests
+tests/dependency-guard.bats:5:# Depends: bats-core, jq, git
+tests/dependency-guard.bats:6:# Run: bats tests/dependency-guard.bats
+tests/dependency-guard.bats:16:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/regression.bats:1:#!/usr/bin/env bats
+tests/regression.bats:2:# regression.bats - Backward Compatibility Regression Tests
+tests/regression.bats:5:# Depends: bats-core
+tests/regression.bats:6:# Run: bats tests/regression.bats
+tests/regression.bats:13:#   T-REG-01: 全量 bats 稳定
+tests/regression.bats:20:PROJECT_ROOT="${BATS_TEST_DIRNAME}/.."
+tests/regression.bats:27:    if [ -n "${BATS_FILE_TMPDIR:-}" ] && [ -d "$BATS_FILE_TMPDIR" ]; then
+tests/regression.bats:28:        cache_dir="$BATS_FILE_TMPDIR"
+tests/regression.bats:34:        cache_dir="${BATS_TEST_DIRNAME:-.}"
+tests/regression.bats:39:# Setup once per file (BATS hook)
+tests/regression.bats:45:    local package_json="${BATS_TEST_DIRNAME}/../package.json"
+tests/regression.bats:47:        cd "${BATS_TEST_DIRNAME}/.." || return 1
+tests/regression.bats:53:# Cleanup after all tests (BATS hook)

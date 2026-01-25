@@ -1,0 +1,409 @@
+[2026-01-23T04:57:44] OpenAI Codex v0.0.0 (research preview)
+[2026-01-23T04:57:44] binary: /Users/ozbombor/Library/Caches/just-every/code/0.6.49/code-aarch64-apple-darwin
+--------
+workdir: /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+model: gpt-5.2-codex
+provider: custom
+approval: never
+sandbox: danger-full-access
+reasoning effort: xhigh
+reasoning summaries: auto
+--------
+[2026-01-23T04:57:44] User instructions:
+Context: Repo: /Users/ozbombor/Projects/code-intelligence-mcp
+Truth Root: dev-playbooks/specs/
+Change Root: dev-playbooks/changes/
+当前日期：2026-01-23
+语言：中文
+
+Agent: 使用 devbooks-proposal-judge skill 对本次变更的提案进行裁决，并将裁决结果写回 proposal.md 的 `## Decision Log` 部分。
+
+必须遵循：
+- `~/.claude/skills/_shared/references/AI行为规范.md`
+- `/Users/ozbombor/.code/skills/devbooks-proposal-judge/references/提案裁决提示词.md`
+
+配置发现：
+- 本仓库 `.devbooks/config.yaml` 没有 roots 映射；按 `dev-playbooks/project.md` 使用：
+  - <truth-root> = dev-playbooks/specs/
+  - <change-root> = dev-playbooks/changes/
+
+变更包：
+- change-id：20260123-1206-add-auto-tool-orchestrator
+- proposal：`/Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md`
+- Challenger 报告：`/Users/ozbombor/Projects/code-intelligence-mcp/.code/agents/806ae537-8f23-4fba-915d-f65fa51d2d00/result.txt`
+
+任务要求：
+1) 阅读 proposal.md 与 Challenger 报告。
+2) 做裁决：Approved | Revise | Rejected（若存在未解决 Blocking，不得 Approved）。
+3) 把裁决写回 proposal.md 的 `## Decision Log`：
+   - 在末尾追加新的裁决条目（不要覆盖历史记录）。
+   - 日期用 2026-01-23。
+4) 注意提案含“单变更包强制约束”：不得要求拆分多个 change；可要求范围收敛/同包重排优先级。
+5) 写回必须发生在主工作区：`/Users/ozbombor/Projects/code-intelligence-mcp`（不要只改 .code/working/* worktree）。
+
+输出（聊天窗口）：
+- 简要告知裁决结果 + 已写回的文件路径。
+- 不要输出多余解释或工具日志。
+
+
+Desired output: 裁决结论（Approved/Revise/Rejected）+ 已写回 proposal.md 的确认。
+
+Files to consider: /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md, /Users/ozbombor/Projects/code-intelligence-mcp/.code/agents/806ae537-8f23-4fba-915d-f65fa51d2d00/result.txt, /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/project.md
+
+[2026-01-23T04:57:52] thinking
+
+**Preparing to use proposal judge skill**
+
+I'll open the skill file along with AI behavior guidelines and proposal judgment prompt files to understand requirements before applying any edits.
+[2026-01-23T04:57:54] exec /bin/sh -lc ls in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T04:57:54] /bin/sh -lc ls succeeded in 13ms:
+README.md
+README.zh-CN.md
+bin
+config
+docs
+hooks
+install.sh
+package-lock.json
+package.json
+parse-scip.js
+scripts
+src
+tests
+tsconfig.json
+vendored
+[2026-01-23T04:57:56] tokens used: 12,424
+
+[2026-01-23T04:58:05] thinking
+
+**Preparing to use proposal-judge skill**
+
+I'm locating and planning to read the SKILL.md and related instructions for the devbooks-proposal-judge skill while ensuring to operate in the main repo directory as required.
+[2026-01-23T04:58:06] exec /bin/sh -lc 'cat /Users/ozbombor/.codex/skills/devbooks-proposal-judge/SKILL.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T04:58:06] /bin/sh -lc 'cat /Users/ozbombor/.codex/skills/devbooks-proposal-judge/SKILL.md' succeeded in 22ms:
+---
+name: devbooks-proposal-judge
+description: devbooks-proposal-judge：对 proposal 阶段进行裁决（Judge），输出 Approved/Revise/Rejected 并写回 proposal.md 的 Decision Log。用户说"裁决提案/提案评审/Approved Revise Rejected/decision log"等时使用。
+recommended_experts: ["Product Manager", "System Architect"]
+allowed-tools:
+  - Glob
+  - Grep
+  - Read
+  - Write
+  - Edit
+---
+
+# DevBooks：提案裁决（Proposal Judge）
+
+## 前置：配置发现（协议无关）
+
+- `<truth-root>`：当前真理目录根
+- `<change-root>`：变更包目录根
+
+执行前**必须**按以下顺序查找配置（找到后停止）：
+[2026-01-23T04:58:06] tokens used: 12,806
+
+[2026-01-23T04:58:20] thinking
+
+**Confirming config and reference file paths**
+
+I'm verifying that the config is at dev-playbooks/project.md in the main workspace and planning to read the user's specified AI行为规范 and 提案裁决提示词 files at the .code skills path, prioritizing user instructions. I'll read the proposal and challenger report in the main workspace and prepare to append the decision without altering other content.
+**Inspecting decision log format**
+
+I'm opening the proposal to review the existing Decision Log structure before appending a new entry with date, decision, and reasons.
+
+[2026-01-23T04:58:23] exec /bin/sh -lc 'cat /Users/ozbombor/.claude/skills/_shared/references/AI行为规范.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T04:58:23] /bin/sh -lc 'cat /Users/ozbombor/.claude/skills/_shared/references/AI行为规范.md' succeeded in 22ms:
+# DevBooks AI 行为规范
+
+> **角色设定**：你是软件工程领域的专业实践者，融合了系统架构、测试驱动与代码质量的经验。你的决策必须可验证、可追溯、可复用。
+>
+> **用户须知**：本文档定义了 AI 在 DevBooks 工作流中的行为规范。你可以根据项目需求自定义这些规则。
+
+---
+
+## 0. 配置发现（强制）
+
+在写任何文件之前，必须先确定 `<truth-root>` 与 `<change-root>` 的实际路径；禁止猜测。
+
+**发现顺序**（找到后停止）：
+1. `.devbooks/config.yaml`（如存在）→ 解析 `root`、`paths.specs`、`paths.changes`
+2. `dev-playbooks/project.md`（如存在）→ 使用 `dev-playbooks/specs` 和 `dev-playbooks/changes`
+3. `project.md`（如存在）→ 使用 `specs/` 和 `changes/`
+4. 若仍无法确定 → **停止并询问用户**
+
+**关键约束**：
+- 如果配置中指定了 `constitution`（宪法文件），**必须先阅读该文档**再执行任何操作
+[2026-01-23T04:58:25] tokens used: 14,151
+
+[2026-01-23T04:58:38] thinking
+
+**Confirming config and instructions**
+
+I'm clarifying we must work in the main repo directory with absolute paths, use dev-playbooks/project.md as config, check that file for any constitution or agents_doc mentions, and follow the proposal judge skill instructions including reading AI规范 and references/提案裁决提示词.md before making decisions.
+**Resolving output format and tooling**
+
+I'm prioritizing AI规范's required initial line with truth-root/change-root before brief decision+path output, accepting two-line outputs as minimal compliance. I'll mention expert roles in the decision log entry per references and confirm to always use apply_patch for edits while operating in the main repo path.
+
+[2026-01-23T04:58:51] exec /bin/sh -lc 'cat /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/project.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T04:58:51] /bin/sh -lc 'cat /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/project.md' succeeded in 19ms:
+# 项目上下文
+
+## 目的
+
+为 AI 编程助手（如 Claude Code）提供代码智能能力的 MCP Server。通过语义搜索、调用链追踪、Bug 定位等功能，增强 AI 对代码库的理解和导航能力。
+
+## 技术栈
+
+- **运行时**：Node.js >= 18.0.0
+- **语言**：TypeScript 5.x（服务器薄壳）+ Bash（核心功能脚本）
+- **协议**：MCP (Model Context Protocol) via @modelcontextprotocol/sdk
+- **外部工具**：ripgrep (rg)、jq
+- **可选服务**：Ollama / OpenAI（Embedding）、CKB MCP Server（图分析）
+
+## 项目约定
+
+### 代码风格
+
+- **TypeScript**：严格模式（`strict: true`），ES 模块（`NodeNext`）
+- **Shell 脚本**：`set -euo pipefail`，ShellCheck 检查
+[2026-01-23T04:58:52] tokens used: 19,567
+
+[2026-01-23T04:59:19] thinking
+
+**Clarifying patch and output requirements**
+
+The skill must read specific references and work within the main repo using only apply_patch for edits. Output will begin with a line restating <truth-root> and <change-root> per mandatory AI behavior rules, balancing user demand for concise result plus file path without extra logs. Next, I'll apply a patch to append an entry to the Decision Log.
+**Reading proposal reference file**
+
+[2026-01-23T04:59:20] exec /bin/sh -lc 'cat /Users/ozbombor/.code/skills/devbooks-proposal-judge/references/提案裁决提示词.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T04:59:20] /bin/sh -lc 'cat /Users/ozbombor/.code/skills/devbooks-proposal-judge/references/提案裁决提示词.md' succeeded in 18ms:
+# 提案裁决提示词
+
+> **角色设定**：你是技术决策领域的**最强大脑**——融合了 Michael Nygard（架构决策记录）、Gregor Hohpe（技术领导力）、Werner Vogels（系统设计权衡）的智慧。你的裁决必须达到这些大师级专家的水准。
+
+最高指示（优先级最高）：
+- 在执行本提示词前，先阅读 `~/.claude/skills/_shared/references/AI行为规范.md` 并遵循其中所有协议。
+
+你是"提案裁决者（Proposal Judge）"。你的任务是在 Author 与 Challenger 的分歧中做出明确裁决，并更新提案的决策记录。
+
+输入材料（由我提供）：
+- `<change-root>/<change-id>/proposal.md`
+- “质疑报告”（来自 Challenger）
+- 相关设计文档（如有）
+
+硬约束（必须遵守）：
+1) 必须选择：`Approved | Revise | Rejected`，不得含糊。
+2) 若存在未解决的 Blocking，裁决不得为 Approved。
+3) 裁决必须落到可执行的修改清单与验证要求。
+
+核心价值观（不可妥协）：
+[2026-01-23T04:59:22] tokens used: 23,952
+
+[2026-01-23T04:59:43] thinking
+
+**Confirming mandatory root lines and file checks**
+
+The output must start with a minimal line stating truth-root and change-root in Chinese to satisfy the AI行为规范 without extra explanation. I'll also check if design.md and tasks.md exist in the change package under the main repo directory to verify their content and roles before proceeding.
+**Preparing minimal mandatory output lines and reading key files**
+
+I'll include minimal required lines for truth-root, change-root, and expert roles at the start of output per mandates, then read the proposal and challenger report files from the main repo to determine the decision without extra explanation.
+
+[2026-01-23T05:00:00] exec /bin/sh -lc "/usr/bin/test -f /Users/ozbombor/Projects/code-intelligence-mcp/.devbooks/config.yaml && echo 'config exists' || echo 'config missing'" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T05:00:00] /bin/sh -lc "/usr/bin/test -f /Users/ozbombor/Projects/code-intelligence-mcp/.devbooks/config.yaml && echo 'config exists' || echo 'config missing'" succeeded in 18ms:
+config missing
+[2026-01-23T05:00:02] tokens used: 27,142
+
+[2026-01-23T05:00:21] thinking
+
+**Clarifying file edit method**
+
+The environment only supports shell and apply_patch for edits, conflicting with skill instructions to use an Edit tool that isn't available; I’ll follow developer guidance to use apply_patch for file changes and specify absolute repo paths.
+**Aligning output format with requirements**
+
+I must prepend each file write with truth-root, change-root, and expert roles to comply with AI behavior norms despite user preferring minimal output; I'll integrate all required info concisely on the first output line. I'll also check for design.md and tasks.md presence to verify their content separation before updating the Decision Log using apply_patch with absolute repo paths.
+
+[2026-01-23T05:00:45] exec /bin/sh -lc 'rg -n --no-heading -e "''^## " -e "Decision Log" /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T05:00:45] /bin/sh -lc 'rg -n --no-heading -e "''^## " -e "Decision Log" /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' exited 127 in 17ms:
+ERROR
+/bin/sh: rg: command not found
+[2026-01-23T05:00:46] tokens used: 29,491
+
+[2026-01-23T05:00:59] thinking
+
+**Preparing file existence checks**
+
+I'm planning to check if design.md and tasks.md exist in the directory to inspect their content and presence, deciding between rg and grep for searching but defaulting to grep due to rg absence.
+[2026-01-23T05:01:00] exec /bin/sh -lc 'ls -la /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T05:01:00] /bin/sh -lc 'ls -la /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator' succeeded in 20ms:
+total 104
+drwxr-xr-x  4 ozbombor  staff    128 Jan 23 03:29 .
+drwxr-xr-x  7 ozbombor  staff    224 Jan 23 12:25 ..
+-rw-r--r--  1 ozbombor  staff  41559 Jan 23 08:47 proposal.md
+-rw-r--r--@ 1 ozbombor  staff   6607 Jan 23 03:05 用户初始要求.md
+[2026-01-23T05:01:01] tokens used: 30,525
+[2026-01-23T05:01:13] exec /bin/sh -lc 'cat /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T05:01:13] /bin/sh -lc 'cat /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' succeeded in 25ms:
+# Claude Code / Codex CLI：自动工具编排 + 结果融合的上下文注入（单变更包交付）
+
+- Decision Status: Pending
+
+> Truth Root: `dev-playbooks/specs/`
+> Change Root: `dev-playbooks/changes/`
+> Status: Revise（Judge 要求修改后再评审）
+
+> 治理约束（强制）：本次变更**所有任务必须在一个变更包里完成**，禁止拆分为多个变更包；若 Proposal Challenger 要求拆分，Proposal Judge **必须驳回拆分请求**（允许在同一变更包内重排优先级/范围，但不得拆包）。
+
+## 🎯 结论先行（30秒阅读）
+
+**本提案会导致**：
+- ✅ 在 Claude Code 与 Codex CLI 中，用户输入后可在模型输出前自动执行“合适的”MCP 工具，并把结果回填进 Prompt
+- ✅ 自动调用不再是“固定 1-2 个工具”，而是按意图/置信度/预算选择多工具，并做结果融合与解释（面向用户可读）
+- ✅ 中英文都可触发自动注入（语言无关），并保留“可见 + 可控”的用户体验
+- ✅ 明确 `hooks/context-inject-global.sh` 与新增 `hooks/auto-tool-orchestrator.sh` 的分工：前者做客户端适配入口，后者做可复用的编排内核
+
+**本提案不会导致**：
+- ❌ 不做 Cursor/其他 IDE 的适配（明确排除）
+[2026-01-23T05:01:15] tokens used: 31,693
+
+[2026-01-23T05:01:36] thinking
+
+**Preparing to read challenger report**
+
+I'm setting up to read the challenger report file to evaluate it against the proposal, with the intent to append a dated decision entry to the existing Decision Log in proposal.md using apply_patch.
+[2026-01-23T05:01:37] exec /bin/sh -lc 'cat /Users/ozbombor/Projects/code-intelligence-mcp/.code/agents/806ae537-8f23-4fba-915d-f65fa51d2d00/result.txt' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T05:01:37] /bin/sh -lc 'cat /Users/ozbombor/Projects/code-intelligence-mcp/.code/agents/806ae537-8f23-4fba-915d-f65fa51d2d00/result.txt' succeeded in 19ms:
+现在让我基于提案内容和现有代码进行全面的质疑审查。我将按照"提案质疑提示词"的要求输出报告。
+
+---
+
+# Challenger 质疑报告
+
+## 结论
+
+**Revise（要求修改后再评审）**
+
+**理由**：提案在架构设计、可行性验证、安全边界与范围收敛方面存在多处阻断性缺口，且部分设计决策缺乏充分证据支撑。虽然目标明确且具有价值，但当前设计存在"过度设计 vs 可交付性"的矛盾，需要在保持单变更包约束的前提下进一步收敛范围、补齐验证路径并明确降级策略。
+
+---
+
+## 1. 阻断项（Blocking）
+
+### B1. Codex CLI 会话连续性方案的可行性未经验证
+
+**问题**：
+- 提案第 273-277 行声明"session_id 来源：wrapper 以 `codex exec --json` / `codex exec resume --json` 运行，解析 JSON 事件中的 `session_id`"
+[2026-01-23T05:01:37] tokens used: 44,329
+
+[2026-01-23T05:02:09] thinking
+
+**Reaffirming roots and confirming apply_patch has been used**
+
+Change applied successfully to the specified file path.
+**<truth-root>=dev-playbooks/specs/; <change-root>=dev-playbooks/changes/**
+
+Appending Decision Log entry with Revise decision based on unresolved blocking items B1-B4, missing evidence for session_id and error propagation, unclear parameter clipping enforcement, and MVP scope ambiguity; adopting Product Manager + System Architect perspective.
+**<truth-root>=dev-playbooks/specs/; <change-root>=dev-playbooks/changes/**
+
+Appending detailed Decision Log entry listing 4 blocking reasons, required modifications aligned with B1-B4 issues, and corresponding verification requirements; maintaining single change package and adopting expert perspectives.
+
+
+[2026-01-23T05:03:48] exec /bin/sh -lc 'tail -n 20 /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-judge-skill
+[2026-01-23T05:03:48] /bin/sh -lc 'tail -n 20 /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' succeeded in 22ms:
+- [ ] repo-root 判定规则：`git rev-parse --show-toplevel`/`pwd`/配置的优先级；无 git/monorepo/子目录场景的行为与错误处理。
+- [ ] 结果融合确定性规则：去重键、聚合顺序（稳定排序）、摘要长度/截断策略、冲突结论呈现；并给出示例。
+- [ ] 定义 error.code 与入口层退出码枚举，说明超时/解析失败/工具不可用等失败类型的降级路径与用户可见文本。
+- [ ] 补充安装/升级/卸载/验证流程：Claude hooks 与 Codex wrapper 的安装位置、PATH/配置依赖、回滚与验证命令。
+
+**验证要求**：
+- [ ] bats 覆盖 plan/dry-run 输出：给定固定 prompt，断言输出包含 `schema_version/run_id/tool_plan` 且未执行 codex。
+- [ ] e2e/脚本验证 Codex wrapper 会话恢复：模拟连续两轮 prompt，验证 session_id 复用或 resume 逻辑与降级输出。
+- [ ] 路径过滤验证用例：在无 git/子目录/monorepo 三场景下，断言 repo-root 解析与过滤行为一致。
+- [ ] 结果融合确定性验证：同一输入重复执行输出顺序与摘要长度稳定（含示例断言）。
+- [ ] 错误码/退出码验证：模拟 timeout/解析失败/工具不可用并断言 code 与 [Limits] 文本一致。
+
+### 2026-01-23 修订说明（Author）
+
+- 已补齐 Codex CLI 入口 A 的会话连续性：session_id 来源、持久化位置、resume 时机与丢失/冲突降级路径，并给出回滚方式。
+- 已明确 plan/dry-run 的确定性输出契约与“不调用 codex”的验证锚点，AC 与安装验证同步更新。
+- 已补齐 repo-root 判定优先级与无 git/子目录/monorepo 行为。
+- 已落地融合确定性规则（去重键/稳定排序/摘要截断/冲突呈现）。
+- 已补齐 error.code 枚举与入口层退出码、用户可见文本。
+- 已补齐 Claude hook 与 Codex wrapper 的安装/升级/卸载/验证路径。
+[2026-01-23T05:03:49] tokens used: 55,820
+
+[2026-01-23T05:04:08] thinking
+
+**Clarifying conflicting instructions about skill announcements**
+
+There's a conflict between skill usage instructions requiring announcement and user instructions requesting minimal output with only decision and file paths; deciding which takes precedence needs confirmation in next steps.
+**Summarizing decision rationale and structuring patch approach**
+
+I've analyzed the proposal and challenger reports, confirming key blocking issues remain unresolved, so the judgment will be "Revise" with detailed reasons and required modifications; I'll prepare the new Decision Log entry accordingly, ensuring compliance with output and patching rules.
+**Preparing detailed revision patch with required reasons and validations**
+
+I'm crafting the apply_patch diff to append a Decision Log entry marking Revise with clear reasons, must-modify checklist, and validation requirements for codex session, error propagation, parameter clipping, and MVP scope as per analysis.
+
+
+[2026-01-23T05:05:42] apply_patch auto_approved=true:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -691 +691,21 @@
+ - 已补齐 Claude hook 与 Codex wrapper 的安装/升级/卸载/验证路径。
++
++### 2026-01-23 裁决：Revise
++
++**理由摘要**：
++- Codex CLI 会话连续性仍依赖 `codex exec --json` 的 `session_id` 输出，但未提供可验证的输出样例或替代方案，无法评估可行性与降级路径。
++- 编排内核与入口层的错误传播契约未明确到可执行层面，fail-open 与用户可见降级提示缺乏可验证规则。
++- 自动调用参数裁剪与白名单的强制执行机制未落地，存在从 prompt 透传危险参数的风险。
++- MVP 与 Tier-2 触发边界仍不够可执行，范围收敛与可交付性存在不确定性。
++
++**必须修改项**（若 Revise）：
++- [ ] 补充 `codex exec --json` 的可验证输出样例或权威引用，并给出不支持 JSON 时的明确降级方案（如退回单次注入或关闭会话连续性）。
++- [ ] 明确编排内核向入口层传递错误的接口与退出码策略，说明成功与失败时 stdout/stderr/JSON 的格式与入口层分流逻辑。
++- [ ] 给出参数裁剪的强制执行位置与规则表，说明超限参数如何被裁剪或拒绝，并在 [Limits] 中提示原因。
++- [ ] 明确 MVP 范围：Tier-2 默认关闭或仅在显式确认下启用，并在同一变更包内标注可选项与回退路径。
++
++**验证要求**：
++- [ ] 增加 Codex CLI 会话连续性的验证锚点：当 `--json` 无 `session_id` 时降级行为可重复验证。
++- [ ] 增加错误传播验证：模拟编排内核不可用或执行失败，入口层输出空注入并包含 [Limits] 提示。
++- [ ] 增加参数裁剪验证：构造超限参数的 prompt，断言裁剪生效且 [Limits] 提示明确。
++- [ ] 增加 MVP 范围验证：默认配置下 Tier-2 不进入 plan，显式确认后才触发。
+[2026-01-23T05:05:42] apply_patch(auto_approved=true) exited 0 in 0ms:
+Success. Updated the following files:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+[2026-01-23T05:05:42] turn diff:
+diff --git a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+index 29af36fb28b668af0a10fdebb79cc02add6a743f..4d207fe4f661df1ec979528b5e64fb1fa5c09d06
+--- a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
++++ b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -689,3 +689,23 @@
+ - 已落地融合确定性规则（去重键/稳定排序/摘要截断/冲突呈现）。
+ - 已补齐 error.code 枚举与入口层退出码、用户可见文本。
+ - 已补齐 Claude hook 与 Codex wrapper 的安装/升级/卸载/验证路径。
++
++### 2026-01-23 裁决：Revise
++
++**理由摘要**：
++- Codex CLI 会话连续性仍依赖 `codex exec --json` 的 `session_id` 输出，但未提供可验证的输出样例或替代方案，无法评估可行性与降级路径。
++- 编排内核与入口层的错误传播契约未明确到可执行层面，fail-open 与用户可见降级提示缺乏可验证规则。
++- 自动调用参数裁剪与白名单的强制执行机制未落地，存在从 prompt 透传危险参数的风险。
++- MVP 与 Tier-2 触发边界仍不够可执行，范围收敛与可交付性存在不确定性。
++
++**必须修改项**（若 Revise）：
++- [ ] 补充 `codex exec --json` 的可验证输出样例或权威引用，并给出不支持 JSON 时的明确降级方案（如退回单次注入或关闭会话连续性）。
++- [ ] 明确编排内核向入口层传递错误的接口与退出码策略，说明成功与失败时 stdout/stderr/JSON 的格式与入口层分流逻辑。
++- [ ] 给出参数裁剪的强制执行位置与规则表，说明超限参数如何被裁剪或拒绝，并在 [Limits] 中提示原因。
++- [ ] 明确 MVP 范围：Tier-2 默认关闭或仅在显式确认下启用，并在同一变更包内标注可选项与回退路径。
++
++**验证要求**：
++- [ ] 增加 Codex CLI 会话连续性的验证锚点：当 `--json` 无 `session_id` 时降级行为可重复验证。
++- [ ] 增加错误传播验证：模拟编排内核不可用或执行失败，入口层输出空注入并包含 [Limits] 提示。
++- [ ] 增加参数裁剪验证：构造超限参数的 prompt，断言裁剪生效且 [Limits] 提示明确。
++- [ ] 增加 MVP 范围验证：默认配置下 Tier-2 不进入 plan，显式确认后才触发。
+
+[2026-01-23T05:05:43] tokens used: 63,280
+[2026-01-23T05:05:54] codex
+
+Revise，已写回 `/Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md`。
+[2026-01-23T05:05:55] tokens used: 64,434

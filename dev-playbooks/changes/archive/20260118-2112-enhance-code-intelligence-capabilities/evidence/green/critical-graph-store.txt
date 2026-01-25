@@ -1,0 +1,22 @@
+1..7
+ok 1 SC-GS-001: graph-store init creates database with correct schema
+ok 2 SC-GS-002: graph-store add-node creates node successfully
+ok 3 SC-GS-003: graph-store add-edge creates edge with valid type
+not ok 4 SC-GS-004: graph-store add-edge rejects invalid edge type
+# (from function `skip_if_not_ready' in file tests/helpers/common.bash, line 336,
+#  in test file tests/graph-store.bats, line 178)
+#   `skip_if_not_ready "$status" "$output" "graph-store.sh add-edge validation"' failed
+# {"status":"ok","id":"a"}
+# {"status":"ok","id":"b"}
+# FAIL: graph-store.sh add-edge validation should pass but returned status 1
+# Output: [graph-store] Invalid edge type: INVALID_TYPE. Valid types: DEFINES, IMPORTS, CALLS, MODIFIES, REFERENCES, IMPLEMENTS, EXTENDS, RETURNS_TYPE, ADR_RELATED
+not ok 5 SC-GS-004c: graph-store add-edge rejects near-miss edge types
+# (from function `skip_if_not_ready' in file tests/helpers/common.bash, line 336,
+#  in test file tests/graph-store.bats, line 198)
+#   `skip_if_not_ready "$status" "$output" "graph-store.sh add-edge validation"' failed
+# {"status":"ok","id":"a"}
+# {"status":"ok","id":"b"}
+# FAIL: graph-store.sh add-edge validation should pass but returned status 1
+# Output: [graph-store] Invalid edge type: CALL. Valid types: DEFINES, IMPORTS, CALLS, MODIFIES, REFERENCES, IMPLEMENTS, EXTENDS, RETURNS_TYPE, ADR_RELATED
+ok 6 SC-GS-004b: graph-store supports all 4 edge types
+ok 7 SC-GS-005: graph-store query-edges filters by type

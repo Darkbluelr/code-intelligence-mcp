@@ -1,0 +1,23 @@
+[
+  {
+    "symbol": "src/auth.ts::login",
+    "file_path": "src/auth.ts",
+    "score": 0.5,
+    "source": "graph",
+    "distance": 1
+  },
+  {
+    "symbol": "src/other.ts::x",
+    "file_path": "src/other.ts",
+    "score": 0.5,
+    "source": "embedding",
+    "distance": 0
+  },
+  {
+    "symbol": "src/utils.ts::hash",
+    "file_path": "src/utils.ts",
+    "score": 0.48,
+    "source": "embedding",
+    "distance": 0
+  }
+]

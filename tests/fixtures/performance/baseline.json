@@ -1,0 +1,6 @@
+{
+  "data_flow": {
+    "single_hop_p95_ms": 100,
+    "total_timeout_ms": 500
+  }
+}

@@ -1,0 +1,13 @@
+1..8
+ok 1 CT-BM-101: schema v1.1 required fields and types
+ok 2 CT-BM-102: metrics.* and top-level compatibility fields are consistent
+ok 3 CT-BM-103: benchmark_summary.median.md template required fields
+ok 4 CT-BM-201: compare stdout two lines + summary JSON schema
+ok 5 CT-BM-202: version_mismatch blocks compare (exit code=2)
+ok 6 CT-BM-203: threshold precedence (metric.threshold wins)
+not ok 7 CT-BM-204: compare prefers metrics.* (fallback when missing)
+# (from function `fail' in file tests/helpers/common.bash, line 34,
+#  in test file tests/benchmark-contract-v1_1.bats, line 392)
+#   `[ "$baseline_mrr" = "0.8" ] || fail "compare 应优先读取 metrics.*"' failed
+# FAIL: compare 应优先读取 metrics.*
+ok 8 CT-BM-301: median-of-3 per-metric median

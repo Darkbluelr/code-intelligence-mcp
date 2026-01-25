@@ -1,0 +1,120 @@
++  - 升级：重复运行 `./install.sh --with-hook` 覆盖旧脚本（保留 settings 备份）
++  - 卸载：删除 `~/.claude/hooks/context-inject-global.sh`，并从 `~/.claude/settings.json` 移除 hooks 配置
++  - 验证：`cat ~/.claude/hooks/context-inject-global.sh | head -n 5`，并在 Claude Code 触发 [Auto Tools]
++
++- **Codex wrapper 安装**：
++  - 位置：`/usr/local/bin/codex-auto`（global）或 `<repo-root>/bin/codex-auto`（local）
++  - PATH 依赖：global 模式需 `/usr/local/bin` 在 PATH；local 模式需 `export PATH="<repo-root>/bin:$PATH"`
++  - 配置依赖：`~/.codex/config.toml` 已配置本项目 MCP server
++  - 升级：重新执行安装脚本（覆盖同名 wrapper）
++  - 卸载：删除对应 wrapper 文件；删除 session 文件 `<repo-root>/.devbooks/cache/auto-tools/codex-session.json`
++  - 验证：`codex-auto --dry-run "ping"` 输出包含 `schema_version` 且不触发 codex
++
+ #### 验收标准（AC-xxx，含验证锚点）
+ 
+ | AC | 验收标准 | 可验证方式/证据锚点 |
+ |----|----------|---------------------|
+ | AC-001 | Claude Code 能在“模型输出前”完成工具调用并回填 | bats：模拟 UserPromptSubmit payload -> 断言输出包含 `tool_plan/tools`、`tool_results`、`fused_context` |
+-| AC-002 | Codex CLI 能在“模型输出前”完成工具调用并回填 | e2e：wrapper 每轮 prompt 先输出 [Auto Tools]/[Limits] 再调用 `codex exec`；bats：断言增强 prompt 含 `run_id` |
+-| AC-003 | 控制面可控且配置优先级为 env > config > default | bats：同一输入分别用 env 覆盖/无覆盖，断言 `tier_max/budget` 与开关生效 |
+-| AC-004 | 白名单/参数裁剪/路径过滤/脱敏生效 | 安全样例：请求读取 `.env`/`id_rsa`/`..` 路径 -> 结果被过滤且 [Limits] 解释；脱敏样例含 `Bearer`/`BEGIN PRIVATE KEY` -> 输出被遮盖 |
+-| AC-005 | 预算/并发/回填限额为明确数字且默认可用 | bats：对超量结果触发 `truncated=true`；输出包含 `tool_plan/budget` 与 [Limits] |
+-| AC-006 | 失败不阻塞输出（fail-open），且降级可见 | bats：模拟工具超时 -> `degraded.is_degraded=true` 且 [Limits] 含原因；仍输出可用 JSON |
+-| AC-007 | Tier-0/1 自动；Tier-2 仅条件/确认触发；同包分阶段不拆包 | bats：explore vs debug 输入 -> 断言 Tier-2 是否进入 plan；文档明确“同包分阶段” |
+-| AC-008 | 提示注入防护策略落地 | 构造工具输出含“忽略之前指令/执行 rm -rf”等文本 -> 输出被过滤且 `safety.ignore_instructions_inside_tool_output=true` |
+-| AC-009 | hooks 调用链清晰且 `augment-context-global.sh` 仍兼容 | bats：调用 `hooks/augment-context-global.sh` 断言等价于 `hooks/context-inject-global.sh` |
+-| AC-010 | I/O schema 版本与兼容策略明确 | 静态检查/测试：JSON 输出必须包含 `schema_version`；未来变更遵守 SemVer 与向前兼容 |
++| AC-002 | Codex CLI 入口 A 支持会话连续性 | bats：连续两次输入，第二次走 `codex exec resume <session_id>`；session 文件存在且 session_id 复用；失败时 [Limits] 显示降级 |
++| AC-003 | plan/dry-run 可重复且不依赖外部 codex | bats：`CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` -> 输出包含 `schema_version/run_id/tool_plan`，且不触发 codex 命令 |
++| AC-004 | 控制面可控且配置优先级为 env > config > default | bats：同一输入分别用 env 覆盖/无覆盖，断言 `tier_max/budget` 与开关生效 |
++| AC-005 | repo-root 判定在无 git/子目录/monorepo 场景一致 | bats：模拟三场景 -> 断言 repo-root 来源优先级与路径过滤一致 |
++| AC-006 | 白名单/参数裁剪/路径过滤/脱敏生效 | 安全样例：请求读取 `.env`/`id_rsa`/`..` 路径 -> 结果被过滤且 [Limits] 解释；脱敏样例含 `Bearer`/`BEGIN PRIVATE KEY` -> 输出被遮盖 |
++| AC-007 | 预算/并发/回填限额为明确数字且默认可用 | bats：对超量结果触发 `truncated=true`；输出包含 `tool_plan/budget` 与 [Limits] |
++| AC-008 | 失败不阻塞输出（fail-open），且降级可见 | bats：模拟工具超时/解析失败 -> `degraded.is_degraded=true` 且 [Limits] 含原因；仍输出可用 JSON |
++| AC-009 | Tier-0/1 自动；Tier-2 仅条件/确认触发；同包分阶段不拆包 | bats：explore vs debug 输入 -> 断言 Tier-2 是否进入 plan；文档明确“同包分阶段” |
++| AC-010 | 提示注入防护策略落地 | 构造工具输出含“忽略之前指令/执行 rm -rf”等文本 -> 输出被过滤且 `safety.ignore_instructions_inside_tool_output=true` |
++| AC-011 | 结果融合确定性规则稳定 | bats：同一输入重复两次 -> 输出顺序与摘要长度一致；冲突结论按规则呈现 |
++| AC-012 | 错误码/退出码契约一致 | bats：模拟 timeout/解析失败/工具不可用 -> error.code 与退出码匹配；[Limits] 文本一致 |
++| AC-013 | hooks 调用链清晰且 `augment-context-global.sh` 仍兼容 | bats：调用 `hooks/augment-context-global.sh` 断言等价于 `hooks/context-inject-global.sh` |
++| AC-014 | I/O schema 版本与兼容策略明确 | 静态检查/测试：JSON 输出必须包含 `schema_version`；未来变更遵守 SemVer 与向前兼容 |
++| AC-015 | Codex CLI 入口 B 仍可用于单次注入 | bats：单次执行 `codex exec <PROMPT>` 前置注入 -> 断言增强 prompt 含 `run_id` 且输出 [Limits] |
+ 
+ ---
+ 
+@@ -560,3 +648,12 @@
+ - [ ] 路径过滤验证用例：在无 git/子目录/monorepo 三场景下，断言 repo-root 解析与过滤行为一致。
+ - [ ] 结果融合确定性验证：同一输入重复执行输出顺序与摘要长度稳定（含示例断言）。
+ - [ ] 错误码/退出码验证：模拟 timeout/解析失败/工具不可用并断言 code 与 [Limits] 文本一致。
++
++### 2026-01-23 修订说明（Author）
++
++- 已补齐 Codex CLI 入口 A 的会话连续性：session_id 来源、持久化位置、resume 时机与丢失/冲突降级路径，并给出回滚方式。
++- 已明确 plan/dry-run 的确定性输出契约与“不调用 codex”的验证锚点，AC 与安装验证同步更新。
++- 已补齐 repo-root 判定优先级与无 git/子目录/monorepo 行为。
++- 已落地融合确定性规则（去重键/稳定排序/摘要截断/冲突呈现）。
++- 已补齐 error.code 枚举与入口层退出码、用户可见文本。
++- 已补齐 Claude hook 与 Codex wrapper 的安装/升级/卸载/验证路径。
+
+[2026-01-23T00:19:09] tokens used: 211,608
+[2026-01-23T00:19:14] exec /bin/sh -lc 'tail -n 120 /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0623-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-revise
+[2026-01-23T00:19:14] /bin/sh -lc 'tail -n 120 /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0623-add-auto-tool-orchestrator/proposal.md' succeeded in 22ms:
+#### 兼容性
+
+- 目标是默认不破坏现有“手动调用工具”的使用方式
+- Hook/Wrapper 的输出应保持向后兼容：即使自动化关闭，也能输出空注入或仅注入项目画像
+
+#### 风险
+
+| 风险 | 概率 | 影响 | 缓解措施 |
+|------|------|------|----------|
+| 自动调用导致延迟增加 | 中 | 高 | 分层 + 预算 + 并发控制 + 缓存 + 降级 |
+| 结果噪音反而干扰模型 | 中 | 中-高 | top-k、聚合去重、明确溯源、解释摘要 |
+| 不同客户端调用链差异导致“未必能预调用” | 低-中 | 高 | 以 Hook/Wrapper 为强入口；在测试中验证“输出前调用” |
+| 工具不可用/索引不可用导致失败 | 中 | 中 | 先 `ci_index_status`，并提供降级路径 |
+| 安全/隐私风险（意外读到敏感文件） | 低-中 | 高 | 白名单 + 路径过滤 + 输出脱敏 + 明确提示 |
+
+---
+
+### Alternatives（备选方案）
+
+#### 方案 A：把所有逻辑塞进 `hooks/context-inject-global.sh`
+[2026-01-23T00:19:14] tokens used: 212,374
+
+[2026-01-23T00:19:31] thinking
+
+**总结文件写入输出格式**
+
+输出应以中文提供，第一行明确重申使用的 truth-root 与 change-root，第二行说明所用技能及角色视角，接着列出文件路径和修订要点。输出保持简洁，无需包含后续步骤。
+**输出带修订要点**
+
+使用 <truth-root>=`dev-playbooks/specs`，<change-root>=`dev-playbooks/changes`。  
+使用技能：devbooks-proposal-author（Product Manager / System Architect 视角）。
+
+proposal.md 路径：`dev-playbooks/specs/proposal.md`
+
+- Codex CLI 会话连续性，包含 session_id 提取、存储、恢复条件及降级回滚机制  
+- plan/dry-run 模式确定性输出契约，避免调用 Codex，添加 run_id 规则，AC 验证节点切换为 bats  
+- 仓库根路径优先级及配置层级统一：环境变量 > 配置文件 > 默认，采用 config/auto-tools.yaml，舍弃 .devbooks/config.yaml  
+- 确定性融合规则，实现键去重、稳定排序、摘要长度控制及冲突处理  
+- 错误码及退出码标准化，带用户可见错误文本  
+- Claude 钩子与 Codex 包装器的安装升级卸载验证流程，包括路径、环境变量、回滚和验证策略  
+- 决策日志新增修订说明，确保仅修改 proposal.md 文件，无额外文件改动  
+
+下一步建议：进行测试验证并提交变更。
+
+[2026-01-23T00:20:16] codex
+
+使用 <truth-root>=`dev-playbooks/specs`，<change-root>=`dev-playbooks/changes`。  
+使用技能：devbooks-proposal-author（Product Manager / System Architect 视角）。
+
+proposal.md 路径：`/Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0623-add-auto-tool-orchestrator/proposal.md`
+
+- Codex CLI 入口 A 会话连续性：定义 `session_id` 来源（`codex exec --json`）、持久化位置、resume 触发、丢失/冲突降级与回滚路径  
+- plan/dry-run 确定性输出契约：`CI_AUTO_TOOLS_MODE=plan`/`CI_AUTO_TOOLS_DRY_RUN=1` 不调用 codex、固定输出字段与 `run_id` 规则，AC-001/AC-002/AC-003 锚点统一为 bats  
+- repo-root 与配置层级：明确 `env > config > default`，config 仅指 `config/auto-tools.yaml`（`.devbooks/config.yaml` 不参与）；repo-root 采用配置→git→pwd 优先级并覆盖无 git/子目录/monorepo 行为  
+- 融合确定性规则：去重键、稳定排序、摘要长度与截断、冲突结论呈现与稳定输出约束  
+- 错误码/退出码契约：补齐 `error.code` 枚举、入口层退出码与用户可见文本模板  
+- 安装/升级/卸载/验证路径：补齐 Claude hook 与 Codex wrapper 的安装位置、PATH/配置依赖、回滚与验证命令
+
+下一步建议：`devbooks-design-doc`（进入设计文档阶段）。
+[2026-01-23T00:20:17] tokens used: 218,168

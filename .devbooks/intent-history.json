@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "symbol": "handleToolCall",
+      "symbol_id": "src/server.ts::handleToolCall",
+      "action": "view",
+      "timestamp": 1769035486
+    },
+    {
+      "symbol": "handleCiIntent",
+      "symbol_id": "src/tool-handlers.ts::handleCiIntent",
+      "action": "view",
+      "timestamp": 1769035486
+    }
+  ]
+}

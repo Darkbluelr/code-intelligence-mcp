@@ -1,0 +1,75 @@
+#!/bin/bash
+# pre-commit - Architecture Guard Pre-commit Hook
+#
+# Version: 1.0.0
+# Purpose: Run dependency guard checks before commit
+# Install: ln -sf ../../hooks/pre-commit .git/hooks/pre-commit
+#
+# Environment Variables:
+#   SKIP_ARCH_CHECK     - Set to 1 to skip architecture checks
+#   ARCH_BLOCK_ON_ERROR - Set to 1 to block commits on violations (default: warn only)
+#   WITH_DEPS           - Set to 1 to include first-level dependencies
+#
+# Trace: AC-012, AC-N03, AC-N04
+# Change: augment-upgrade-phase2
+
+set -euo pipefail
+
+# Find project root
+PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+GUARD_SCRIPT="${PROJECT_ROOT}/scripts/dependency-guard.sh"
+
+# Check if skip is requested
+if [[ "${SKIP_ARCH_CHECK:-0}" == "1" ]]; then
+    echo "[pre-commit] Architecture check skipped (SKIP_ARCH_CHECK=1)"
+    exit 0
+fi
+
+# Check if guard script exists
+if [[ ! -x "$GUARD_SCRIPT" ]]; then
+    echo "[pre-commit] Warning: dependency-guard.sh not found, skipping architecture check"
+    exit 0
+fi
+
+# Build command
+CMD=("$GUARD_SCRIPT" "--pre-commit" "--format" "json")
+
+if [[ "${WITH_DEPS:-0}" == "1" ]]; then
+    CMD+=("--with-deps")
+fi
+
+echo "[pre-commit] Running architecture check..."
+
+# Run guard
+OUTPUT=$("${CMD[@]}" 2>&1) || true
+
+# Parse result
+if command -v jq &>/dev/null; then
+    BLOCKED=$(echo "$OUTPUT" | jq -r '.summary.blocked // false' 2>/dev/null || echo "false")
+    VIOLATIONS=$(echo "$OUTPUT" | jq -r '.summary.total_violations // 0' 2>/dev/null || echo "0")
+    CYCLES=$(echo "$OUTPUT" | jq -r '.summary.total_cycles // 0' 2>/dev/null || echo "0")
+else
+    BLOCKED="false"
+    VIOLATIONS="0"
+    CYCLES="0"
+fi
+
+# Report
+if [[ "$VIOLATIONS" != "0" ]] || [[ "$CYCLES" != "0" ]]; then
+    echo "[pre-commit] Architecture issues found:"
+    echo "  - Violations: $VIOLATIONS"
+    echo "  - Cycles: $CYCLES"
+
+    if [[ "${ARCH_BLOCK_ON_ERROR:-0}" == "1" ]] && [[ "$BLOCKED" == "true" ]]; then
+        echo "[pre-commit] Commit blocked due to architecture violations"
+        echo ""
+        echo "To bypass this check, run: SKIP_ARCH_CHECK=1 git commit ..."
+        exit 1
+    else
+        echo "[pre-commit] Warning: Architecture issues detected but commit allowed"
+    fi
+else
+    echo "[pre-commit] Architecture check passed"
+fi
+
+exit 0

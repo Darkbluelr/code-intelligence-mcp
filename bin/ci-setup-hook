@@ -1,0 +1,99 @@
+#!/bin/bash
+# ci-setup-hook - Install Claude Code hook for automatic context injection
+#
+# This script installs the context injection hook for Claude Code,
+# enabling automatic context injection when you interact with Claude.
+#
+# Usage:
+#   ci-setup-hook [--uninstall]
+#
+# Options:
+#   --uninstall    Remove the installed hook
+
+set -euo pipefail
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log_info()  { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_ok()    { echo -e "${GREEN}[OK]${NC} $1"; }
+log_warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
+
+# Find the installation directory
+# When installed via npm, this script is in node_modules/.bin/
+# We need to find the actual package directory
+SCRIPT_PATH="$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")"
+BIN_DIR="$(dirname "$SCRIPT_PATH")"
+
+# Try to find the package root
+if [[ -f "${BIN_DIR}/../install.sh" ]]; then
+    # Direct installation (git clone)
+    PACKAGE_ROOT="${BIN_DIR}/.."
+elif [[ -f "${BIN_DIR}/../../install.sh" ]]; then
+    # npm global install (symlink in .bin)
+    PACKAGE_ROOT="${BIN_DIR}/../.."
+else
+    # Try to find via npm
+    if command -v npm &> /dev/null; then
+        NPM_PREFIX="$(npm prefix -g 2>/dev/null || echo "")"
+        if [[ -n "$NPM_PREFIX" ]] && [[ -f "${NPM_PREFIX}/lib/node_modules/@ozbombor/code-intelligence-mcp/install.sh" ]]; then
+            PACKAGE_ROOT="${NPM_PREFIX}/lib/node_modules/@ozbombor/code-intelligence-mcp"
+        fi
+    fi
+fi
+
+if [[ -z "${PACKAGE_ROOT:-}" ]] || [[ ! -f "${PACKAGE_ROOT}/install.sh" ]]; then
+    log_error "Cannot find code-intelligence-mcp installation directory"
+    log_error "Please ensure the package is properly installed"
+    exit 1
+fi
+
+PACKAGE_ROOT="$(cd "$PACKAGE_ROOT" && pwd)"
+
+# Parse arguments
+UNINSTALL=false
+if [[ $# -gt 0 ]] && [[ "$1" == "--uninstall" ]]; then
+    UNINSTALL=true
+fi
+
+if [[ "$UNINSTALL" == true ]]; then
+    log_info "Uninstalling Claude Code hook..."
+
+    HOOK_FILE="$HOME/.claude/hooks/context-inject-global.sh"
+    if [[ -f "$HOOK_FILE" ]]; then
+        rm "$HOOK_FILE"
+        log_ok "Hook removed: $HOOK_FILE"
+    else
+        log_warn "Hook not found: $HOOK_FILE"
+    fi
+
+    AUGMENT_FILE="$HOME/.claude/hooks/augment-context-global.sh"
+    if [[ -f "$AUGMENT_FILE" ]]; then
+        rm "$AUGMENT_FILE"
+        log_ok "Hook removed: $AUGMENT_FILE"
+    fi
+
+    log_ok "Hook uninstalled successfully"
+    exit 0
+fi
+
+# Install hook
+log_info "Installing Claude Code hook for automatic context injection..."
+log_info "Package root: $PACKAGE_ROOT"
+
+cd "$PACKAGE_ROOT"
+bash install.sh --with-hook --skip-deps
+
+log_ok "Hook installation complete!"
+echo ""
+echo "🎉 Automatic context injection is now enabled!"
+echo ""
+echo "When you use Claude Code, relevant code context will be"
+echo "automatically injected based on your prompts."
+echo ""
+echo "To uninstall: ci-setup-hook --uninstall"

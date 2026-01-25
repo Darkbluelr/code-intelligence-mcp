@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "indexed_at": "2026-01-14T06:42:34Z",
+  "repositories": [
+    {
+      "name": "code-intelligence-mcp",
+      "path": ".",
+      "contracts": []
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+1..4
+ok 1 DF-BASE-001: call-chain.sh exists and is executable
+ok 2 DF-BASE-002: --data-flow parameter is recognized
+ok 3 DF-BASE-003: --help includes --data-flow description
+ok 4 DF-BASE-004: --symbol parameter required for data flow

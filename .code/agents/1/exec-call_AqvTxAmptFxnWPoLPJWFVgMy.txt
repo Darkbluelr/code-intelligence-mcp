@@ -1,0 +1,260 @@
+#!/usr/bin/env node
+/**
+ * Code Intelligence MCP Server
+ *
+ * A thin MCP shell that delegates to shell scripts for code intelligence capabilities.
+ * CON-TECH-002: MCP Server 使用 Node.js 薄壳调用 Shell 脚本
+ */
+
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import { execFile } from "child_process";
+import { promisify } from "util";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+import { TOOL_HANDLERS } from "./tool-handlers.js";
+
+const execFileAsync = promisify(execFile);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const SCRIPTS_DIR = join(__dirname, "..", "scripts");
+
+const VERSION = "0.1.0";
+
+// Configuration constants
+const SCRIPT_TIMEOUT_MS = 60000; // 60s timeout
+const MAX_BUFFER_SIZE = 10 * 1024 * 1024; // 10MB buffer
+
+interface ExecError extends Error {
+  stdout?: string;
+  stderr?: string;
+}
+
+// Tool definitions
+const TOOLS = [
+  {
+    name: "ci_search",
+    description: "Semantic code search using embeddings or keywords. Use this for natural language queries like 'find authentication code' or 'where is error handling'. Supports both semantic (AI-powered) and keyword search modes. Best for: discovering code by concept, finding related implementations, exploring unfamiliar codebases.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        query: { type: "string", description: "Search query" },
+        limit: { type: "number", description: "Max results (default: 10)" },
+        mode: {
+          type: "string",
+          enum: ["semantic", "keyword"],
+          description: "Search mode (default: semantic)",
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "ci_call_chain",
+    description: "Trace function call chains to understand code flow. Use this to find who calls a function (callers) or what a function calls (callees). Best for: understanding dependencies, impact analysis before refactoring, debugging call paths, finding entry points.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        symbol: { type: "string", description: "Symbol to trace" },
+        direction: {
+          type: "string",
+          enum: ["callers", "callees", "both"],
+          description: "Trace direction (default: both)",
+        },
+        depth: { type: "number", description: "Max depth (default: 3)" },
+      },
+      required: ["symbol"],
+    },
+  },
+  {
+    name: "ci_bug_locate",
+    description: "Locate potential bug locations based on error description. Paste an error message or stack trace to find relevant code. Best for: debugging errors, finding root causes, locating exception sources.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        error: { type: "string", description: "Error message or description" },
+      },
+      required: ["error"],
+    },
+  },
+  {
+    name: "ci_complexity",
+    description: "Analyze code complexity metrics (cyclomatic complexity, lines of code, etc.). Use this to identify complex code that may need refactoring. Best for: code quality assessment, finding technical debt, prioritizing refactoring.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        path: { type: "string", description: "File or directory path" },
+        format: {
+          type: "string",
+          enum: ["text", "json"],
+          description: "Output format (default: text)",
+        },
+      },
+      required: ["path"],
+    },
+  },
+  {
+    name: "ci_graph_rag",
+    description: "Get Graph-RAG context for a query. Combines semantic search with code graph traversal to provide rich context. Use this when you need comprehensive context about a topic including related code, dependencies, and call relationships. Best for: understanding complex features, gathering context for code changes, exploring interconnected code.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        query: { type: "string", description: "Query for context retrieval" },
+        depth: { type: "number", description: "Graph traversal depth (default: 2)" },
+        budget: { type: "number", description: "Token budget (default: 8000)" },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "ci_index_status",
+    description: "Check or manage the semantic search embedding index. Use 'status' to check index health, 'build' to rebuild after major code changes, 'clear' to reset. Best for: troubleshooting search issues, maintaining search quality.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        action: {
+          type: "string",
+          enum: ["status", "build", "clear"],
+          description: "Action to perform: status (check index status), build (rebuild embedding index), clear (clean embedding cache). Default: status",
+        },
+      },
+    },
+  },
+  {
+    name: "ci_hotspot",
+    description: "Find code hotspots - files that change frequently and have high complexity. These are often sources of bugs and good refactoring candidates. Best for: identifying risky code, prioritizing code review, finding technical debt.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        top: { type: "number", description: "Number of top hotspots to return (default: 20)" },
+        days: { type: "number", description: "Number of days to analyze git history (default: 30)" },
+        format: {
+          type: "string",
+          enum: ["text", "json"],
+          description: "Output format (default: json)",
+        },
+        path: { type: "string", description: "Target directory to analyze (default: current directory)" },
+      },
+    },
+  },
+  {
+    name: "ci_boundary",
+    description: "Detect code boundary type (user code, library, generated, vendor). Use this to understand code ownership and filter analysis. Best for: excluding vendor code from analysis, identifying generated files.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        file: { type: "string", description: "File or pattern to check" },
+        format: {
+          type: "string",
+          enum: ["text", "json"],
+          description: "Output format (default: json)",
+        },
+      },
+      required: ["file"],
+    },
+  },
+  {
+    name: "ci_arch_check",
+    description: "Check architecture rules and detect circular dependencies. Use this to enforce module boundaries and find dependency cycles. Best for: maintaining clean architecture, preventing spaghetti code, enforcing layering rules.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        path: { type: "string", description: "Path to analyze (default: src/)" },
+        format: {
+          type: "string",
+          enum: ["text", "json"],
+          description: "Output format (default: json)",
+        },
+        rules: { type: "string", description: "Path to architecture rules file (default: config/arch-rules.yaml)" },
+      },
+    },
+  },
+  {
+    name: "ci_federation",
+    description: "Cross-repo API contract tracking and symbol search. Use this to find how external APIs are used across repositories, track breaking changes, and discover virtual edges between repos. Best for: microservices architecture, API versioning, cross-repo refactoring.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        action: {
+          type: "string",
+          enum: ["status", "update", "search", "generate-virtual-edges", "query-virtual"],
+          description: "Action to perform (default: status)",
+        },
+        query: { type: "string", description: "Symbol query for search/query-virtual action" },
+        format: {
+          type: "string",
+          enum: ["text", "json"],
+          description: "Output format (default: json)",
+        },
+        min_confidence: { type: "number", description: "Minimum confidence threshold for virtual edges (default: 0.5)" },
+        local_repo: { type: "string", description: "Local repository path for generate-virtual-edges (default: current directory)" },
+        sync: { type: "boolean", description: "Enable sync mode for generate-virtual-edges (update existing, remove stale)" },
+      },
+    },
+  },
+  {
+    name: "ci_graph_store",
+    description: "Query the code intelligence graph database directly with SQL. Use this for custom queries on symbols, references, and relationships. Best for: advanced analysis, custom reports, debugging index issues.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        action: {
+          type: "string",
+          enum: ["init", "query", "stats"],
+          description: "Action to perform: init (initialize database), query (execute SQL), stats (show statistics)",
+        },
+        payload: {
+          type: "object",
+          properties: {
+            sql: { type: "string", description: "SQL query for query action" },
+          },
+          description: "Payload object for query action containing sql field",
+        },
+      },
+      required: ["action"],
+    },
+  },
+  // MP8.1: AST Delta 增量索引工具
+  {
+    name: "ci_ast_delta",
+    description: "AST-based incremental indexing using tree-sitter. Use this to update the code index after file changes without full rebuild. Best for: keeping index fresh, fast incremental updates, CI/CD integration.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        action: {
+          type: "string",
+          enum: ["update", "batch", "status", "clear-cache"],
+          description: "Action to perform: update (single file), batch (multiple files), status, clear-cache",
+        },
+        file: { type: "string", description: "File path for update action" },
+        since: { type: "string", description: "Git ref for batch action (default: HEAD~1)" },
+      },
+    },
+  },
+  // MP8.2: 影响分析工具
+  {
+    name: "ci_impact",
+    description: "Analyze the impact of changing a symbol or file. Uses multi-hop graph traversal with confidence decay to find all affected code. Best for: safe refactoring, understanding change risk, planning migrations, pre-commit impact check.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        symbol: { type: "string", description: "Symbol to analyze impact for" },
+        file: { type: "string", description: "File path for file-level analysis (alternative to symbol)" },
+        depth: { type: "number", description: "Max traversal depth (default: 3, max: 5)" },
+        decay: { type: "number", description: "Decay factor for impact calculation (default: 0.8)" },
+        threshold: { type: "number", description: "Minimum impact threshold (default: 0.1)" },
+        format: {
+          type: "string",
+          enum: ["json", "md", "mermaid"],
+          description: "Output format (default: json)",
+        },
+      },
+    },
+  },
+  // MP8.3: COD 架构可视化工具
+  {

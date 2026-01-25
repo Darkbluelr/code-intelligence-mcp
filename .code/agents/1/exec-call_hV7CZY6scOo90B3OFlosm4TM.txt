@@ -1,0 +1,80 @@
+./.npmignore:30:*.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:180:-rw-r--r--   1 ozbombor  staff   4379 Jan 16 16:51 adr-parser.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:181:-rw-r--r--   1 ozbombor  staff  24166 Jan 16 05:07 ast-delta.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:182:-rw-r--r--   1 ozbombor  staff  16606 Jan 16 18:58 augment-context.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:183:-rw-r--r--   1 ozbombor  staff  12505 Jan 17 01:02 boundary-detector.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:184:-rw-r--r--   1 ozbombor  staff  11143 Jan 16 19:07 bug-locator.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:185:-rw-r--r--   1 ozbombor  staff  32328 Jan 17 01:06 cache-manager.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:186:-rw-r--r--   1 ozbombor  staff   4606 Jan 16 18:59 ci.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:187:-rwxr-xr-x   1 ozbombor  staff  17863 Jan 16 01:31 cod-visualizer.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:188:-rw-r--r--   1 ozbombor  staff  12395 Jan 17 16:58 context-compressor.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:189:-rw-r--r--   1 ozbombor  staff  18511 Jan 14 21:49 context-layer.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:190:-rw-r--r--   1 ozbombor  staff  25910 Jan 16 21:13 daemon.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:191:-rw-r--r--   1 ozbombor  staff  24466 Jan 17 18:20 data-flow-tracing.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:192:-rw-r--r--   1 ozbombor  staff  28795 Jan 15 03:42 dependency-guard.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:193:-rw-r--r--   1 ozbombor  staff   8677 Jan 17 16:59 drift-detector.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:194:-rw-r--r--   1 ozbombor  staff   7497 Jan 14 20:36 feature-toggle.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:195:-rw-r--r--   1 ozbombor  staff  60099 Jan 17 01:02 federation-lite.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:381:tests/drift-detector.bats:11:    export DRIFT_DETECTOR_SCRIPT="${SCRIPTS_DIR}/drift-detector.sh"
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:382:tests/drift-detector.bats:53:@test "T-DD-001: drift-detector.sh script exists and is executable" {
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:383:tests/drift-detector.bats:74:    echo "$result" | jq -e '.drift_detected == true'
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:384:tests/drift-detector.bats:141:    echo "$result" | jq -e '.drift_detected == true'
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:385:tests/drift-detector.bats:237:@test "T-DD-009: Comprehensive drift detection" {
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:386:tests/drift-detector.bats:270:    echo "$result" | jq -e '.drift_detected == true'
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:391:[2026-01-18T11:19:01] exec sh -lc "sed -n '1,120p' tests/drift-detector.bats" in /Users/ozbombor/Projects/code-intelligence-mcp
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:392:[2026-01-18T11:19:01] sh -lc "sed -n '1,120p' tests/drift-detector.bats" succeeded in 29ms:
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:393:#!/usr/bin/env bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:440:tests/mcp-contract.bats:187:@test "CT-CLI-001: call-chain.sh --trace-data-flow parameter" {
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:441:tests/mcp-contract.bats:191:    [[ "$output" == *"trace-data-flow"* ]] || [[ "$output" == *"data-flow"* ]] || \
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:442:tests/mcp-contract.bats:192:    skip "--trace-data-flow not yet added"
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:443:tests/data-flow-tracing.bats:2:# data-flow-tracing.bats - AC-004 Data Flow Tracing Acceptance Tests
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:444:tests/data-flow-tracing.bats:4:# Purpose: Verify call-chain.sh --data-flow functionality (M3: AC-004)
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:445:tests/data-flow-tracing.bats:6:# Run: bats tests/data-flow-tracing.bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:446:tests/data-flow-tracing.bats:40:@test "DF-BASE-002: --data-flow parameter is recognized" {
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:447:tests/data-flow-tracing.bats:41:    run "$CALL_CHAIN" --symbol "test" --data-flow --format json 2>&1
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:448:tests/data-flow-tracing.bats:48:@test "DF-BASE-003: --help includes --data-flow description" {
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:449:tests/data-flow-tracing.bats:51:    # Check for --data-flow parameter documentation (REQ-DFT-001)
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:450:tests/data-flow-tracing.bats:52:    [[ "$output" == *"--data-flow"* ]] || skip "--data-flow not yet documented"
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:451:tests/data-flow-tracing.bats:58:    run "$CALL_CHAIN" --data-flow --format json 2>&1
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:452:tests/data-flow-tracing.bats:69:    run "$CALL_CHAIN" --symbol "handleToolCall" --data-flow --data-flow-direction forward --format json 2>&1
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:453:tests/data-flow-tracing.bats:77:    run "$CALL_CHAIN" --symbol "handleToolCall" --data-flow --data-flow-direction forward --format json 2>&1
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:454:tests/data-flow-tracing.bats:85:    run "$CALL_CHAIN" --symbol "userInput" --data-flow --data-flow-direction forward --format json 2>&1
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:455:tests/data-flow-tracing.bats:88:    echo "$output" | jq -e '.paths // .data_flows // .tainted_symbols' > /dev/null 2>&1 || skip "Output format not matching"
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:456:tests/data-flow-tracing.bats:98:    run "$CALL_CHAIN" --symbol "processResult" --data-flow --data-flow-direction backward --format json 2>&1
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:457:tests/data-flow-tracing.bats:106:    run "$CALL_CHAIN" --symbol "data" --data-flow --data-flow-direction backward --format json 2>&1
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:458:tests/data-flow-tracing.bats:120:    run "$CALL_CHAIN" --symbol "handleToolCall" --data-flow --data-flow-direction both --format json 2>&1
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:459:tests/data-flow-tracing.bats:128:    run "$CALL_CHAIN" --symbol "handleToolCall" --data-flow --format json 2>&1
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:642:[2026-01-18T11:21:35] exec sh -lc "sed -n '1,220p' tests/indexer-scheduler.bats" in /Users/ozbombor/Projects/code-intelligence-mcp
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:643:[2026-01-18T11:21:35] sh -lc "sed -n '1,220p' tests/indexer-scheduler.bats" succeeded in 26ms:
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:644:#!/usr/bin/env bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:645:# indexer-scheduler.bats - Indexing Pipeline Optimization Tests
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:768:I see there are several test files like context-compressor.bats, long-term-memory.bats, and keystroke-cancel.bats, but the scripts directory doesn't seem to have matching names, unless they’re functions in other scripts. I should compare the lists of scripts and tests. There appear to be many tests, but some scripts, like context-compressor.sh, drift-detector.sh, and data-flow-tracing, are missing. It looks like call-chain.sh covers data flow. I’ll quickly search for context-compressor.sh to confirm.
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:772:tests/context-compressor.bats:11:    export CONTEXT_COMPRESSOR_SCRIPT="${SCRIPTS_DIR}/context-compressor.sh"
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:773:tests/context-compressor.bats:12:    export FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures/context-compressor"
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:778:[2026-01-18T11:22:50] exec sh -lc "sed -n '1,120p' tests/context-compressor.bats" in /Users/ozbombor/Projects/code-intelligence-mcp
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:779:[2026-01-18T11:22:50] sh -lc "sed -n '1,120p' tests/context-compressor.bats" succeeded in 28ms:
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:780:#!/usr/bin/env bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:809:tests/llm-provider.bats:3:# Change ID: augment-final-10-percent
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:810:tests/context-compressor.bats:3:# Change ID: augment-final-10-percent
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:811:tests/data-flow-tracing.bats:9:# Change: augment-final-10-percent
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:812:tests/long-term-memory.bats:3:# Change ID: augment-final-10-percent
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:813:tests/semantic-anomaly.bats:3:# Change ID: augment-final-10-percent
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:814:tests/keystroke-cancel.bats:3:# Change ID: augment-final-10-percent
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:815:tests/drift-detector.bats:3:# Change ID: augment-final-10-percent
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:820:[2026-01-18T11:23:10] exec sh -lc "sed -n '1,260p' tests/long-term-memory.bats" in /Users/ozbombor/Projects/code-intelligence-mcp
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:821:[2026-01-18T11:23:10] sh -lc "sed -n '1,260p' tests/long-term-memory.bats" succeeded in 30ms:
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:822:#!/usr/bin/env bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1075:The tests mention "keystroke-cancel," but I need to check if it’s implemented, perhaps through `daemon.sh`. Let’s inspect the tests in keystroke-cancel.bats to identify any missing features or improvements needed.
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1077:[2026-01-18T11:25:18] exec sh -lc "sed -n '1,240p' tests/keystroke-cancel.bats" in /Users/ozbombor/Projects/code-intelligence-mcp
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1078:[2026-01-18T11:25:18] sh -lc "sed -n '1,240p' tests/keystroke-cancel.bats" succeeded in 61ms:
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1079:#!/usr/bin/env bats
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1134:The package.json notes "test": "echo 'No tests yet'," which seems inconsistent since there are bats tests that may run separately from npm. I could suggest integrating these tests into the package scripts and adding CI, but the user's focus is on proposing improvements to close the gap with Augment, rather than fixing repository issues. Bridging that gap involves evaluating user experience, performance, and language coverage. I'll take a look at scripts/graph-store.sh to understand data models and see how we can enhance graph queries and caching.
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1344:for path in glob.glob('tests/*.bats'):
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1356:for path in glob.glob('tests/*.bats'):
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1369:for path in glob.glob(\"tests/*.bats\"):
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1375:for path in glob.glob(\"tests/*.bats\"):
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1411:I'm looking to create a benchmark harness for retrieval metrics like top-K recall and latency. We already have some scripts in place, like benchmark.sh and performance.bats. I can propose creating golden datasets for offline evaluation, and possibly using a human-curated process for more insights.
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1509:[2026-01-18T11:29:59] exec sh -lc 'rg -n "bats" README.md package.json scripts hooks .github -S | head -n 120' in /Users/ozbombor/Projects/code-intelligence-mcp
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1510:[2026-01-18T11:29:59] sh -lc 'rg -n "bats" README.md package.json scripts hooks .github -S | head -n 120' succeeded in 44ms:
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:1719:I need to gather more info, especially checking for missing scripts referenced in the README and tests. For instance, context-compressor.sh and drift-detector.sh seem to be missing. Also, the intent-learner.sh functions are mentioned in long-term-memory.bats, but they don't seem to exist in the script.
+./.code/agents/2d84c3d0-8f71-41cd-bbf9-83488d3ff8d1/result.txt:2092:I'm weighing the idea of using SQLite FTS for keyword and ranking fusion with embedding results, considering whether it's a heavy solution. We could propose ranked retrieval fusion at the script level since there's already some fusion in graph-rag. On security, adding a "dependency guard" tool for pre/post generation checks could work well, since we already have dependency-guard.sh. For developer workflow, automating CI with bats tests is essential—though the user didn't ask for modifications, I think proposing it makes sense. Lastly, metrics and logging could enhance observability for the retrieval pipeline.

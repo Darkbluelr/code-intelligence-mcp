@@ -1,0 +1,435 @@
+total 48
+drwxr-xr-x   7 ozbombor  staff   224 Jan 13 20:09 .
+drwxr-xr-x  57 ozbombor  staff  1824 Jan 18 05:51 ..
+drwxr-xr-x   2 ozbombor  staff    64 Jan 13 19:19 anti-patterns
+-rw-r--r--   1 ozbombor  staff  1341 Jan 13 19:21 glossary.md
+-rw-r--r--   1 ozbombor  staff  7092 Jan 13 19:19 key-concepts.md
+-rw-r--r--   1 ozbombor  staff  5438 Jan 13 20:09 project-profile.md
+-rw-r--r--   1 ozbombor  staff  3790 Jan 13 19:19 verification-baseline.md
+# 术语表 (Glossary)
+
+> 本文档定义项目中使用的领域术语和技术术语。
+> AI 助手在生成代码和文档时应遵循这些术语约束。
+
+---
+
+## 领域术语
+
+| 术语 | 定义 | 英文 | 禁用词 |
+|------|------|------|--------|
+| <!-- 如：用户 --> | <!-- 系统的使用者 --> | User | <!-- 客户、会员 --> |
+
+---
+
+## 技术术语
+
+| 术语 | 定义 | 所属上下文 |
+|------|------|-----------|
+| Truth Root | 真理源根目录，存放规格和设计的最终版本 | DevBooks |
+| Change Root | 变更包根目录，存放每次变更的所有产物 | DevBooks |
+| Spec Delta | 规格增量，描述变更对规格的修改 | DevBooks |
+| AC-ID | 验收标准标识符，格式 `AC-XXX` | DevBooks |
+| GIP | 全局不可违背原则（Global Inviolable Principle） | DevBooks |
+
+---
+
+## 缩写表
+
+| 缩写 | 全称 | 说明 |
+|------|------|------|
+| AC | Acceptance Criteria | 验收标准 |
+| GIP | Global Inviolable Principle | 全局不可违背原则 |
+| DoD | Definition of Done | 完成定义 |
+
+---
+
+## 术语使用规则
+
+1. **一致性**：同一概念在代码、文档、注释中使用相同术语
+2. **无歧义**：避免使用有多重含义的词
+3. **可追溯**：新术语必须在此文档中定义后才能使用
+
+---
+
+**术语表版本**：v1.0.0
+**最后更新**：{{DATE}}
+# 项目画像：Code Intelligence MCP Server
+
+> 生成时间：2026-01-10（更新：2026-01-11）
+> 生成方式：Brownfield Bootstrap（SCIP 索引可用）
+
+---
+
+## 第一层：快速定位（30秒阅读）
+
+### 项目概述
+
+| 属性 | 值 |
+|------|-----|
+| 项目名称 | code-intelligence-mcp |
+| 项目类型 | MCP Server（Model Context Protocol） |
+| 主要用途 | 为 AI 编程助手提供代码智能能力 |
+| 技术栈 | TypeScript + Node.js + Shell Scripts |
+| 当前版本 | 0.2.0 |
+
+### 核心功能
+
+| 功能 | 描述 | 入口 |
+|------|------|------|
+| 语义搜索 | 使用 Embedding 进行代码语义搜索 | `ci_search` |
+| 调用链追踪 | 追踪函数调用链（callers/callees） | `ci_call_chain` |
+| Bug 定位 | 基于错误描述智能定位潜在 Bug 位置 | `ci_bug_locate` |
+| 复杂度分析 | 代码复杂度指标分析 | `ci_complexity` |
+| Graph-RAG | 图基检索增强生成上下文 | `ci_graph_rag` |
+| 索引管理 | Embedding 索引状态管理 | `ci_index_status` |
+
+### 目录结构
+
+```
+code-intelligence-mcp/
+├── src/                    # TypeScript 源码
+│   └── server.ts          # MCP 服务器入口（薄壳）
+├── scripts/               # 核心功能脚本
+│   ├── embedding.sh       # Embedding 搜索
+│   ├── call-chain.sh      # 调用链追踪
+│   ├── bug-locator.sh     # Bug 定位
+│   ├── complexity.sh      # 复杂度分析
+│   ├── graph-rag.sh       # Graph-RAG
+│   └── indexer.sh         # 索引管理
+├── hooks/                 # Claude Code 钩子
+│   └── augment-context-global.sh  # 全局上下文注入
+├── bin/                   # CLI 入口
+│   ├── code-intelligence-mcp     # MCP 服务器启动器
+│   └── ci-search                 # 独立搜索命令
+├── config/                # 配置模板
+├── dev-playbooks/         # DevBooks Skills 和模板
+└── dev-playbooks/              # OpenSpec 规范目录
+```
+
+---
+
+## 第二层：开发约定（3分钟阅读）
+
+### 技术栈详情
+
+| 层级 | 技术 | 版本要求 |
+|------|------|----------|
+| 运行时 | Node.js | >= 18.0.0 |
+| 语言 | TypeScript | ^5.0.0 |
+| 协议 | MCP SDK | ^1.0.0 |
+| 脚本 | Bash | - |
+| 工具 | ripgrep, jq | - |
+
+### 架构模式
+
+**薄壳模式（Thin Shell）**：
+- MCP Server 使用 TypeScript 作为薄壳
+- 核心功能由 Shell 脚本实现
+- 设计约束：`CON-TECH-002: MCP Server 使用 Node.js 薄壳调用 Shell 脚本`
+
+```
+[Claude Code] → [MCP Protocol] → [server.ts] → [scripts/*.sh]
+```
+
+### 命令速查
+
+| 命令 | 用途 |
+|------|------|
+| `npm install` | 安装依赖 |
+| `npm run build` | 编译 TypeScript |
+| `npm run start` | 启动 MCP Server |
+| `npm run lint` | 运行 ShellCheck |
+| `./install.sh` | 安装脚本 |
+| `./install.sh --global` | 全局安装 |
+| `./install.sh --with-hook` | 安装 Claude Code 钩子 |
+
+### 代码风格约定
+
+- TypeScript：严格模式（`strict: true`）
+- ES 模块：使用 `NodeNext` 模块解析
+- Shell 脚本：使用 `set -euo pipefail`
+- 命名：
+  - MCP 工具名：`ci_*` 前缀（snake_case）
+  - 脚本文件：`*.sh`（kebab-case）
+
+### 测试策略
+
+- 当前状态：无自动化测试（`npm test` 输出 "No tests yet"）
+- 建议：添加脚本单元测试和 MCP 集成测试
+
+---
+
+## 第三层：深度约定（按需阅读）
+
+### 边界识别
+
+| 类型 | 路径 | 说明 |
+|------|------|------|
+| 用户代码 | `src/`, `scripts/`, `hooks/` | 可修改 |
+| 库代码 | `node_modules/` | 不可变接口 |
+| 生成代码 | `dist/` | 禁止手动修改 |
+| 配置模板 | `config/` | 复制后修改 |
+| DevBooks | `dev-playbooks/` | 独立子项目 |
+
+### 依赖方向约束
+
+---
+last_referenced_by: augment-parity-final-gaps
+last_verified: 2026-01-16
+health: active
+---
+
+
+# Spec: 结构化上下文输出（structured-context-output）
+
+> **Change ID**: `augment-parity-final-gaps`
+> **Capability**: structured-context-output
+> **Version**: 1.0.0
+> **Status**: Draft
+> **Created**: 2026-01-16
+
+---
+
+## 概述
+
+本规格定义结构化上下文输出功能。系统应将上下文输出从自由文本升级为 5 层结构化模板，提升 AI 理解效率。
+
+---
+
+## Requirements（需求）
+
+### REQ-SCO-001：5 层结构化输出
+
+系统应输出 5 层结构化上下文：
+
+| 层级 | 字段名 | 内容 |
+|------|--------|------|
+| 1 | `project_profile` | 项目画像（名称/类型/技术栈/架构模式/关键约束） |
+| 2 | `current_state` | 当前状态（索引状态/热点文件/最近提交） |
+| 3 | `task_context` | 任务上下文（意图分析/相关代码片段/调用链） |
+| 4 | `recommended_tools` | 推荐工具（基于意图的工具推荐和参数建议） |
+| 5 | `constraints` | 约束提醒（架构约束/安全约束） |
+
+### REQ-SCO-002：project_profile 结构
+
+项目画像层应包含以下字段：
+
+```json
+{
+  "project_profile": {
+    "name": "code-intelligence-mcp",
+    "type": "mcp-server",
+    "tech_stack": ["Node.js", "TypeScript", "Bash", "SQLite"],
+    "architecture": "thin-shell",
+    "key_constraints": [
+      "CON-TECH-002: MCP Server 使用 Node.js 薄壳调用 Shell 脚本"
+    ]
+  }
+}
+```
+
+**数据来源**：
+- `dev-playbooks/specs/_meta/project-profile.md`（如存在）
+- `package.json`（技术栈推断）
+- 代码目录结构分析
+
+### REQ-SCO-003：current_state 结构
+
+当前状态层应包含以下字段：
+
+```json
+{
+  "current_state": {
+    "index_status": "ready|stale|missing",
+    "hotspot_files": ["src/server.ts", "scripts/graph-store.sh", ...],
+    "recent_commits": [
+      "abc1234: feat: add path query",
+      "def5678: fix: edge type validation"
+    ]
+  }
+}
+```
+
+**数据来源**：
+- `index_status`：检查 SCIP/Embedding/CKB 索引状态
+- `hotspot_files`：调用 `hotspot-analyzer.sh` 获取 Top 5
+- `recent_commits`：`git log -3 --oneline`
+
+**约束**：
+- `hotspot_files` 最多 5 个
+- `recent_commits` 最多 3 条
+
+### REQ-SCO-004：task_context 结构
+
+任务上下文层应包含以下字段：
+
+```json
+{
+  "task_context": {
+    "intent_analysis": {
+      "primary_intent": "explore|modify|debug|understand",
+      "target_scope": "file|module|project",
+      "confidence": 0.85
+    },
+    "relevant_snippets": [
+      {
+        "file": "src/server.ts",
+        "lines": "10-25",
+        "relevance": 0.9
+      }
+    ],
+    "call_chains": [
+      {
+        "root": "main",
+        "chain": ["main", "startServer", "handleRequest"]
+      }
+    ]
+  }
+}
+```
+
+**数据来源**：
+- `intent_analysis`：调用 `intent-learner.sh analyze`
+- `relevant_snippets`：基于意图的相关代码检索
+- `call_chains`：调用 `call-chain.sh`（如相关）
+
+### REQ-SCO-005：recommended_tools 结构
+
+推荐工具层应包含以下字段：
+
+```json
+{
+  "recommended_tools": [
+    {
+      "tool": "ci_call_chain",
+      "reason": "查询调用链有助于理解函数关系",
+      "suggested_params": {
+        "symbol": "handleRequest",
+        "depth": 3
+      }
+    }
+  ]
+}
+```
+
+**推荐规则**：
+| 意图 | 推荐工具 |
+|------|----------|
+| explore | ci_search, ci_graph_rag |
+| modify | ci_call_chain, ci_bug_locate |
+| debug | ci_bug_locate, ci_call_chain |
+| understand | ci_complexity, ci_graph_rag |
+
+### REQ-SCO-006：constraints 结构
+
+约束提醒层应包含以下字段：
+
+```json
+{
+  "constraints": {
+    "architectural": [
+      "分层规则：shared ← core ← integration",
+      "禁止：scripts/*.sh → src/*.ts"
+    ],
+    "security": [
+      "敏感文件：.env, credentials.json"
+    ]
+  }
+}
+```
+
+**数据来源**：
+- `architectural`：从 `c4.md` 或架构规则配置提取
+- `security`：检测敏感文件模式
+
+### REQ-SCO-007：输出格式
+
+系统应支持两种输出格式：
+
+| 格式 | 选项 | 说明 |
+|------|------|------|
+| JSON | `--format json` | 完整 JSON 结构（默认） |
+| Text | `--format text` | 人类可读的文本摘要 |
+
+---
+
+## Scenarios（场景）
+
+### SC-SCO-001：完整结构化输出
+
+**Given**:
+- 项目已初始化
+- SCIP 索引可用
+**When**: 执行 `augment-context-global.sh --format json`
+**Then**:
+- 输出包含 `project_profile` 字段
+- 输出包含 `current_state` 字段
+- 输出包含 `task_context` 字段
+- 输出包含 `recommended_tools` 字段
+- 输出包含 `constraints` 字段
+- JSON 格式有效
+
+### SC-SCO-002：project_profile 提取
+
+**Given**:
+- 存在 `package.json`，技术栈为 Node.js + TypeScript
+**When**: 构建 project_profile
+**Then**:
+- `tech_stack` 包含 `Node.js` 和 `TypeScript`
+- `name` 从 package.json 提取
+
+### SC-SCO-003：current_state 提取
+
+**Given**:
+- SCIP 索引存在且新鲜
+- 最近有 3 次提交
+**When**: 构建 current_state
+**Then**:
+- `index_status` = `ready`
+- `hotspot_files` 包含 Top 5 热点文件
+- `recent_commits` 包含 3 条提交记录
+
+### SC-SCO-004：task_context 意图分析
+
+**Given**:
+- 用户查询：`how does the auth module work?`
+**When**: 分析意图并构建 task_context
+**Then**:
+- `intent_analysis.primary_intent` = `understand`
+- `relevant_snippets` 包含 auth 相关代码
+- 推荐工具包含 `ci_graph_rag`
+
+### SC-SCO-005：recommended_tools 生成
+
+**Given**:
+- 意图分析结果：`debug`
+**When**: 生成推荐工具
+**Then**:
+- 推荐列表包含 `ci_bug_locate`
+- 推荐列表包含 `ci_call_chain`
+- 每个工具有 `reason` 说明
+
+### SC-SCO-006：constraints 提取
+
+**Given**:
+- 存在 `dev-playbooks/specs/architecture/c4.md`
+- C4 文档定义了分层约束
+**When**: 构建 constraints
+**Then**:
+- `architectural` 包含分层规则
+- `security` 包含敏感文件提醒
+
+### SC-SCO-007：索引不可用降级
+
+**Given**:
+- SCIP 索引不存在
+**When**: 构建 current_state
+**Then**:
+- `index_status` = `missing`
+- `hotspot_files` 基于 Git churn 降级计算
+- 不报错
+
+### SC-SCO-008：文本格式输出
+
+**Given**:
+- 用户指定 `--format text`

@@ -1,0 +1,389 @@
+Excellent! Now let me compile the final audit report with the configuration table:
+
+# 配置项全量审计报告
+
+## 执行摘要
+
+本报告对 code-intelligence-mcp 项目的所有外部输入依赖进行了全面审计，包括环境变量、配置文件参数和 CLI 参数。审计发现 **大量配置项未在 README.md 中说明**，存在文档缺失问题。
+
+## 审计范围
+
+- **配置文件**: `.devbooks/config.yaml`, `config/*.yaml`
+- **脚本目录**: `scripts/*.sh`, `hooks/*.sh`, `bin/*`
+- **主程序**: `src/server.ts`
+
+---
+
+## 一、缺失配置项清单
+
+### 1.1 环境变量（README 未说明）
+
+以下环境变量在代码中使用但 README.md 未说明：
+
+| 环境变量 | 使用位置 | 作用 | 优先级 |
+|---------|---------|------|--------|
+| `ANTHROPIC_API_KEY` | llm-providers.yaml, scripts/llm-providers/ | Anthropic API 密钥 | 高 |
+| `ANTHROPIC_MODEL` | scripts/llm-providers/ | Anthropic 模型 ID | 中 |
+| `OPENAI_MODEL` | scripts/llm-providers/ | OpenAI 模型 ID | 中 |
+| `LLM_PROVIDER` | scripts/llm-provider.sh | 指定 LLM Provider | 高 |
+| `DEVBOOKS_DIR` | 多个脚本 | DevBooks 数据目录 | 高 |
+| `PROJECT_ROOT` | 多个脚本 | 项目根目录 | 高 |
+| `SCIP_INDEX_PATH` | scripts/indexer.sh | SCIP 索引文件路径 | 中 |
+| `EMBEDDING_MODEL` | scripts/embedding.sh | Embedding 模型名称 | 中 |
+| `EMBEDDING_CACHE_DIR` | scripts/embedding.sh | Embedding 缓存目录 | 中 |
+| `BUG_LOCATOR_WITH_IMPACT` | scripts/bug-locator.sh | 启用影响分析 | 低 |
+| `BUG_LOCATOR_CACHE_ENABLED` | scripts/bug-locator.sh | 启用 Bug Locator 缓存 | 低 |
+| `DAEMON_SOCK` | scripts/daemon.sh | Daemon socket 路径 | 中 |
+| `DAEMON_PID_FILE` | scripts/daemon.sh | Daemon PID 文件路径 | 中 |
+| `DAEMON_QUEUE_SIZE` | scripts/daemon.sh | Daemon 队列大小 | 低 |
+| `DAEMON_MAX_RESTARTS` | scripts/daemon.sh | Daemon 最大重启次数 | 低 |
+| `DAEMON_WARMUP_QUERIES` | scripts/daemon.sh | Warmup 默认查询 | 低 |
+| `DAEMON_CANCEL_DIR` | scripts/daemon.sh | 取消请求目录 | 低 |
+| `DAEMON_CANCEL_CHECK_INTERVAL_MS` | scripts/daemon.sh | 取消检查间隔 | 低 |
+| `CONTEXT_COMPRESSOR_MAX_MB` | scripts/context-compressor.sh | 最大文件大小限制 | 中 |
+| `PATTERN_LEARNER_DB` | scripts/semantic-anomaly.sh | 模式学习数据库路径 | 中 |
+| `BENCHMARK_ITERATIONS` | scripts/benchmark.sh | 基准测试迭代次数 | 低 |
+| `BENCHMARK_REGRESSION_THRESHOLD` | scripts/benchmark.sh | 性能回归阈值 | 低 |
+| `EVIDENCE_DIR` | scripts/benchmark.sh | 证据目录路径 | 低 |
+| `DEVBOOKS_ENABLE_ALL_FEATURES` | 多个脚本 | 强制启用所有功能 | 中 |
+| `DEBUG` | 多个脚本 | 调试模式开关 | 低 |
+| `VERBOSE` | 多个脚本 | 详细输出模式 | 低 |
+
+### 1.2 配置文件参数（README 未说明）
+
+#### `.devbooks/config.yaml`
+README 提到复制模板但未说明具体参数：
+
+| 参数 | 作用 | 默认值 | 是否必填 |
+|-----|------|--------|---------|
+| `embedding.provider` | Embedding 提供商 | ollama | 是 |
+| `embedding.ollama.model` | Ollama 模型名称 | nomic-embed-text | 否 |
+| `embedding.ollama.endpoint` | Ollama 端点 | http://localhost:11434 | 否 |
+| `embedding.dimension` | 向量维度 | 768 | 否 |
+| `ai_tools` | AI 工具列表 | [claude, codex, code] | 否 |
+| `install_scope` | 安装范围 | global | 否 |
+
+#### `config/llm-providers.yaml`
+README **完全未提及**此文件：
+
+| 参数 | 作用 | 默认值 | 是否必填 |
+|-----|------|--------|---------|
+| `providers.<name>.script` | Provider 脚本路径 | - | 是 |
+| `providers.<name>.env_key` | API Key 环境变量名 | - | 否 |
+| `providers.<name>.default_model` | 默认模型 ID | - | 是 |
+| `providers.<name>.endpoint` | API 端点 | - | 否 |
+| `auto_detect_priority` | Provider 自动检测优先级 | [anthropic, openai, ollama, mock] | 否 |
+| `defaults.timeout_ms` | 默认超时 | 2000 | 否 |
+| `defaults.max_tokens` | 默认最大 token | 1024 | 否 |
+| `defaults.max_retries` | 默认重试次数 | 3 | 否 |
+| `features.auto_detect` | 启用自动检测 | true | 否 |
+| `features.fallback_on_error` | 错误时降级 | true | 否 |
+| `features.cache_detection` | 缓存检测结果 | true | 否 |
+| `features.cache_ttl_seconds` | 缓存 TTL | 60 | 否 |
+
+#### `config/features.yaml`
+README 有部分说明但**不完整**：
+
+**缺失说明的参数**：
+- `features.boundary_detector.enabled`
+- `features.context_signals.enabled`
+- `features.data_flow_tracing.enabled`
+- `features.hotspot_analyzer.enabled`
+- `features.hybrid_retrieval.weights.*`
+- `features.hybrid_retrieval.rrf_k`
+- `features.incremental_indexing.enabled`
+- `features.pattern_learner.enabled`
+- `features.performance_regression.enabled`
+
+### 1.3 CLI 参数（README 未说明）
+
+以下脚本的 CLI 参数未在 README 中说明：
+
+#### `scripts/embedding.sh`
+- `--query <text>` - 搜索查询
+- `--top-k <n>` - 结果数量
+- `--format <json|text>` - 输出格式
+
+#### `scripts/call-chain.sh`
+- `--cwd <path>` - 工作目录
+- `--data-flow <symbol>` - 数据流追踪（README 有但不完整）
+- `--data-flow-direction <forward|backward|both>` - 数据流方向
+- `--include-transforms` - 包含转换细节
+
+#### `scripts/bug-locator.sh`
+- `--history-depth <days>` - Git 历史深度
+- `--cwd <path>` - 工作目录
+- `--version` - 显示版本
+
+#### `scripts/daemon.sh`
+- `ping` - Ping daemon
+- `query <sql>` - 执行 SQL 查询
+- `warmup --async` - 异步 warmup
+- `warmup --queries <list>` - 指定查询列表
+
+#### `scripts/context-compressor.sh`
+- `--mode <skeleton>` - 压缩模式
+- `--compress <low|medium|high>` - 压缩级别
+
+#### `scripts/drift-detector.sh`
+- `--diff <baseline> <current>` - 显示差异
+- `--rules <arch-rules.yaml> <project-dir>` - 检查规则
+- `--report <snapshots-dir>` - 生成报告
+- `--period <weekly>` - 报告周期
+- `--parse-c4 <c4.md>` - 解析 C4
+- `--scan-code <project-dir>` - 扫描代码
+
+#### `scripts/semantic-anomaly.sh`
+- `--verbose` / `-v` - 详细输出
+- `--report` - 生成报告到 evidence/
+- `--feedback <file> <line> <feedback>` - 记录反馈
+
+#### `scripts/benchmark.sh`
+- `--baseline <file>` - 基线报告
+- `--iterations <n>` - 迭代次数
+
+---
+
+## 二、配置清单表格草案
+
+### 2.1 环境变量配置清单
+
+| 参数名 | 是否必填 | 默认值 | 作用 | 相关功能 |
+|--------|---------|--------|------|---------|
+| **核心配置** |
+| `OPENAI_API_KEY` | 条件必填* | - | OpenAI API 密钥 | Embedding, LLM Rerank |
+| `ANTHROPIC_API_KEY` | 条件必填* | - | Anthropic API 密钥 | LLM Rerank |
+| `OLLAMA_ENDPOINT` | 否 | `http://localhost:11434` | Ollama API 端点 | Embedding |
+| `OLLAMA_MODEL` | 否 | `nomic-embed-text` | Ollama 模型名称 | Embedding |
+| `LLM_PROVIDER` | 否 | 自动检测 | LLM Provider 选择 | LLM Rerank |
+| **数据库与索引** |
+| `GRAPH_DB_PATH` | 否 | `.devbooks/graph.db` | 图数据库路径 | Graph Store |
+| `SCIP_INDEX_PATH` | 否 | `index.scip` | SCIP 索引文件路径 | Indexer |
+| `SCIP_PROTO_PATH` | 否 | `vendored/scip.proto` | SCIP proto 文件路径 | Indexer |
+| `SCIP_PROTO_URL` | 否 | Google Storage URL | SCIP proto 下载 URL | Indexer |
+| `DEVBOOKS_DIR` | 否 | `.devbooks` | DevBooks 数据目录 | 全局 |
+| `PROJECT_ROOT` | 否 | 当前目录 | 项目根目录 | 全局 |
+| **功能开关** |
+| `DISABLE_TREE_SITTER` | 否 | `false` | 禁用 Tree-sitter | AST Delta |
+| `FORCE_SCIP_FALLBACK` | 否 | `false` | 强制 SCIP 降级模式 | Indexer |
+| `CI_AST_DELTA_ENABLED` | 否 | 从 features.yaml | 启用 AST Delta | Indexer |
+| `CI_FILE_THRESHOLD` | 否 | 10 | AST Delta 文件阈值 | Indexer |
+| `DEBOUNCE_SECONDS` | 否 | 2 | 索引防抖秒数 | Indexer |
+| `DEVBOOKS_ENABLE_ALL_FEATURES` | 否 | unset | 强制启用所有功能 | 全局 |
+| **Daemon 配置** |
+| `DAEMON_SOCK` | 否 | `.devbooks/daemon.sock` | Daemon socket 路径 | Daemon |
+| `DAEMON_PID_FILE` | 否 | `.devbooks/daemon.pid` | Daemon PID 文件 | Daemon |
+| `DAEMON_QUEUE_SIZE` | 否 | 100 | Daemon 队列大小 | Daemon |
+| `DAEMON_MAX_RESTARTS` | 否 | 3 | Daemon 最大重启次数 | Daemon |
+| `DAEMON_WARMUP_ENABLED` | 否 | true | 启用 Warmup | Daemon |
+| `DAEMON_WARMUP_TIMEOUT` | 否 | 30 | Warmup 超时（秒） | Daemon |
+| `DAEMON_WARMUP_HOTSPOT_LIMIT` | 否 | 10 | Warmup 热点文件数 | Daemon |
+| `DAEMON_WARMUP_QUERIES` | 否 | main,server,handler | Warmup 默认查询 | Daemon |
+| `DAEMON_CANCEL_ENABLED` | 否 | true | 启用请求取消 | Daemon |
+| `DAEMON_CANCEL_DIR` | 否 | `.devbooks/cancel` | 取消请求目录 | Daemon |
+| `DAEMON_CANCEL_CHECK_INTERVAL_MS` | 否 | 50 | 取消检查间隔（毫秒） | Daemon |
+| **Bug Locator 配置** |
+| `BUG_LOCATOR_WITH_IMPACT` | 否 | false | 启用影响分析 | Bug Locator |
+| `BUG_LOCATOR_CACHE_ENABLED` | 否 | true | 启用缓存 | Bug Locator |
+| **其他配置** |
+| `EMBEDDING_MODEL` | 否 | text-embedding-ada-002 | Embedding 模型 | Embedding |
+| `EMBEDDING_CACHE_DIR` | 否 | `.devbooks/embeddings` | Embedding 缓存目录 | Embedding |
+| `CONTEXT_COMPRESSOR_MAX_MB` | 否 | 10 | 最大文件大小（MB） | Context Compressor |
+| `PATTERN_LEARNER_DB` | 否 | `.devbooks/learned-patterns.json` | 模式学习数据库 | Semantic Anomaly |
+| `BENCHMARK_ITERATIONS` | 否 | 20 | 基准测试迭代次数 | Benchmark |
+| `BENCHMARK_REGRESSION_THRESHOLD` | 否 | 0.05 | 性能回归阈值（5%） | Benchmark |
+| `EVIDENCE_DIR` | 否 | `evidence/` | 证据目录 | Benchmark |
+| `DEBUG` | 否 | unset | 调试模式 | 全局 |
+| `VERBOSE` | 否 | unset | 详细输出模式 | 全局 |
+
+**注**：条件必填* = 使用对应 Provider 时必填
+
+### 2.2 配置文件参数清单
+
+#### `.devbooks/config.yaml`
+
+| 参数路径 | 是否必填 | 默认值 | 作用 |
+|---------|---------|--------|------|
+| `embedding.provider` | 是 | ollama | Embedding 提供商（ollama/openai） |
+| `embedding.ollama.model` | 否 | nomic-embed-text | Ollama 模型名称 |
+| `embedding.ollama.endpoint` | 否 | http://localhost:11434 | Ollama API 端点 |
+| `embedding.dimension` | 否 | 768 | 向量维度 |
+| `ai_tools` | 否 | [claude, codex, code] | AI 工具列表 |
+| `install_scope` | 否 | global | 安装范围 |
+
+#### `config/features.yaml`
+
+| 参数路径 | 是否必填 | 默认值 | 作用 |
+|---------|---------|--------|------|
+| `features.graph_store.enabled` | 否 | true | 启用图存储 |
+| `features.graph_store.wal_mode` | 否 | true | SQLite WAL 模式 |
+| `features.llm_rerank.enabled` | 否 | false | 启用 LLM 重排序 |
+| `features.llm_rerank.provider` | 否 | anthropic | LLM Provider |
+| `features.ast_delta.enabled` | 否 | true | 启用 AST Delta |
+| `features.ast_delta.file_threshold` | 否 | 10 | 文件阈值 |
+| `features.indexer.debounce_seconds` | 否 | 2 | 防抖秒数 |
+| `features.indexer.offline_proto` | 否 | true | 使用离线 proto |
+| `features.indexer.allow_proto_download` | 否 | false | 允许下载 proto |
+| `features.smart_pruning.enabled` | 否 | true | 启用智能剪枝 |
+| `features.smart_pruning.default_budget` | 否 | 8000 | 默认 token 预算 |
+| `features.daemon.enabled` | 否 | true | 启用 Daemon |
+| `features.daemon.warmup.enabled` | 否 | true | 启用 Warmup |
+| `features.daemon.warmup.timeout_seconds` | 否 | 30 | Warmup 超时 |
+| `features.daemon.warmup.hotspot_limit` | 否 | 10 | 热点文件数 |
+| `features.daemon.cancel.enabled` | 否 | true | 启用请求取消 |
+| `features.daemon.cancel.check_interval_ms` | 否 | 50 | 检查间隔 |
+| `features.intent_learner.enabled` | 否 | true | 启用意图学习 |
+| `features.intent_learner.max_history_entries` | 否 | 10000 | 最大历史条目 |
+| `features.context_compressor.enabled` | 否 | true | 启用上下文压缩 |
+| `features.context_compressor.default_budget` | 否 | 8000 | 默认预算 |
+| `features.context_compressor.min_compression_ratio` | 否 | 0.3 | 最小压缩比 |
+| `features.context_compressor.max_compression_ratio` | 否 | 0.5 | 最大压缩比 |
+| `features.context_compressor.strategy` | 否 | smart | 压缩策略 |
+| `features.drift_detector.enabled` | 否 | true | 启用漂移检测 |
+| `features.drift_detector.c4_path` | 否 | dev-playbooks/specs/architecture/c4.md | C4 文件路径 |
+| `features.drift_detector.auto_fix` | 否 | false | 自动修复 |
+| `features.semantic_anomaly.enabled` | 否 | true | 启用语义异常检测 |
+| `features.semantic_anomaly.severity_threshold` | 否 | warning | 严重性阈值 |
+| `features.entropy_visualization.enabled` | 否 | true | 启用熵可视化 |
+| `features.entropy_visualization.mermaid` | 否 | true | 生成 Mermaid 图 |
+| `features.entropy_visualization.ascii_dashboard` | 否 | true | 显示 ASCII 仪表板 |
+| `features.impact_analyzer.max_depth` | 否 | 5 | 最大传播深度 |
+| `features.impact_analyzer.decay_factor` | 否 | 0.5 | 置信度衰减因子 |
+| `features.impact_analyzer.threshold` | 否 | 0.2 | 最小置信度阈值 |
+| `features.benchmark.enabled` | 否 | false | 启用基准测试 |
+| `features.benchmark.output_dir` | 否 | results/ | 输出目录 |
+| `features.boundary_detector.enabled` | 否 | true | 启用边界检测 |
+| `features.context_signals.enabled` | 否 | true | 启用上下文信号 |
+| `features.data_flow_tracing.enabled` | 否 | true | 启用数据流追踪 |
+| `features.hotspot_analyzer.enabled` | 否 | true | 启用热点分析 |
+| `features.hybrid_retrieval.enabled` | 否 | true | 启用混合检索 |
+| `features.hybrid_retrieval.weights.keyword` | 否 | 0.3 | 关键词权重 |
+| `features.hybrid_retrieval.weights.vector` | 否 | 0.5 | 向量权重 |
+| `features.hybrid_retrieval.weights.graph` | 否 | 0.2 | 图权重 |
+| `features.hybrid_retrieval.rrf_k` | 否 | 60 | RRF K 参数 |
+| `features.incremental_indexing.enabled` | 否 | true | 启用增量索引 |
+| `features.pattern_learner.enabled` | 否 | true | 启用模式学习 |
+| `features.performance_regression.enabled` | 否 | true | 启用性能回归检测 |
+
+#### `config/llm-providers.yaml`
+
+| 参数路径 | 是否必填 | 默认值 | 作用 |
+|---------|---------|--------|------|
+| `providers.<name>.script` | 是 | - | Provider 脚本路径 |
+| `providers.<name>.env_key` | 否 | - | API Key 环境变量名 |
+| `providers.<name>.default_model` | 是 | - | 默认模型 ID |
+| `providers.<name>.endpoint` | 否 | - | API 端点 |
+| `auto_detect_priority` | 否 | [anthropic, openai, ollama, mock] | 自动检测优先级 |
+| `defaults.timeout_ms` | 否 | 2000 | 默认超时（毫秒） |
+| `defaults.max_tokens` | 否 | 1024 | 默认最大 token |
+| `defaults.max_retries` | 否 | 3 | 默认重试次数 |
+| `defaults.retry_delay_ms` | 否 | 1000 | 重试延迟（毫秒） |
+| `features.auto_detect` | 否 | true | 启用自动检测 |
+| `features.fallback_on_error` | 否 | true | 错误时降级 |
+| `features.cache_detection` | 否 | true | 缓存检测结果 |
+| `features.cache_ttl_seconds` | 否 | 60 | 缓存 TTL（秒） |
+
+#### `config/arch-rules.yaml`
+
+| 参数路径 | 是否必填 | 默认值 | 作用 |
+|---------|---------|--------|------|
+| `schema_version` | 是 | 1.0.0 | Schema 版本 |
+| `rules[].name` | 是 | - | 规则名称 |
+| `rules[].description` | 是 | - | 规则描述 |
+| `rules[].from` | 是 | - | 源模块模式 |
+| `rules[].cannot_import` | 是 | - | 禁止导入模式列表 |
+| `rules[].severity` | 否 | warning | 严重性（error/warning） |
+| `config.on_violation` | 否 | warn | 违规时动作（warn/block） |
+| `config.ignore` | 否 | [] | 忽略路径列表 |
+
+#### `config/boundaries.yaml`
+
+| 参数路径 | 是否必填 | 默认值 | 作用 |
+|---------|---------|--------|------|
+| `rules[].pattern` | 是 | - | 文件模式 |
+| `rules[].type` | 是 | - | 边界类型（user/library/generated/vendor） |
+| `rules[].confidence` | 是 | - | 置信度（0.0-1.0） |
+| `rules[].reason` | 否 | - | 原因说明 |
+| `overrides` | 否 | [] | 项目级覆盖规则 |
+
+#### `config/federation.yaml`
+
+| 参数路径 | 是否必填 | 默认值 | 作用 |
+|---------|---------|--------|------|
+| `schema_version` | 是 | 1.0.0 | Schema 版本 |
+| `federation.repositories[].name` | 是 | - | 仓库名称 |
+| `federation.repositories[].path` | 是 | - | 仓库路径 |
+| `federation.repositories[].contracts` | 是 | - | 契约文件模式列表 |
+| `federation.auto_discover.enabled` | 否 | false | 启用自动发现 |
+| `federation.auto_discover.search_paths` | 否 | [] | 搜索路径 |
+| `federation.auto_discover.contract_patterns` | 否 | [] | 契约模式 |
+| `federation.update.trigger` | 否 | manual | 更新触发方式 |
+
+### 2.3 CLI 参数清单（按脚本分组）
+
+#### `ci-search` (bin/ci-search)
+
+| 参数 | 是否必填 | 默认值 | 作用 |
+|-----|---------|--------|------|
+| `<query>` | 是 | - | 搜索查询 |
+| `-l, --limit <n>` | 否 | 10 | 最大结果数 |
+| `-m, --mode <mode>` | 否 | semantic | 搜索模式（semantic/keyword） |
+| `-h, --help` | 否 | - | 显示帮助 |
+| `-v, --version` | 否 | - | 显示版本 |
+
+#### `scripts/graph-rag.sh`
+
+| 参数 | 是否必填 | 默认值 | 作用 |
+|-----|---------|--------|------|
+| `--query <text>` | 是 | - | 查询文本 |
+| `--budget <n>` | 否 | 8000 | Token 预算 |
+| `--depth <n>` | 否 | 2 | 图遍历深度 |
+| `--format <json\|text>` | 否 | json | 输出格式 |
+| `--help, -h` | 否 | - | 显示帮助 |
+
+#### `scripts/call-chain.sh`
+
+| 参数 | 是否必填 | 默认值 | 作用 |
+|-----|---------|--------|------|
+| `--symbol <name>` | 是 | - | 要追踪的符号 |
+| `--depth <n>` | 否 | 3 | 遍历深度 |
+| `--direction <callers\|callees\|both>` | 否 | both | 追踪方向 |
+| `--format <json\|text>` | 否 | json | 输出格式 |
+| `--cwd <path>` | 否 | 当前目录 | 工作目录 |
+| `--data-flow <symbol>` | 否 | - | 数据流追踪符号 |
+| `--data-flow-direction <forward\|backward\|both>` | 否 | both | 数据流方向 |
+| `--include-transforms` | 否 | false | 包含转换细节 |
+| `--help, -h` | 否 | - | 显示帮助 |
+
+#### `scripts/bug-locator.sh`
+
+| 参数 | 是否必填 | 默认值 | 作用 |
+|-----|---------|--------|------|
+| `--error <text>` | 是 | - | 错误消息 |
+| `--top-n <n>` | 否 | 5 | 候选数量 |
+| `--history-depth <d>` | 否 | 30 | Git 历史天数 |
+| `--cwd <path>` | 否 | 当前目录 | 工作目录 |
+| `--format <text\|json>` | 否 | json | 输出格式 |
+| `--with-impact` | 否 | false | 启用影响分析 |
+| `--impact-depth <n>` | 否 | 3 | 影响分析深度 |
+| `--version` | 否 | - | 显示版本 |
+| `--help, -h` | 否 | - | 显示帮助 |
+
+#### `scripts/daemon.sh`
+
+| 参数 | 是否必填 | 默认值 | 作用 |
+|-----|---------|--------|------|
+| `start` | - | - | 启动 daemon |
+| `stop` | - | - | 停止 daemon |
+| `status` | - | - | 显示状态 |
+| `ping` | - | - | Ping daemon |
+| `query <sql>` | - | - | 执行 SQL 查询 |
+| `warmup` | - | - | 预热缓存 |
+| `warmup --timeout <n>` | 否 | 30 | Warmup 超时（秒） |
+| `warmup --queries <list>` | 否 | main,server,handler | 查询列表（逗号分隔） |
+| `warmup --hotspot-limit <n>` | 否 | 10 | 热点文件数 |
+| `warmup --format <json\|text>` | 否 | json | 输出格式 |
+| `warmup --async` | 否 | false | 后台运行 |
+| `--help, -h` | 否 | - | 显示帮助 |
+
+#### `scripts

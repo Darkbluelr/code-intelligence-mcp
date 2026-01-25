@@ -1,0 +1,120 @@
+**Integrating with Codex CLI**
+
+I'm realizing that this repository might need to integrate with Codex CLI's built-in hook, which I didn't fully consider before. The proposal mentions that Codex CLI doesn't have an equivalent official hook event for user prompt submissions, and it must go through the wrapper for guarantees. They suggest providing a wrapper command, like `codex-auto`, to read user input and call `codex exec` or `codex exec resume`. However, since `codex exec` is non-interactive, it might not maintain conversation continuity unless it stores and retrieves the session ID successfully, possibly from JSON output.
+**Assessing integration risks**
+
+I'm noticing an unspecified risk in the proposal regarding the integration with Codex. It might be easier to use `codex resume` for an interactive session, but I'm concerned about whether the wrapper can effectively call `codex` with the initial prompt. The major risk remains in the Codex integration. They mention two strategies: a wrapper per-turn and a single `codex exec <PROMPT>` pre-injection. However, the per-turn wrapper could complicate implementation and user experience. There's also a "fail-open" proposal, which aims to ensure that if the orchestrator fails, it still calls Codex with the original prompt. Lastly, I need to check how the wrapper is supposed to be installed; the proposal is unclear on that aspect.
+**Clarifying proposal details**
+
+I’m figuring out that while they might not need to answer immediately, it’s crucial for us to demand clarity in the proposal's scope. Even though the proposal is detailed, there are still missing elements that we need to identify. I’ve read up to line 560, but I need to check the earlier part since I noticed it was truncated, likely due to shell output limits. To make sure I have the full context, I’ll use sed to read the lines between 1-160 and 160-240 to capture any crucial information that may have been missed.
+
+
+
+
+[2026-01-22T23:28:02] exec sh -lc "sed -n '1,120p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0623-add-auto-tool-orchestrator/proposal.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-22T23:28:02] sh -lc "sed -n '1,120p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0623-add-auto-tool-orchestrator/proposal.md" succeeded in 33ms:
+# Claude Code / Codex CLI：自动工具编排 + 结果融合的上下文注入（单变更包交付）
+
+> <truth-root> = `dev-playbooks/specs/`
+> <change-root> = `dev-playbooks/changes/`
+> Status: Revise（Judge 要求修改后再评审）
+
+> 治理约束（强制）：本次变更**所有任务必须在一个变更包里完成**，禁止拆分为多个变更包；若 Proposal Challenger 要求拆分，Proposal Judge **必须驳回拆分请求**（允许在同一变更包内重排优先级/范围，但不得拆包）。
+
+## 🎯 结论先行（30秒阅读）
+
+**本提案会导致**：
+- ✅ 在 Claude Code 与 Codex CLI 中，用户输入后可在模型输出前自动执行“合适的”MCP 工具，并把结果回填进 Prompt
+- ✅ 自动调用不再是“固定 1-2 个工具”，而是按意图/置信度/预算选择多工具，并做结果融合与解释（面向用户可读）
+- ✅ 中英文都可触发自动注入（语言无关），并保留“可见 + 可控”的用户体验
+- ✅ 明确 `hooks/context-inject-global.sh` 与新增 `hooks/auto-tool-orchestrator.sh` 的分工：前者做客户端适配入口，后者做可复用的编排内核
+
+**本提案不会导致**：
+- ❌ 不做 Cursor/其他 IDE 的适配（明确排除）
+- ❌ 不改变 Thin Shell 架构约束（TypeScript 仍是薄壳，核心能力仍在 Shell 脚本 / MCP 工具侧）
+
+[2026-01-22T23:28:02] tokens used: 262,515
+
+[2026-01-22T23:28:18] thinking
+
+**Evaluating proposal details**
+
+I need to consider the "单变更包强制约束" and suggest "同包分阶段" without splitting into multiple change packages since that request is off the table. Proposing to narrow the scope or set a minimum viable product within the same package is allowed. I can’t modify files, just output a report. I must decide if the proposal is ready to approve, revise, or reject, paying close attention to missing details, inconsistencies, and feasibility. Let’s evaluate!
+**Analyzing project structure**
+
+The proposal refers to "入口适配层," but the current file is quite heavy at 45k lines and handles many functions like intent detection and caching. The proposed orchestrator wants to split responsibilities, using context-inject-global as an adapter while the orchestrator manages routing and fusion. However, currently, context-inject-global serves as the context injector. I noticed that some script references in `hooks/context-inject-global.sh` point to non-existent files in the repo, which seems incorrect after analyzing the paths. It looks like `../../tools` goes above the repo root, which probably isn’t intended.
+**Investigating tool paths**
+
+The script references paths for tools, but we found there's no `tools` directory in the repo. It seems like the script works because it includes fallback definitions when certain functions aren't loaded. For example, if `get_cache_key` isn’t available, it defines a simple alternative. However, referencing nonexistent tool paths could indicate a bug. The path for Graph-RAG also points to a missing file, yet the integration might still function with `scripts/graph-rag.sh`. However, since the script calls for `../../tools/graph-rag-context.sh`, it might never execute Graph-RAG unless that file exists somewhere else. We've checked the repo but found nothing.
+**Assessing the Graph-RAG injection issue**
+
+It seems like the Graph-RAG injection might be broken, but that might not be the core concern. Our primary task is to challenge the proposal, not the code itself. I can point out that the proposal plans to create a new script called `hooks/auto-tool-orchestrator.sh` while adjusting the roles within context-inject-global. Since existing code uses `scripts/*.sh` and `src/tool-handlers` for MCP, the orchestrator should ideally call these scripts directly. The proposal states that the orchestrator will automatically call MCP tools. However, for that, it seems the orchestrator needs to communicate with MCP servers via the CLI, but since we're using the Claude Code hook, it can run local commands. To call an MCP tool, though, we likely need to invoke the AI tool directly.
+**Challenging the proposal**
+
+The hook script can't directly call MCP tools through the model, but it might embed calls to underlying scripts. However, the requirement mentions automatically selecting and invoking MCP tools. This suggests a pre-processing step outside the model that interacts with MCP tools directly. It seems the orchestrator should call these scripts directly rather than using the MCP protocol. We need to clarify terms around invoking MCP tools since the current proposal implies some ambiguity. Also, I noticed that references to certain configurations and tests don’t exist yet, but that's part of the planning stage. In my report, I need to mention the root paths and reflect concerns about user value, risk, dependencies, and potential duplicates. Our conclusion will likely be "Revise" due to clarity issues and an integration approach that needs further precision.
+**Examining the proposal**
+
+I’m analyzing the proposal's scope, which includes a mismatch regarding existing tests in the repository. The proposal mentions adapting codes for Claude Code and Codex CLI, but the lack of a wrapper for Codex CLI is a concern. It seems hooks are published, and discussing where the wrapper should be located is important. The proposal lacks clarity on the exact wrapper and its installation. To satisfy acceptance criteria, a wrapper must be delivered, but it’s inconsistently referenced. Additionally, issues with session persistence and how tools would be called directly need to be clearly addressed. This highlights potential complexities in implementation. I see the need to challenge these claims for clarity and feasibility.
+**Evaluating duplication and compatibility**
+
+I’m noticing the proposal's potential duplication with tool handlers and their existing parameter validation. It suggests outputting a new JSON schema, but current scripts already produce text and JSON without a stable schema. I need to verify if the existing context-inject script outputs will be changed, as doing so could break related tests. The proposal should specify whether to maintain these existing outputs and mention a migration path if they are deprecated. Also, the config file paths and network access classifications need clarity. I’ll challenge these aspects to ensure risk awareness and compatibility moving forward.
+**Examining output injection and hooks**
+
+I’m looking at the proposal about output injection formats and how they include `max_injected_chars`. We need to confirm that injection is safe with long contexts in the Codex wrapper. Then, I’m wondering about the acceptance criteria for tests. Using the `UserPromptSubmit payload` doesn’t prove context consumption by Codex effectively since it focuses on output. So, we might need to add debug prints to verify prompt context. Another concern is ensuring that hooks correctly reference scripts, especially when installed outside the repository. We need to ensure the orchestrator aligns with the current setup to avoid failures.
+**Clarifying installation and access paths**
+
+The proposal outlines how the hook structure will operate between different scripts and hooks, but there’s a need for clarity on installation paths. Currently, the install process copies scripts directly, which could limit access to the orchestrator during runtime. We need to ensure that the setup supports both npm package locations and user home directories. It’s important to avoid relying on repo-relative paths. The proposal also discusses access restrictions and testing but highlights risks due to the project’s complexity. We should focus on a more manageable MVP approach that can still meet user requirements.
+**Reviewing proposal requirements**
+
+The output format needs to start with a conclusion, so I must embed root info appropriately while maintaining that structure. I'll select "Revise" because, despite improvements, significant concerns about implementation and distribution remain. I need to ensure the proposal's handling of file paths and tool access is clear, as some essential components appear missing. By referencing specific files, I can substantiate claims effectively. I should also point out existing tests and their relevance, keeping my report verifiable.
+**Reviewing proposal improvements**
+
+I need to consider implementing orchestrators by embedding them initially in existing scripts to avoid install path complications. I should define clear phases for delivery, with each phase building on the last while staying in one package. There are significant gaps in evidence, especially around security, correctness, and performance, which need to be documented. I also want to address how the proposal is improving, while still highlighting things that need to be fixed before approval, ensuring a thorough challenge report.
+**Assessing alternative proposals**
+
+I'm considering an MVP approach within the same change package, suggesting an orchestrator as a self-contained script in hooks and a simple wrapper for Codex CLI. There are gaps in evidence needed for security, performance, and pre-calls, which I should document thoroughly. It's essential to clarify how changes to existing scripts will maintain backward compatibility and define the relationship between new and old context injections. I need to ensure my report captures all these nuances without proposing a split into multiple packages.
+
+
+
+
+
+
+
+
+
+
+
+[2026-01-22T23:32:17] codex
+
+1) **结论**：`Revise` —— 提案已补齐预算/分层/安全/Schema/AC，但“运行时部署与路径解析（Claude Hook/Codex Wrapper 如何找到编排器与配置）”“编排器如何实际调用 MCP 工具（脚本直跑 vs MCP 协议）”“Codex CLI 多轮预调用的可验证与可测试方案”“与现有 hook 输出契约/既有 bats 的兼容策略”仍不清晰，当前无法保证可落地与可回滚。
+
+2) **阻断项（Blocking）**
+- **工具调用机制未落地**：提案需要明确“`ci_*` 工具如何被编排器调用”的可执行方案（例如：是否直接调用 `scripts/*.sh`，还是实现一个 MCP 客户端去调用 `dist/server.js` 的 tool handlers），并给出一张可核验的映射表（工具名→可执行入口→关键参数→超时/并发策略→输出格式）。否则 `hooks/auto-tool-orchestrator.sh` 的可行性与改动面无法评估，AC-001/AC-005/AC-006 也无法落地。
+- **Claude Code Hook 的部署链路与现状冲突**：提案写了 `~/.claude/hooks/context-inject-global.sh -> hooks/context-inject-global.sh -> hooks/auto-tool-orchestrator.sh`，但当前 `install.sh --with-hook` 实际是复制 `hooks/context-inject-global.sh` 到 `~/.claude/hooks/context-inject-global.sh`（`install.sh` 可验证），并不会自动带上“新增的 `hooks/auto-tool-orchestrator.sh` / `config/auto-tools.yaml`”。必须在提案中明确：最终运行时是“拷贝一组文件到 `~/.claude/hooks/`”还是“hook 通过可定位的包安装路径调用仓库脚本”，否则会出现“链路断开/找不到编排器”的硬失败。
+- **Codex CLI “每轮预调用”承诺缺少可验证实现**：提案将 wrapper 作为“保证每轮 prompt 都先编排再回答”的关键，但未明确：wrapper 的具体交互模型（是否放弃 Codex 交互式 TUI、改用 `codex exec`/`codex exec resume` 驱动多轮；session_id 如何持久化；如何处理 `resume --last` 的不确定性）。在未明确前，AC-002 的“每轮预调用”无法被证明成立。
+- **与现有 Hook/测试契约的兼容策略缺失**：当前 `hooks/augment-context-global.sh` 是兼容 wrapper，且已有 `tests/augment-context.bats` 等 bats 测试依赖现有 `hooks/context-inject-global.sh --format json/text` 的结构化输出契约。提案把 `hooks/context-inject-global.sh` 重新定位为“入口适配层 + 编排内核调用”，但未声明是否保持旧 `--format` 输出不变、还是要废弃并迁移（以及迁移的验证闸门）。这会直接引入回归风险，属于阻断项。
+- **验收锚点缺少“可重复、非外部依赖”的测试路径**：AC-001/AC-002 当前描述不足以落到确定性测试：Claude Hook 必须输出 `hookSpecificOutput.additionalContext`（这意味着 `tool_plan/tool_results/fused_context` 是“外层 JSON 字段”还是“注入块里的 JSON”需要明确）；Codex 侧 e2e 不应依赖模型回显或登录态。提案需明确一个可 bats 自动化验证的接口（例如 `CI_AUTO_TOOLS_MODE=plan`/`--dry-run` 输出“最终将发送给 codex 的增强 prompt 或编排 JSON”，并且不实际执行 `codex`），否则验收会陷入“人工主观判断”。
+
+3) **遗漏项（Missing）**
+- **运行时“repo-root”定义与路径过滤细则**：提案要求 realpath 防逃逸，但未定义 `<repo-root>` 的来源（`pwd` vs `git rev-parse --show-toplevel` vs WORKING_DIRECTORY），以及遇到子项目/monorepo/无 git 目录时的行为；这直接影响安全边界可验证性（AC-004）。
+- **配置层级与配置落点的统一**：提案提出 `env > config > default`，并举例 `config/auto-tools.yaml`，但与现有 `.devbooks/config.yaml` 的职责边界未定义（是否复用 `.devbooks/config.yaml` 作为项目配置入口，还是新增独立配置；二者冲突时如何处理）。
+- **融合规则的确定性定义**：提案强调“去重/聚合/溯源”，但缺少最低限度的确定性规则（同一结论来自多个工具时的优先级；冲突结论如何呈现；输出顺序是否稳定；摘要长度控制策略）。没有这些规则，AC-009/用户体验目标会变成“实现者自由发挥”。
+- **退出码/错误码契约**：提案在 Schema 中有 `error.code` 字段，但未定义错误码枚举、退出码语义、以及入口层在不同失败类型下的降级路径（JSON 解析失败、单工具失败、部分成功、预算超限等）。
+- **升级/回滚的用户操作路径**：提案有环境变量回滚，但缺少面向用户的“如何安装/如何升级/如何卸载/如何验证已生效”的最小操作说明（尤其是 Claude Hook 与 Codex wrapper 的安装位置与 PATH/配置要求）。
+
+4) **非阻断项（Non-blocking）**
+- **Tier 分层建议再校准**：提案把 `ci_search`/`ci_graph_rag` 放入 Tier-1 默认自动，但这两者在某些环境可能触发网络调用或重计算（取决于 embedding provider/索引状态）。建议将“是否自动”与“是否本地/是否已有索引/是否需要联网”绑定为条件，而不是仅按工具名固定分层。
+- **控制面语义细化**：`CI_AUTO_TOOLS=auto|on|off` 中 `auto` 与 `on` 的差异需要一句话钉死（例如 `auto`=仅 code intent；`on`=强制执行 Tier<=max），避免实现期出现歧义。
+- **输出展示一致性**：`[Auto Tools]/[Results]/[Limits]` 的“默认展开/折叠”在 Claude Code 与 Codex CLI 的终端体验不同，建议在提案里明确默认展示策略与最小噪音原则（例如 Limits 永远可见、Results 默认摘要）。
+
+5) **替代方案**
+- **同包分阶段（不拆包）的最小可行路径**：
+  - 阶段 A（MVP）：先把“编排器调用的工具”定义为“直接调用本仓库 `scripts/*.sh`”并输出稳定 JSON（即提案的 schema v1.0），同时提供 `CI_AUTO_TOOLS_MODE=plan`/`--dry-run` 以支持 bats 确定性测试；Claude 侧先保证单文件自洽（安装时拷贝编排器+配置到 `~/.claude/hooks/` 或可定位路径）。
+  - 阶段 B：Codex CLI 先交付“单次 `codex exec` 前置注入”（入口 B）+ 可测试 dry-run；把“多轮会话 wrapper（入口 A）”作为同包内的可选增强（若实现，则明确使用 `codex exec resume` 的会话策略与局限）。
+  - 阶段 C：再扩展 Tier-2 条件触发与更复杂的融合/去噪规则（仍在同一变更包内完成，但对非 MVP 明确“可选不阻塞 DoD”的验收门槛）。
+
+6) **风险与证据缺口**
+- **“模型输出前调用”证据缺口**：需要定义可采集的证据字段（`run_id`/时间戳/执行耗时/是否降级）并给出一条可重复的验证流程（不依赖模型回显）。目前 AC-002 的 e2e 描述不足以形成确定性证据。
+- **安全与隐私证据缺口**：AC-004/AC-008 需要可执行样例与断言（敏感文件路径被过滤、密钥片段被脱敏、提示注入文本被隔离且 `ignore_instructions_inside_tool_output=true` 生效）。目前提案列了规则，但缺少“最小测试向量集合”（至少 3-5 个固定输入用例）与预期输出断言点。
+- **性能/稳定性证据缺口**：既然目标是“尽可能多工具但有预算边界”，需要一组基准（至少：默认 Tier-1 在典型仓库下的 P50/P95 耗时、超时降级比例、回填大小分布）。当前仅给了预算数字，缺少如何验证这些数字“现实可用”的证据计划。
+[2026-01-22T23:32:46] tokens used: 281,240

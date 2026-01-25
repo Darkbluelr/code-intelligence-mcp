@@ -1,0 +1,9 @@
+{
+  "l1_entries": 0,
+  "l2_entries": 1,
+  "size_kb": 4,
+  "size_mb": 0,
+  "max_size_mb": 50,
+  "cache_dir": "/var/folders/1s/mj5j1ds94gsgrf_qdx5bs08h0000gn/T//.ci-cache",
+  "schema_version": "1.0.0"
+}

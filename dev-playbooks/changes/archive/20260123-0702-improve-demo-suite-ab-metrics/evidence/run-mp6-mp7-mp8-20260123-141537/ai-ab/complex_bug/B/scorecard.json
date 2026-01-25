@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "task_id": "complex_bug",
+  "agent_id": "B",
+  "git": {
+    "ref_input": "HEAD",
+    "ref_resolved": "3547af120636a4f2fa8635a238dd3cc5994b5321"
+  },
+  "run": {
+    "started_at": "2026-01-23T14:15:38Z",
+    "ended_at": "2026-01-23T14:15:38Z",
+    "duration_ms": 0,
+    "turns": 0
+  },
+  "variables": {
+    "fixed": ["repo", "dataset", "prompt_template"],
+    "varied": ["model", "temperature"]
+  },
+  "anchors": [
+    { "id": "placeholder-001", "passed": false, "reason": "not_run" }
+  ],
+  "evidence": {
+    "command_log_path": "ai-ab/complex_bug/B/commands.log",
+    "output_diff_path": "ai-ab/complex_bug/B/diff.txt"
+  }
+}

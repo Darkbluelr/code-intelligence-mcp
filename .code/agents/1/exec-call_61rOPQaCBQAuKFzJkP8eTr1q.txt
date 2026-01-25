@@ -1,0 +1,126 @@
+dev-playbooks/README.md:157:产物：`proposal.md`（必需）、`design.md`、`tasks.md`
+dev-playbooks/README.md:488:| `specs/[feature]/plan.md` | `changes/[feature]/proposal.md` |
+scripts/common.sh:1023:    local proposal_file="$change_dir/proposal.md"
+.codex/skills/devbooks-proposal-judge/SKILL.md:3:description: devbooks-proposal-judge：对 proposal 阶段进行裁决（Judge），输出 Approved/Revise/Rejected 并写回 proposal.md 的 Decision Log。用户说"裁决提案/提案评审/Approved Revise Rejected/decision log"等时使用。
+.codex/skills/devbooks-proposal-judge/SKILL.md:45:1. 检测 `proposal.md` 是否存在
+.codex/skills/devbooks-proposal-judge/SKILL.md:65:- proposal.md：存在
+.codex/skills/devbooks-proposal-author/SKILL.md:3:description: devbooks-proposal-author：撰写变更提案 proposal.md（Why/What/Impact + Debate Packet），作为后续 Design/Spec/Plan 的入口。对设计性决策会呈现选项给用户选择。用户说"写提案/proposal/为什么要改/影响范围/坏味道重构提案"等时使用。
+.codex/skills/devbooks-proposal-author/SKILL.md:37:- 提案：`<change-root>/<change-id>/proposal.md`
+.codex/skills/devbooks-proposal-author/SKILL.md:55:2. 检测 `proposal.md` 是否已存在
+.codex/skills/devbooks-proposal-author/SKILL.md:62:| **新建提案** | 变更包不存在或 `proposal.md` 不存在 | 创建完整提案文档 |
+.codex/skills/devbooks-proposal-author/SKILL.md:63:| **修订提案** | `proposal.md` 存在，Judge 要求 Revise | 根据裁决意见修改提案 |
+.codex/skills/devbooks-proposal-author/SKILL.md:64:| **补充 Impact** | `proposal.md` 存在但缺少 Impact 章节 | 补充影响分析部分 |
+.codex/skills/devbooks-proposal-author/SKILL.md:71:- proposal.md：存在
+.codex/skills/devbooks-coder/SKILL.md:232:- **禁止修改 `.devbooks/`、`build/`、工程配置文件**（除非 proposal.md 明确声明）
+.codex/skills/devbooks-proposal-judge/references/提案裁决提示词.md:11:- `<change-root>/<change-id>/proposal.md`
+.codex/skills/devbooks-proposal-judge/references/提案裁决提示词.md:37:- **必须写回**：裁决结果必须使用 Edit 工具写入 `proposal.md` 的 `## Decision Log` 部分，而非仅输出到聊天窗口
+.codex/skills/devbooks-proposal-judge/references/提案裁决提示词.md:57:- 若 `## Decision Log` 部分不存在，在 proposal.md 末尾创建该部分
+.codex/skills/devbooks-proposal-judge/references/提案裁决提示词.md:60:现在开始执行裁决并写回 proposal.md。
+.codex/skills/devbooks-proposal-author/references/提案撰写提示词.md:18:1) 你只负责 `proposal.md`：只允许创建/更新 `(<change-root>/<change-id>/proposal.md)`；不得创建/修改任何其他文件（包括但不限于 `design.md`、`tasks.md`、`specs/**`、`tests/**`、`<truth-root>/**`）。
+.codex/skills/devbooks-proposal-author/references/提案撰写提示词.md:28:   - 你只能：把报错摘要写进 `proposal.md` 的 Debate Packet 或 Open Questions，并给出下一步应由哪个角色/Skill 处理。
+.codex/skills/devbooks-proposal-author/references/提案撰写提示词.md:76:现在开始输出 `proposal.md` Markdown，不要输出额外解释。
+.codex/skills/_shared/references/通用守门协议.md:54:│   │       ├── proposal.md
+dev-playbooks/docs/DevBooks配置指南.md:73:| 提案 | `<change-root>/<change-id>/proposal.md` | Why/What/Impact |
+dev-playbooks/docs/DevBooks配置指南.md:125:| Proposal Author | `devbooks-proposal-author` | `proposal.md` |
+.codex/skills/devbooks-delivery-workflow/SKILL.md:125:| `check_proposal()` | 所有模式 | 检查 proposal.md 格式与决策状态 |
+.codex/skills/_shared/context-detection-template.md:35:  [[ -f "${change_dir}/proposal.md" ]] && has_proposal=true
+.codex/skills/_shared/context-detection-template.md:104:| **proposal** | `proposal.md` 不存在，或存在但未通过 Judge 裁决 |
+.codex/skills/_shared/context-detection-template.md:105:| **apply** | `proposal.md` 存在且已裁决，`design.md` 存在，正在实现 |
+.codex/skills/_shared/context-detection-template.md:118:  [[ -f "${change_dir}/proposal.md" ]] && has_proposal=true
+.codex/skills/_shared/context-detection-template.md:190:| **CD-002** | 仅有 proposal | `proposal.md` 存在，其他为空 | 阶段=proposal, 等待裁决 | 提案已撰写但未通过 |
+.codex/skills/_shared/context-detection-template.md:221:touch "$TEST_DIR/CD-002/proposal.md"
+.codex/skills/_shared/context-detection-template.md:228:touch "$TEST_DIR/CD-003/proposal.md"
+.codex/skills/_shared/context-detection-template.md:256:touch "$TEST_DIR/CD-006/proposal.md"
+.codex/skills/devbooks-spec-contract/references/规格变更提示词.md:17:- 本次变更提案：`<change-root>/<change-id>/proposal.md`（可选）
+.codex/skills/devbooks-brownfield-bootstrap/SKILL.md:85:| `proposal.md` | 基线范围、In/Out、风险 |
+.codex/skills/devbooks-router/SKILL.md:95:当 `proposal.md` 存在时，Router **应自动解析** Impact 章节以生成更精确的执行计划。
+.codex/skills/devbooks-router/SKILL.md:114:1. 检测 `proposal.md` 是否存在
+.codex/skills/devbooks-router/SKILL.md:135:1. `devbooks-proposal-author skill` → proposal.md（提案已存在，跳过）
+.codex/skills/devbooks-router/SKILL.md:152:⚠️ proposal.md 中未找到 Impact 画像。
+.codex/skills/devbooks-router/SKILL.md:176:1. 检查 proposal.md 中 impact_profile YAML 格式
+.codex/skills/devbooks-router/SKILL.md:189:- `devbooks-proposal-author` → `(<change-root>/<change-id>/proposal.md)`（必须）
+.codex/skills/devbooks-router/SKILL.md:300:1. 记录学习到的关键洞察到 `proposal.md` 的 Decision Log
+.codex/skills/devbooks-router/SKILL.md:327:| **新变更** | 变更包不存在或为空 | 路由到 proposal 阶段，建议创建 proposal.md |
+.codex/skills/devbooks-router/SKILL.md:336:- 已有产物：proposal.md ✓, design.md ✓, tasks.md ✓, verification.md ✗
+.codex/skills/devbooks-impact-analysis/SKILL.md:3:description: devbooks-impact-analysis：跨模块/跨文件/对外契约变更前做影响分析，产出可直接写入 proposal.md 的 Impact 部分（Scope/Impacts/Risks/Minimal Diff/Open Questions）。用户说"做影响分析/改动面控制/引用查找/受影响模块/兼容性风险"等时使用。
+.codex/skills/devbooks-impact-analysis/SKILL.md:31:- **必须**写入：`<change-root>/<change-id>/proposal.md` 的 Impact 部分
+.codex/skills/devbooks-impact-analysis/SKILL.md:32:- 备选：独立 `impact-analysis.md` 文件（后续回填到 proposal.md）
+.codex/skills/devbooks-impact-analysis/SKILL.md:48:| 分析完成 | 在对话中输出完整 Impact 表格 | 使用 Edit 工具写入 proposal.md |
+.codex/skills/devbooks-impact-analysis/SKILL.md:49:| 通知用户 | 复述分析内容 | "影响分析已写入 `changes/xxx/proposal.md`" |
+.codex/skills/devbooks-impact-analysis/SKILL.md:58:    [使用 Edit 工具写入 proposal.md]
+.codex/skills/devbooks-impact-analysis/SKILL.md:60:    影响分析已写入 `changes/refactor-user/proposal.md` 的 Impact 部分。
+.codex/skills/devbooks-impact-analysis/SKILL.md:109:2. 检测 `proposal.md` 中是否已有 Impact 章节
+.codex/skills/devbooks-impact-analysis/SKILL.md:125:- proposal.md：存在，Impact 章节缺失
+.codex/skills/devbooks-design-doc/SKILL.md:189:1. 检测 `proposal.md` 是否存在（设计文档的输入）
+.codex/skills/devbooks-design-doc/SKILL.md:205:- proposal.md：存在
+.codex/skills/devbooks-brownfield-bootstrap/references/存量项目初始化.md:22:输出（写进 `<change-root>/<baseline-id>/proposal.md`）：
+.codex/skills/devbooks-impact-analysis/references/影响分析提示词.md:27:- 输出必须可落地：能直接写进 `proposal.md` 的 Impact 部分
+.codex/skills/devbooks-proposal-challenger/SKILL.md:3:description: devbooks-proposal-challenger：对 proposal.md 发起质疑（Challenger）+ 查漏补缺，指出风险/遗漏/不一致并给结论，发现缺失的验收标准和未覆盖场景。用户说"质疑提案/挑刺/风险评估/提案对辩 challenger/查漏补缺"等时使用。
+.codex/skills/devbooks-proposal-challenger/SKILL.md:53:1. 检测 `proposal.md` 是否存在
+.codex/skills/devbooks-proposal-challenger/SKILL.md:73:- proposal.md：存在
+.codex/skills/devbooks-brownfield-bootstrap/references/存量项目初始化提示词.md:39:  - `proposal.md`：基线范围、为什么先做基线、In/Out、风险与未知
+.codex/skills/devbooks-brownfield-bootstrap/references/存量项目初始化提示词.md:173:5) 输出 `proposal.md` 内容（Markdown）
+.codex/skills/devbooks-proposal-challenger/references/伦理与合规检查清单.md:168:当存在伦理争议时，在 `proposal.md` 的 Decision Log 中记录：
+.codex/skills/devbooks-proposal-challenger/references/提案质疑提示词.md:11:- `<change-root>/<change-id>/proposal.md`
+dev-playbooks/project.md:133:- Proposal Author：只写 `proposal.md`（含 Debate Packet）
+dev-playbooks/project.md:171:- Proposal Author（提案撰写）：`devbooks-proposal-author` → `dev-playbooks/changes/<id>/proposal.md`
+dev-playbooks/project.md:173:- Proposal Judge（提案裁决）：`devbooks-proposal-judge` → 裁决报告（写回 `proposal.md`）
+dev-playbooks/project.md:177:- Impact（影响分析）：`devbooks-impact-analysis` → 写入 `dev-playbooks/changes/<id>/proposal.md` 的 Impact 部分
+dev-playbooks/project.md:201:| Proposal Author | `devbooks-proposal-author` | `proposal.md`（Why/What/Impact + Debate Packet）|
+dev-playbooks/project.md:203:| Proposal Judge | `devbooks-proposal-judge` | 裁决报告（Approved/Revise/Rejected → 写回 proposal.md）|
+dev-playbooks/project.md:207:| Impact Analyst | `devbooks-impact-analysis` | 影响分析（写入 proposal.md 的 Impact 部分）|
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:172:  # If no git, try reading from proposal.md Impact section
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:173:  if [[ -z "$changed_files" && -f "${change_path}/proposal.md" ]]; then
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:174:    changed_files=$(grep -A 100 "^## Impact" "${change_path}/proposal.md" | grep -E "^\s*-\s+\`" | sed 's/.*`\([^`]*\)`.*/\1/' || true)
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:195:      # Check if proposal.md has engineering-system-change tag
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:196:      if ! grep -q "engineering-system-change" "${change_path}/proposal.md" 2>/dev/null; then
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:197:        violations="${violations}\n  - ${file} (sensitive file requires 'engineering-system-change' tag in proposal.md)"
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:232:    # Check if proposal.md explicitly declares dependency changes
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:233:    if ! grep -qE "(dependency|deps|upgrade|update.*package)" "${change_path}/proposal.md" 2>/dev/null; then
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:234:      echo "error: lockfile changes detected (${changed_lockfiles}) but proposal.md does not declare dependency changes" >&2
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:235:      echo "hint: add dependency change description to proposal.md or use '--check-lockfile=false'" >&2
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:261:    # Check if proposal.md has engineering-system-change tag
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:262:    if ! grep -q "engineering-system-change" "${change_path}/proposal.md" 2>/dev/null; then
+.codex/skills/devbooks-delivery-workflow/scripts/guardrail-check.sh:263:      echo "error: engineering system changes detected but proposal.md missing 'engineering-system-change' tag:" >&2
+.codex/skills/devbooks-test-owner/references/变更验证与追溯模板.md:14:  - Proposal：`<change-root>/<change-id>/proposal.md`
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:7:> **Proposal Reference**: `dev-playbooks/changes/achieve-augment-full-parity/proposal.md`
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:45:| CON-SINGLE-DB | 所有图操作在单个 SQLite 数据库中完成 | proposal.md |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:46:| CON-BACKWARD | 所有变更必须向后兼容，不破坏现有用户 | proposal.md |
+.codex/skills/devbooks-delivery-workflow/references/变更验证与追溯模板.md:14:  - Proposal：`<change-root>/<change-id>/proposal.md`
+.codex/skills/devbooks-delivery-workflow/scripts/change-scaffold.sh:131:cat <<'EOF' | render_template | write_file "${change_dir}/proposal.md"
+.codex/skills/devbooks-delivery-workflow/scripts/change-scaffold.sh:134:> Output location: `__CHANGE_ROOT__/__CHANGE_ID__/proposal.md`
+.codex/skills/devbooks-delivery-workflow/scripts/change-scaffold.sh:274:  - Proposal: `__CHANGE_ROOT__/__CHANGE_ID__/proposal.md`
+.codex/skills/devbooks-delivery-workflow/scripts/change-scaffold.sh:433:- [ ] Record key insights learned to `proposal.md` Decision Log
+.codex/skills/devbooks-delivery-workflow/references/原型-生产双轨模式.md:31:│  proposal.md（共用）                                              │
+.codex/skills/devbooks-delivery-workflow/references/原型-生产双轨模式.md:129:- [ ] 记录学习到的关键洞察到 `proposal.md` 的 Decision Log
+.codex/skills/devbooks-delivery-workflow/scripts/progress-dashboard.sh:117:proposal_file="${change_dir}/proposal.md"
+.codex/skills/devbooks-delivery-workflow/scripts/progress-dashboard.sh:237:    echo "  proposal.md:     ${proposal_exists}"
+.codex/skills/devbooks-delivery-workflow/scripts/progress-dashboard.sh:272:    echo "| proposal.md | ${proposal_exists} |"
+.codex/skills/devbooks-delivery-workflow/scripts/change-check.sh:115:proposal_file="${change_dir}/proposal.md"
+.codex/skills/devbooks-entropy-monitor/references/熵度量方法论.md:152:2. 在 `proposal.md` 的 "Why" 部分引用熵报告数据
+dev-playbooks/constitution.md:101:1. 在 `proposal.md` 中记录决策点
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1142:- [x] **B-02**：在 proposal.md 或 design.md 中明确 TF-IDF 语料库构建的触发机制（建议：首次查询时异步触发 + commit hook 增量更新）
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1149:- [ ] 修改后的 proposal.md 通过 Challenger 复检（可在下一轮对话执行）
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1256:1. 更新 proposal.md 状态为 `Approved`
+dev-playbooks/specs/devbooks-adapter/spec.md:54:| 当前变更 | `changes/*/proposal.md` | 变更状态、验收标准、当前焦点 |
+dev-playbooks/specs/devbooks-adapter/spec.md:127:2. 读取每个 `proposal.md` 的 Status 字段
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:755:| 当前变更 | `changes/*/proposal.md` | 变更状态、验收标准 | 工作流感知 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:8:> **Proposal Reference**: [proposal.md](./proposal.md)
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:97:| CON-TECH-003 | **SQLite 图存储**：使用 SQLite + WAL 模式作为图存储后端，不迁移到 Neo4j | proposal.md |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:98:| CON-TECH-004 | **向后兼容**：所有新功能通过可选参数/功能开关控制，不破坏现有 API | proposal.md |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:99:| CON-TECH-005 | **跨进程持久化**：LRU 缓存使用 SQLite 持久化，支持跨进程共享 | proposal.md (MOD-01 修订) |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:139:主要决策记录在 `proposal.md` 的 Decision Log 部分：
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:351:| proposal.md 5.1 | AC-001, AC-002 | tests/llm-provider.bats | evidence/red-baseline/llm-provider-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:352:| proposal.md 5.2 | AC-003 | tests/semantic-anomaly.bats | evidence/red-baseline/semantic-anomaly-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:353:| proposal.md 5.3 | AC-004, AC-004a | tests/data-flow-tracing.bats | evidence/red-baseline/data-flow-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:354:| proposal.md 5.4 | AC-005, AC-005a | tests/keystroke-cancel.bats | evidence/red-baseline/keystroke-cancel-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:355:| proposal.md 5.5 | AC-006, AC-006a | tests/context-compressor.bats | evidence/red-baseline/context-compressor-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:356:| proposal.md 5.6 | AC-007, AC-007a | tests/long-term-memory.bats | evidence/red-baseline/long-term-memory-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:357:| proposal.md 5.7 | AC-008, AC-008a, AC-008b | tests/federation-lite.bats | evidence/red-baseline/federation-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:358:| proposal.md 5.8 | AC-009, AC-009a, AC-009b | tests/cod-visualizer.bats | evidence/red-baseline/cod-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:359:| proposal.md 5.9 | AC-009c | tests/graph-store.bats | evidence/red-baseline/graph-store-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:360:| proposal.md 5.10 | AC-010, AC-010a | tests/drift-detector.bats | evidence/red-baseline/drift-detector-*.log |
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/devbooks-adapter/spec.md:47:| 当前变更 | `changes/*/proposal.md` | 变更状态、验收标准、当前焦点 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/devbooks-adapter/spec.md:120:2. 读取每个 `proposal.md` 的 Status 字段
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:17:- proposal.md 状态：Approved，Impact 章节已存在
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:177:对比 proposal.md 第 3 节的 Impact 分析：

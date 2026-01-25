@@ -1,0 +1,4 @@
+1..3
+ok 1 T-CC-002: Token budget is respected
+ok 2 T-CC-006: Multiple files are aggregated correctly
+ok 3 T-CC-008: Python files are supported

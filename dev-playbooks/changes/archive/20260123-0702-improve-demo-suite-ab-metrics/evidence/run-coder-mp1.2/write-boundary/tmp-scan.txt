@@ -1,0 +1,4 @@
+run_id=run-coder-mp1.2
+scanned_at=2026-01-23T08:29:01Z
+ok:/tmp/ci-drift-snapshot.json not found
+ok:/tmp/ci-demo-run-coder-mp1.2-* not found

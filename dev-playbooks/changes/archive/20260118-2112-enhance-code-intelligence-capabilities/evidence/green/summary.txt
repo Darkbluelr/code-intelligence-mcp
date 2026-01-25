@@ -1,0 +1,16 @@
+=== Test Summary ===
+Timestamp: Tue Jan 20 02:38:55 CST 2026
+
+Context Compressor Tests:
+  Passing: 7
+Data Flow Base Tests:
+  Passing: 4
+Graph Store Tests:
+  Passing: 3
+
+=== Fixes Applied ===
+1. Fixed brace_delta() - replaced bash [!{] pattern with tr -cd
+2. Fixed is_signature_start() - added multiple modifier support
+3. Fixed is_structural_line() - class vs interface/type handling
+4. Added Python support (def/async def, decorators)
+5. Fixed call-chain.sh - replaced declare -A with JSON/jq

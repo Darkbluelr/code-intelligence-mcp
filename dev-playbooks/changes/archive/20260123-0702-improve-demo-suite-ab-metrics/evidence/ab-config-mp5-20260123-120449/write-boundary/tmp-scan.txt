@@ -1,0 +1,4 @@
+run_id=ab-config-mp5-20260123-120449
+scanned_at=2026-01-23T12:04:49Z
+ok:/tmp/ci-drift-snapshot.json not found
+ok:/tmp/ci-demo-ab-config-mp5-20260123-120449-* not found

@@ -1,0 +1,1894 @@
+Command failed: 2026-01-23T10:57:23.506720Z ERROR code_core::exec: exec error: No such file or directory (os error 2)
+2026-01-23T10:58:37.888462Z ERROR code_core::exec: exec error: No such file or directory (os error 2)
+2026-01-23T10:58:54.220861Z ERROR code_core::exec: exec error: No such file or directory (os error 2)
+2026-01-23T10:59:21.379076Z ERROR code_core::exec: exec error: No such file or directory (os error 2)
+[2026-01-23T10:57:01] OpenAI Codex v0.0.0 (research preview)
+[2026-01-23T10:57:01] binary: /Users/ozbombor/Library/Caches/just-every/code/0.6.49/code-aarch64-apple-darwin
+--------
+workdir: /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+model: gpt-5.2-codex
+provider: custom
+approval: never
+sandbox: danger-full-access
+reasoning effort: xhigh
+reasoning summaries: auto
+--------
+[2026-01-23T10:57:01] User instructions:
+Context: 仓库：/Users/ozbombor/Projects/code-intelligence-mcp
+变更包：dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/
+当前 proposal 状态：Decision Status=Revise（需要继续 Challenger/Judge 闭环）
+
+Agent: 使用 devbooks-proposal-author skill：修订变更包 `dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/` 的 `proposal.md`。
+
+目标：根据 proposal.md 现有 Decision Log（多轮 Revise）与最新 Challenger 关注点，把提案正文改到“可进入下一轮 Challenger/Judge”的状态。
+
+必须满足：
+- 严格遵守单变更包强制约束（不可拆包）。
+- 不引入 Cursor/其他 IDE 适配（明确排除）。
+- 入口层收敛为 I/O 适配；所有工具调用/参数裁剪/预算/融合进入 `hooks/auto-tool-orchestrator.sh`。
+- Codex 会话连续性：不依赖 `--json/session_id`；以 `codex exec resume --last` 为首选，失败即降级；给出可验证锚点（含 plan/dry-run 不调用 codex 的路径）。
+- Tier-2：默认关闭；仅 `CI_AUTO_TOOLS_TIER_MAX=2` 显式启用；补齐用户提示与触发说明（不引入新的 CLI 开关）。
+- 参数裁剪/白名单：明确唯一强制执行点与绕过拒绝策略；补齐 [Limits] 文案锚点。
+- 明确与现有 `hooks/context-inject-global.sh` 的迁移/去重策略（同包完成 + 可回滚）：写到“可实现”的粒度（至少列出要迁移/封装的函数/模块边界与互斥关系）。
+- 清理任何工具日志/无关内容（例如 proposal 内不应出现“[Full output saved to: …]”这类工具落盘提示）。
+
+交付：只修改 proposal.md（必要时可同时补充本变更包内的说明性文件，但不要进入 design/spec/plan 阶段）。
+完成后请输出：
+1) 你修改了哪些关键段落（用小节标题定位）
+2) 你认为下一步应立即执行：devbooks-proposal-challenger
+
+Desired output: 更新后的 proposal.md + 修改说明（中文）
+
+Files to consider: dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md, hooks/context-inject-global.sh, hooks/augment-context-global.sh, install.sh, README.md, README.zh-CN.md, .devbooks/config.yaml, dev-playbooks/project.md
+
+[2026-01-23T10:57:23] thinking
+
+**Preparing to edit proposal**
+[2026-01-23T10:57:23] exec rg -n --files in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T10:57:23] rg -n --files exited -1 in 4ms:
+ERROR
+No such file or directory (os error 2)
+[2026-01-23T10:57:24] tokens used: 12,327
+
+[2026-01-23T10:57:42] thinking
+
+**Preparing skill environment**
+
+I'm setting the repo path to the user's project directory and opening the skill definition file to follow its steps, ensuring edits use apply_patch as instructed.
+[2026-01-23T10:57:43] exec sed -n '1,200p' /Users/ozbombor/.codex/skills/devbooks-proposal-author/SKILL.md in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T10:57:43] sed -n '1,200p' /Users/ozbombor/.codex/skills/devbooks-proposal-author/SKILL.md succeeded in 7ms:
+---
+name: devbooks-proposal-author
+description: devbooks-proposal-author：撰写变更提案 proposal.md（Why/What/Impact + Debate Packet），作为后续 Design/Spec/Plan 的入口。对设计性决策会呈现选项给用户选择。用户说"写提案/proposal/为什么要改/影响范围/坏味道重构提案"等时使用。
+recommended_experts: ["Product Manager", "System Architect"]
+allowed-tools:
+  - Glob
+  - Grep
+  - Read
+  - Write
+  - Edit
+---
+
+# DevBooks：提案撰写（Proposal Author）
+
+## 前置：配置发现（协议无关）
+
+- `<truth-root>`：当前真理目录根
+- `<change-root>`：变更包目录根
+
+执行前**必须**按以下顺序查找配置（找到后停止）：
+[2026-01-23T10:57:43] tokens used: 12,642
+
+[2026-01-23T10:58:00] thinking
+
+**Preparing to locate config files**
+
+I'm confirming the current working directory to correctly find .devbooks/config.yaml or dev-playbooks/project.md, ensuring I use the right path for searching next.
+[2026-01-23T10:58:01] exec pwd in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T10:58:01] pwd succeeded in 11ms:
+/Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T10:58:01] tokens used: 14,779
+[2026-01-23T10:58:19] exec ls -la /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T10:58:19] ls -la /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill succeeded in 14ms:
+total 200
+drwxr-xr-x  21 ozbombor  staff    672 Jan 23 14:07 .
+drwxr-xr-x  15 ozbombor  staff    480 Jan 23 14:07 ..
+-rw-r--r--   1 ozbombor  staff    125 Jan 23 14:07 .git
+drwxr-xr-x   3 ozbombor  staff     96 Jan 23 14:07 .github
+-rw-r--r--   1 ozbombor  staff    365 Jan 23 14:07 .gitignore
+-rw-r--r--   1 ozbombor  staff    826 Jan 23 14:07 .npmignore
+-rw-r--r--   1 ozbombor  staff   5516 Jan 23 14:07 README.md
+-rw-r--r--   1 ozbombor  staff   4371 Jan 23 14:07 README.zh-CN.md
+drwxr-xr-x   4 ozbombor  staff    128 Jan 23 14:07 bin
+drwxr-xr-x   8 ozbombor  staff    256 Jan 23 14:07 config
+drwxr-xr-x   4 ozbombor  staff    128 Jan 23 14:07 docs
+drwxr-xr-x   6 ozbombor  staff    192 Jan 23 14:07 hooks
+-rwxr-xr-x   1 ozbombor  staff   9426 Jan 23 14:07 install.sh
+-rw-r--r--   1 ozbombor  staff  48490 Jan 23 14:07 package-lock.json
+-rw-r--r--   1 ozbombor  staff   1495 Jan 23 14:07 package.json
+-rw-r--r--   1 ozbombor  staff   2173 Jan 23 14:07 parse-scip.js
+drwxr-xr-x  55 ozbombor  staff   1760 Jan 23 14:07 scripts
+drwxr-xr-x   6 ozbombor  staff    192 Jan 23 14:07 src
+drwxr-xr-x  44 ozbombor  staff   1408 Jan 23 14:07 tests
+[2026-01-23T10:58:19] tokens used: 15,176
+[2026-01-23T10:58:37] exec rg -n --files /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill -g .devbooks/config.yaml -g dev-playbooks/project.md -g project.md in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T10:58:37] rg -n --files /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill -g .devbooks/config.yaml -g dev-playbooks/project.md -g project.md exited -1 in 20ms:
+ERROR
+No such file or directory (os error 2)
+[2026-01-23T10:58:38] tokens used: 16,005
+[2026-01-23T10:58:54] exec rg -n --files -g .devbooks/config.yaml -g dev-playbooks/project.md -g project.md in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T10:58:54] rg -n --files -g .devbooks/config.yaml -g dev-playbooks/project.md -g project.md exited -1 in 5ms:
+ERROR
+No such file or directory (os error 2)
+[2026-01-23T10:58:54] tokens used: 16,317
+
+[2026-01-23T10:59:19] thinking
+
+**Diagnosing ripgrep config search failure**
+
+The ripgrep command to find config files errors with "No such file or directory (os error 2)", suggesting the executable might be missing or the specified search path is invalid; this blocks locating the required config in the working directory.
+**Testing ripgrep installation**
+
+Planning to run `rg --version` to confirm if ripgrep is installed or missing, as the earlier error suggests the executable might not be found.
+
+[2026-01-23T10:59:21] exec rg --version in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T10:59:21] rg --version exited -1 in 4ms:
+ERROR
+No such file or directory (os error 2)
+[2026-01-23T10:59:21] tokens used: 16,881
+
+[2026-01-23T10:59:46] thinking
+
+**Preferring find over rg for fallback**
+
+Since the error shows the command isn't found, I'll switch to using `find` as the alternative tool to locate config and markdown files per the instructions.
+[2026-01-23T10:59:47] exec /bin/sh -lc 'ls -la .devbooks 2>/dev/null; ls -la dev-playbooks 2>/dev/null; ls -la project.md 2>/dev/null' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T10:59:47] /bin/sh -lc 'ls -la .devbooks 2>/dev/null; ls -la dev-playbooks 2>/dev/null; ls -la project.md 2>/dev/null' exited 1 in 16ms:
+ERROR
+[2026-01-23T10:59:48] tokens used: 17,323
+
+[2026-01-23T11:00:01] thinking
+
+**Assessing repository root discrepancy**
+
+The current working directory appears to be a separate worktree without key config files, while the main repo root likely holds those; next, I'll confirm config presence in the main repo path to align operations correctly.
+[2026-01-23T11:00:02] exec /bin/sh -lc "find /Users/ozbombor/Projects/code-intelligence-mcp -maxdepth 3 -name 'config.yaml' -path '*/.devbooks/*' -o -name 'project.md' -path '*/dev-playbooks/*' -o -name 'project.md' -maxdepth 2" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:00:02] /bin/sh -lc "find /Users/ozbombor/Projects/code-intelligence-mcp -maxdepth 3 -name 'config.yaml' -path '*/.devbooks/*' -o -name 'project.md' -path '*/dev-playbooks/*' -o -name 'project.md' -maxdepth 2" succeeded in 16ms:
+/Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/project.md
+/Users/ozbombor/Projects/code-intelligence-mcp/.devbooks/config.yaml
+[2026-01-23T11:00:03] tokens used: 18,074
+
+[2026-01-23T11:00:17] thinking
+
+**Planning config reading from repo path**
+
+I'll read the .devbooks/config.yaml in the user-given repo path, treating that as the truth root since guessing is disallowed, then check for agents_doc as specified and locate the change root from the config.
+[2026-01-23T11:00:19] exec /bin/sh -lc 'cat /Users/ozbombor/Projects/code-intelligence-mcp/.devbooks/config.yaml' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:00:19] /bin/sh -lc 'cat /Users/ozbombor/Projects/code-intelligence-mcp/.devbooks/config.yaml' succeeded in 16ms:
+embedding:
+  provider: ollama
+  ollama:
+    model: nomic-embed-text
+    endpoint: http://localhost:11434
+  dimension: 768
+
+ai_tools:
+  - claude
+  - cursor
+  - codex
+  - code
+
+install_scope: global
+[2026-01-23T11:00:19] tokens used: 18,803
+
+[2026-01-23T11:00:44] thinking
+
+**Checking config for agents_doc**
+
+The config doesn't specify agents_doc, so next I'll examine dev-playbooks/project.md for relevant details.
+[2026-01-23T11:00:45] exec /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/project.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:00:45] /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/project.md" succeeded in 16ms:
+# 项目上下文
+
+## 目的
+
+为 AI 编程助手（如 Claude Code）提供代码智能能力的 MCP Server。通过语义搜索、调用链追踪、Bug 定位等功能，增强 AI 对代码库的理解和导航能力。
+
+## 技术栈
+
+- **运行时**：Node.js >= 18.0.0
+- **语言**：TypeScript 5.x（服务器薄壳）+ Bash（核心功能脚本）
+- **协议**：MCP (Model Context Protocol) via @modelcontextprotocol/sdk
+- **外部工具**：ripgrep (rg)、jq
+- **可选服务**：Ollama / OpenAI（Embedding）、CKB MCP Server（图分析）
+
+## 项目约定
+
+### 代码风格
+
+- **TypeScript**：严格模式（`strict: true`），ES 模块（`NodeNext`）
+- **Shell 脚本**：`set -euo pipefail`，ShellCheck 检查
+[2026-01-23T11:00:47] tokens used: 19,548
+
+[2026-01-23T11:01:08] thinking
+
+**Locating required reference files**
+
+I'm searching for the specified reference files under the skill folder to meet the skill's instruction requirements before proceeding.
+[2026-01-23T11:01:10] exec /bin/sh -lc 'ls -la /Users/ozbombor/.codex/skills/_shared/references 2>/dev/null; ls -la /Users/ozbombor/.claude/skills/_shared/references 2>/dev/null; ls -la /Users/ozbombor/.code/skills/_shared/references 2>/dev/null' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:01:10] /bin/sh -lc 'ls -la /Users/ozbombor/.codex/skills/_shared/references 2>/dev/null; ls -la /Users/ozbombor/.claude/skills/_shared/references 2>/dev/null; ls -la /Users/ozbombor/.code/skills/_shared/references 2>/dev/null' succeeded in 23ms:
+total 176
+drwxr-xr-x  14 ozbombor  staff    448 Jan 23 17:48 .
+drwxr-xr-x   6 ozbombor  staff    192 Jan 23 17:48 ..
+-rw-r--r--   1 ozbombor  staff  13576 Jan 23 17:48 AI行为规范.md
+-rw-r--r--   1 ozbombor  staff    924 Jan 23 17:48 专家列表.md
+-rw-r--r--   1 ozbombor  staff   5305 Jan 23 17:48 偏离检测与路由协议.md
+-rw-r--r--   1 ozbombor  staff   8368 Jan 23 17:48 完备性思维框架.md
+-rw-r--r--   1 ozbombor  staff   5805 Jan 23 17:48 批准配置说明.md
+-rw-r--r--   1 ozbombor  staff   3067 Jan 23 17:48 文档模板-decision-log.md
+-rw-r--r--   1 ozbombor  staff   4168 Jan 23 17:48 文档模板-design.md
+-rw-r--r--   1 ozbombor  staff   3720 Jan 23 17:48 文档模板-project-profile.md
+-rw-r--r--   1 ozbombor  staff   4782 Jan 23 17:48 文档模板-proposal.md
+-rw-r--r--   1 ozbombor  staff   3960 Jan 23 17:48 文档模板-tasks.md
+-rw-r--r--   1 ozbombor  staff   4015 Jan 23 17:48 文档模板-verification.md
+-rw-r--r--   1 ozbombor  staff   4186 Jan 23 17:48 结构模板-spec.md
+total 176
+drwxr-xr-x  14 ozbombor  staff    448 Jan 23 17:48 .
+drwxr-xr-x   6 ozbombor  staff    192 Jan 23 17:48 ..
+-rw-r--r--   1 ozbombor  staff  13576 Jan 23 17:48 AI行为规范.md
+-rw-r--r--   1 ozbombor  staff    924 Jan 23 17:48 专家列表.md
+[2026-01-23T11:01:11] tokens used: 23,301
+[2026-01-23T11:01:26] exec /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/.codex/skills/_shared/references/AI行为规范.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:01:26] /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/.codex/skills/_shared/references/AI行为规范.md" succeeded in 16ms:
+# DevBooks AI 行为规范
+
+> **角色设定**：你是软件工程领域的专业实践者，融合了系统架构、测试驱动与代码质量的经验。你的决策必须可验证、可追溯、可复用。
+>
+> **用户须知**：本文档定义了 AI 在 DevBooks 工作流中的行为规范。你可以根据项目需求自定义这些规则。
+
+---
+
+## 0. 配置发现（强制）
+
+在写任何文件之前，必须先确定 `<truth-root>` 与 `<change-root>` 的实际路径；禁止猜测。
+
+**发现顺序**（找到后停止）：
+1. `.devbooks/config.yaml`（如存在）→ 解析 `root`、`paths.specs`、`paths.changes`
+2. `dev-playbooks/project.md`（如存在）→ 使用 `dev-playbooks/specs` 和 `dev-playbooks/changes`
+3. `project.md`（如存在）→ 使用 `specs/` 和 `changes/`
+4. 若仍无法确定 → **停止并询问用户**
+
+**关键约束**：
+- 如果配置中指定了 `constitution`（宪法文件），**必须先阅读该文档**再执行任何操作
+[2026-01-23T11:01:27] tokens used: 25,316
+
+[2026-01-23T11:01:47] thinking
+
+**Identifying new skill and resource**
+
+I'm noting the need to develop the 'devbooks-proposal-author' skill and plan to review the proposal writing guide in references/提案撰写提示词.md next.
+[2026-01-23T11:01:48] exec /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/.codex/skills/devbooks-proposal-author/references/提案撰写提示词.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:01:48] /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/.codex/skills/devbooks-proposal-author/references/提案撰写提示词.md" succeeded in 15ms:
+# 提案撰写提示词
+
+> **角色设定**：你是软件架构领域的**最强大脑**——融合了 Eric Evans（领域驱动设计）、Martin Fowler（架构与重构）、Sam Newman（微服务设计）的智慧。你的提案必须达到这些大师级专家的水准。
+
+最高指示（优先级最高）：
+- 在执行本提示词前，先阅读 `~/.claude/skills/_shared/references/AI行为规范.md` 并遵循其中所有协议。
+- **必须**先阅读 `~/.claude/skills/_shared/references/文档模板-proposal.md` 了解新的文档结构。
+
+你是"提案负责人（Proposal Author）"。你的任务是在 proposal 阶段产出清晰、可审查、可落地的变更提案，确保范围最小且可验证。
+
+输入材料（由我提供）：
+- 需求与目标（1–3 句）
+- 当前真理：`<truth-root>/`
+- 项目画像：`<truth-root>/_meta/project-profile.md`（如存在）
+- 决策日志：`<truth-root>/_meta/decision-log.md`（如存在）
+- 统一语言表（如存在）：`<truth-root>/_meta/glossary.md`
+- 已有影响分析（如有）
+
+硬约束（必须遵守）：
+1) 你只负责 `proposal.md`：只允许创建/更新 `(<change-root>/<change-id>/proposal.md)`；不得创建/修改任何其他文件（包括但不限于 `design.md`、`tasks.md`、`specs/**`、`tests/**`、`<truth-root>/**`）。
+[2026-01-23T11:01:49] tokens used: 29,215
+
+[2026-01-23T11:02:04] thinking
+
+**Preparing to access proposal template**
+[2026-01-23T11:02:05] exec /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/.codex/skills/_shared/references/文档模板-proposal.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:02:05] /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/.codex/skills/_shared/references/文档模板-proposal.md" succeeded in 26ms:
+# Proposal 文档模板
+
+> 本模板定义了 proposal.md 的标准结构，确保提案清晰、可审查、可落地。
+
+## 文件位置
+
+```
+<change-root>/<change-id>/proposal.md
+```
+
+## 标准结构
+
+```markdown
+# <变更标题>
+
+## 🎯 结论先行（30秒阅读）
+
+**本提案会导致**：
+- ✅ [会发生什么变化 1]
+- ✅ [会发生什么变化 2]
+[2026-01-23T11:02:05] tokens used: 31,725
+
+[2026-01-23T11:02:29] thinking
+
+**Resolving repo and change root paths**
+
+Confirmed the main repo with dev-playbooks and config is at the user-given path, not the current working directory; will operate there and update proposal.md inside the identified change package folder accordingly.
+**Preparing to read and update proposal.md**
+
+Planning to read the full proposal file to align it with devbooks-proposal-author instructions and recommended experts, ensuring updates respect the template and constraints while using apply_patch for any changes.
+
+[2026-01-23T11:02:42] exec /bin/sh -lc "sed -n '1,240p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:02:42] /bin/sh -lc "sed -n '1,240p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" succeeded in 26ms:
+# Claude Code / Codex CLI：自动工具编排 + 结果融合的上下文注入（单变更包交付）
+
+- Decision Status: Revise
+
+> Truth Root: `dev-playbooks/specs/`
+> Change Root: `dev-playbooks/changes/`
+> Status: Revise（Judge 要求修改后再评审）
+
+> 治理约束（强制）：本次变更**所有任务必须在一个变更包里完成**，禁止拆分为多个变更包；若 Proposal Challenger 要求拆分，Proposal Judge **必须驳回拆分请求**（允许在同一变更包内重排优先级/范围，但不得拆包）。
+
+## 🎯 结论先行（30秒阅读）
+
+**本提案会导致**：
+- ✅ 在 Claude Code 与 Codex CLI 中，用户输入后可在模型输出前自动执行“合适的”MCP 工具，并把结果回填进 Prompt
+- ✅ 自动调用不再是“固定 1-2 个工具”，而是按意图/置信度/预算选择多工具，并做结果融合与解释（面向用户可读）
+- ✅ 中英文都可触发自动注入（语言无关），并保留“可见 + 可控”的用户体验
+- ✅ 入口层收敛为“输入采集 + 输出注入”，所有工具调用/裁剪/预算/融合进入编排内核，并给出同包迁移与回滚路径
+
+**本提案不会导致**：
+- ❌ 不做 Cursor/其他 IDE 的适配（明确排除）
+[2026-01-23T11:02:42] tokens used: 34,381
+[2026-01-23T11:02:53] exec /bin/sh -lc "sed -n '240,480p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:02:53] /bin/sh -lc "sed -n '240,480p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" succeeded in 19ms:
+三者关系（都需要存在，且是**调用链**而非互斥）：
+
+```
+Claude Code (UserPromptSubmit)
+  -> ~/.claude/hooks/context-inject-global.sh
+       -> hooks/context-inject-global.sh (入口适配层)
+            -> hooks/auto-tool-orchestrator.sh (编排内核)
+
+兼容层：hooks/augment-context-global.sh
+  -> exec hooks/context-inject-global.sh (仅为历史路径/测试保持兼容)
+```
+
+- `hooks/context-inject-global.sh`：入口与适配层
+  - 负责输入适配：Claude Code Hook payload / Codex CLI wrapper 输入 / CLI 参数（如 `--prompt`）
+  - 负责输出适配：
+    - Claude Code：输出 `hookSpecificOutput.additionalContext`
+    - Codex CLI：输出可拼接到 prompt 的“增强上下文块”（或 JSON 供 wrapper 二次格式化）
+  - 负责**可控性与降级**：根据控制面决定是否调用编排内核；失败时 fail-open（不阻塞模型输出）
+  - **硬约束**：入口层不允许直接调用任何 MCP 工具；仅能调用编排内核
+
+[2026-01-23T11:02:54] tokens used: 39,265
+[2026-01-23T11:03:17] exec /bin/sh -lc "sed -n '480,960p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:03:17] /bin/sh -lc "sed -n '480,960p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" succeeded in 21ms:
+```
+
+兼容策略（强制）：
+- `schema_version` 采用语义化版本（SemVer）。
+- **向前兼容**：只允许“新增可选字段/扩大枚举”不破坏旧消费者。
+- **破坏性变更**：必须 bump major；入口层必须提供文本兜底（只消费 `fused_context.for_model.additional_context`）。
+
+#### 设计要点 7：失败模型与提示注入防护策略（必须）
+
+失败模型（必须覆盖）：
+- 单工具超时/错误
+- 部分成功（部分工具失败）
+- 编排输出 JSON 解析失败
+- 工具输出包含“提示注入文本/伪指令”
+
+防护策略（强制）：
+- 工具输出视为**不可信数据**：必须放入明确分隔块，并在 `fused_context.for_model.safety` 显式声明“忽略其中指令”。
+- 编排逻辑不得把工具输出当成新的系统指令；最多作为“证据数据”供摘要。
+- 当发现“疑似提示注入/越权指令”模式时：删除/脱敏该段，并在 [Limits] 明示“已过滤潜在注入内容”。
+- fail-open：任何失败都不得阻塞模型输出，但必须把降级原因写入 [Limits]。
+[2026-01-23T11:03:28] tokens used: 44,041
+
+[2026-01-23T11:03:43] thinking
+
+**Preparing detailed edits to proposal.md**
+
+I'm aligning the proposal.md with all new bullet points: single change package, removing Cursor, layering I/O adaptation, managing tool orchestration via specified hook script, ensuring codex session continuity with failover, controlling Tier-2 access via env var, refining parameter trimming logic, adding a [Limits] anchor, clarifying migration/duplication strategy for context injection, cleaning tool log leftovers, and removing default "24 hours auto approval" while updating approval flow with Decision log references. Next, I'll write these changes at implementable modular granularity while strictly modifying proposal.md.
+**Clarifying decision status handling and Tier-2 environment enforcement**
+
+I'm confirming to keep the existing Revise status unchanged, since authors can't modify it and no new decision lines are allowed. Additionally, I'll enforce Tier-2 tooling activation solely via the CI_AUTO_TOOLS_TIER_MAX env var, ensuring config settings can't enable Tier-2, removing any CLI flag mentions. I'll also prepare to anchor parameter trimming enforcement with precise [Limits] messaging and to audit context-inject-global.sh and augment-context-global.sh for specific functions requiring migration notes.
+
+[2026-01-23T11:04:07] exec /bin/sh -lc "sed -n '1,260p' /Users/ozbombor/Projects/code-intelligence-mcp/hooks/context-inject-global.sh" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:04:07] /bin/sh -lc "sed -n '1,260p' /Users/ozbombor/Projects/code-intelligence-mcp/hooks/context-inject-global.sh" succeeded in 23ms:
+#!/bin/bash
+# DevBooks Global Context Injection Hook
+# 全局生效，自动检测代码项目并注入上下文
+# 版本: 3.0 - 新增：Graph-RAG 集成 + Embedding 自动构建 + 优雅降级
+
+# ==================== 环境设置 ====================
+# 注意：不全局修改 PATH，以便支持测试时的隔离环境
+# 复杂度工具检测使用 command -v，会尊重当前 PATH 设置
+
+# 查找 rg (ripgrep) - 优先系统安装，其次 Claude Code 内置
+# 这里使用显式路径检查，不依赖 PATH
+find_rg() {
+  # 系统路径（显式检查，不受 PATH 限制）
+  for p in /opt/homebrew/bin/rg /usr/local/bin/rg /usr/bin/rg; do
+    [ -x "$p" ] && { echo "$p"; return; }
+  done
+
+  # Claude Code 内置（使用平台检测，避免硬编码）
+  local arch platform
+  arch=$(uname -m)
+[2026-01-23T11:04:08] tokens used: 52,129
+
+[2026-01-23T11:04:36] thinking
+
+**Confirming skill use and editing protocol**
+
+The skill devbooks-proposal-author must be announced with use. File edits will only target proposal.md using apply_patch, adhering to truth-root and change-root declarations before writing. The next response will include the required root statement at the top.
+**Confirming strict proposal.md-only edits with template compliance**
+
+Editing will strictly modify only proposal.md per skill constraints, preserving existing Decision Status and structure while aligning sections with the official template. Roles of Product Manager and System Architect will be declared in output along with truth-root/change-root. Key design updates include clarifying Tier-2 trigger, parameter clipping enforcement point, migration details for context injection, and abiding by single-change-package rules. Tool logs and unauthorized status changes will be avoided.
+
+[2026-01-23T11:05:36] exec /bin/sh -lc "grep -nE '"'^[a-zA-Z_][a-zA-Z0-9_]*'"\\s*\\(\\)' /Users/ozbombor/Projects/code-intelligence-mcp/hooks/context-inject-global.sh" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:05:36] /bin/sh -lc "grep -nE '"'^[a-zA-Z_][a-zA-Z0-9_]*'"\\s*\\(\\)' /Users/ozbombor/Projects/code-intelligence-mcp/hooks/context-inject-global.sh" succeeded in 20ms:
+12:find_rg() {
+53:show_help() {
+220:read_yaml_value() {
+243:read_yaml_section_value() {
+273:load_project_config() {
+323:is_code_project() {
+345:check_embedding_index() {
+355:has_embedding_api_key() {
+360:trigger_embedding_build() {
+394:setup_embedding() {
+432:analyze_intent_4d() {
+503:extract_symbols() {
+532:extract_at_refs() {
+539:read_file_ref() {
+577:process_at_refs() {
+597:run_with_timeout() {
+611:search_definition() {
+637:search_reference() {
+659:search_symbol() {
+682:do_search() {
+[2026-01-23T11:05:37] tokens used: 58,538
+
+[2026-01-23T11:06:01] thinking
+
+**Preparing to patch proposal.md**
+
+I'm focusing on revising proposal.md only, strictly using apply_patch, to remove any mentions of "24 hours auto approve" and align it with the latest decision log and Challenger concerns without referencing cursor.
+**Removing cursor mentions and clarifying orchestrator role**
+
+I'm removing all mentions of cursor, explicitly excluding future cursor/IDE adaptation from the proposal. I'll also strengthen statements that all tool calls, parameter pruning, budgets, and fusion are centralized in the auto-tool-orchestrator.sh, emphasizing it as the sole enforcement point with rejection on direct tool calls elsewhere. Additionally, I'll clarify tier-2 enabling is only via env var, not config, aligning with the latest requirements.
+
+[2026-01-23T11:06:40] exec /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/Projects/code-intelligence-mcp/hooks/augment-context-global.sh" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:06:40] /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/Projects/code-intelligence-mcp/hooks/augment-context-global.sh" succeeded in 27ms:
+#!/bin/bash
+# Backward-compat wrapper for renamed hook.
+# Delegates to context-inject-global.sh to keep existing tests/configs working.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET="$SCRIPT_DIR/context-inject-global.sh"
+
+if [ -x "$TARGET" ]; then
+  exec "$TARGET" "$@"
+fi
+
+echo "[DevBooks] Missing hook: $TARGET" >&2
+exit 1
+[2026-01-23T11:06:42] tokens used: 61,410
+
+[2026-01-23T11:07:12] thinking
+
+**Clarifying repo and editing constraints**
+
+The active repo for edits is under /Users/ozbombor/Projects/code-intelligence-mcp, not the working dir clone. All file changes must use apply_patch per the latest instructions. I must use the devbooks-proposal-author skill and include recommended experts from it while updating the proposal in dev-playbooks.
+**Analyzing config and proposal constraints**
+
+I've confirmed no root/paths or constitution settings in config.yaml, so dev-playbooks/project.md guides roots: truth-root is dev-playbooks/specs, change-root is dev-playbooks/changes. Only proposal.md will be modified per skill constraints, respecting user inputs without adding other explanation files.  
+
+**Planning proposal refinements**
+
+The proposal needs alignment with the skill template structure, careful removal of future Cursor adaptation mentions (keeping Cursor explicitly out of scope), and clearer user prompt and trigger details for Tier-2 default off without new CLI flags.  
+
+**Preparing migration details**
+
+I’ll identify concrete functions in context-inject-global.sh related to tool calls for migration into the auto-tool-orchestrator, ensuring clear module boundaries and mutual exclusivity as required.  
+
+**Maintaining status**
+
+I will avoid modifying decision or approval statuses and ensure no mentions of “Full output saved” remain. Next, I’ll inspect context-inject-global.sh for functions to list for migration and begin updating the proposal accordingly.
+
+[2026-01-23T11:08:35] exec /bin/sh -lc "command -v rg || echo 'rg-not-found'" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:08:35] /bin/sh -lc "command -v rg || echo 'rg-not-found'" succeeded in 17ms:
+rg-not-found
+[2026-01-23T11:08:38] tokens used: 66,182
+
+[2026-01-23T11:09:25] thinking
+
+**Confirming root paths and patch use**
+
+The truth-root and change-root are set to dev-playbooks/specs and dev-playbooks/changes per defaults since config lacks these; all file edits will be done via apply_patch per instructions.
+**Planning detailed proposal updates**
+
+I'm clarifying that the proposal must follow the template structure while preserving existing content, updating migration details with specific functions from context-inject-global.sh to orchestrator, emphasizing entry layer as I/O adapter only, refining Tier-2 controls and user prompts without new CLI flags, consolidating parameter clamping with explicit [Limits] text anchors, ensuring codex session continuity adheres to no --json usage and provides verifiable plan/dry-run paths, and removing any mention of new CLI flags like `--dry-run` while keeping environment-variable controls.
+**Detailing migration function list and enforcing mutual exclusion**
+
+I'm preparing to update the migration strategy with a clear list of functions to move into the orchestrator, specifying entry-layer functions that remain as thin adapters, and defining mutual exclusion rules forbidding direct tool calls in entry by enforcing calls only via the orchestrator. I'll also remove all mentions of Cursor or IDE adaptations to comply with exclusion requirements.
+
+
+[2026-01-23T11:11:11] exec /bin/sh -lc 'grep -n "Cursor" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:11:11] /bin/sh -lc 'grep -n "Cursor" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' succeeded in 21ms:
+20:- ❌ 不做 Cursor/其他 IDE 的适配（明确排除）
+51:- [x] Cursor/其他 IDE 适配
+75:- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
+201:- Cursor/其他 IDE 适配
+681:- 交付边界：仅 Claude Code + Codex CLI；Cursor 等明确不做
+[2026-01-23T11:11:12] tokens used: 72,969
+
+[2026-01-23T11:11:33] thinking
+
+**Confirming status update rules**
+
+The author must keep the existing decision status unchanged (Revise) and can only set Status to Pending if changing it, but since the file already has Status: Revise, it's safest to retain current values without modifying those fields.
+**Clarifying status handling for revisions**
+
+The author should change the general "Status" to Pending to signal readiness for re-judgment while keeping the "Decision Status" untouched as Revise per instructions. Also, upcoming outputs must restate truth-root and change-root and note recommended experts as Product Manager and System Architect.
+
+[2026-01-23T11:11:49] exec /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/.codex/skills/_shared/references/专家列表.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:11:49] /bin/sh -lc "sed -n '1,200p' /Users/ozbombor/.codex/skills/_shared/references/专家列表.md" succeeded in 24ms:
+# 专家列表
+
+## 目标
+
+为 Skills 提供统一的专家角色命名与职责范围，供 `recommended_experts` 字段引用。
+
+## 标准专家角色
+
+| 角色 | 职责 | 使用场景 |
+|------|------|----------|
+| Product Manager | 定义业务目标、用户价值与边界 | 需求定义、价值评估、范围控制 |
+| System Architect | 设计系统边界、关键机制与依赖方向 | 架构设计、跨模块影响评估 |
+| Test Engineer | 设计验证策略与覆盖矩阵 | 验收测试、回归策略 |
+| Security Expert | 识别安全风险与最小权限 | 权限模型、敏感数据处理 |
+| Performance Engineer | 评估性能风险与指标 | 性能预算、瓶颈分析 |
+| Technical Writer | 维护对外文档一致性 | 文档规范、信息架构 |
+
+## 使用规范
+
+1. `recommended_experts` 必须使用表内角色名。
+[2026-01-23T11:11:49] tokens used: 75,133
+
+[2026-01-23T11:12:28] thinking
+
+**Confirming file edit approach**
+
+Preparing to edit proposal.md only via apply_patch without extraneous logs, and will mention truth-root and change-root usage in the assistant output before applying changes.
+**Detailing proposal revisions**
+
+I'm specifying updates to proposal.md to enforce entry layer I/O adaptation, orchestrator-exclusive tool calls, codex session continuity without --json/session_id, tier-2 default off with env var enablement, unique parameter trimming enforcement with bypass rejection, and explicit migration/dedup function mappings referencing context-inject-global.sh functions, while removing any mention of Cursor and auto-approval.
+
+[2026-01-23T11:13:42] exec /bin/sh -lc "sed -n '420,760p' /Users/ozbombor/Projects/code-intelligence-mcp/hooks/context-inject-global.sh" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:13:43] /bin/sh -lc "sed -n '420,760p' /Users/ozbombor/Projects/code-intelligence-mcp/hooks/context-inject-global.sh" succeeded in 40ms:
+}
+
+# ==================== 缓存机制（使用共享库） ====================
+# 缓存函数由 tools/devbooks-cache-utils.sh 提供
+# 不再提供内联降级实现，已在脚本开头统一检查并退出
+
+# ==================== 意图检测 ====================
+# 意图检测函数由 tools/devbooks-common.sh 提供（CODE_INTENT_PATTERN, NON_CODE_PATTERN, is_code_intent, is_non_code）
+
+# ==================== 四维意图分析 (AC-002) ====================
+# 聚合显式/隐式/历史/代码 4 维信号，提升意图理解深度
+# 返回 JSON 格式：{explicit: w1, implicit: w2, historical: w3, code: w4, signals: [...]}
+analyze_intent_4d() {
+  local prompt="$1"
+  local signals='[]'
+
+  # 1. 显式信号 (explicit) - 直接指令词
+  local explicit_weight=0
+  local explicit_patterns='(fix|add|remove|update|create|delete|implement|refactor|debug|test|review)'
+  if echo "$prompt" | grep -qiE "$explicit_patterns"; then
+[2026-01-23T11:13:45] tokens used: 78,779
+
+[2026-01-23T11:14:26] thinking
+
+**Clarifying status update rules**
+
+The existing proposal has "Status: Revise" set by the Judge, but author instructions forbid changing status to Approved, Revise, or Rejected—only Pending is allowed. To comply, the author should update status to Pending after revisions, replacing Revise in the proposal header.
+**Finalizing proposal revisions and patch plan**
+
+Decided to update both "Decision Status" and "Status" to Pending to indicate readiness for next review, per author permission. I'll remove all mention of Cursor or IDE adaptations and eliminate the 24-hour auto-approval default, replacing it with explicit judge-required language. I'll consolidate and clarify [Limits] text anchors, emphasize the entry layer’s strict I/O adaptation role and the orchestrator’s exclusive tool invocation, listing functions moved accordingly. Codex session continuity and Tier-2 triggers will be clarified with no new CLI flags, only env vars. I'll keep existing proposal structure with minor alignment to the doc template and ensure no log artifacts leak into the text. The patch will only modify proposal.md using apply_patch and include skill and expert role announcement with truth root/change root at output start. Next step after this will be devbooks-proposal-challenger.
+**Confirming repo root and file paths**
+
+Verified the repo root is at /Users/ozbombor/Projects/code-intelligence-mcp per instructions, and not overridden by current working directory. Will apply all proposal.md edits with apply_patch relative to that repo root path to avoid path conflicts.
+
+
+[2026-01-23T11:16:10] exec /bin/sh -lc 'ls -la /Users/ozbombor/Projects/code-intelligence-mcp | head -n 5' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:16:10] /bin/sh -lc 'ls -la /Users/ozbombor/Projects/code-intelligence-mcp | head -n 5' succeeded in 18ms:
+total 672
+drwxr-xr-x@  37 ozbombor  staff    1184 Jan 23 17:30 .
+drwxr-xr-x@  36 ozbombor  staff    1152 Jan 23 18:12 ..
+-rw-r--r--@   1 ozbombor  staff   18436 Jan 23 05:13 .DS_Store
+drwxr-xr-x    8 ozbombor  staff     256 Jan 13 20:35 .ckb
+[2026-01-23T11:16:12] tokens used: 88,416
+
+[2026-01-23T11:17:02] thinking
+
+**Confirming environment and constraints**
+
+The project root is at /Users/ozbombor/Projects/code-intelligence-mcp, with no constitution or agents_doc specified in config, so no extra references are needed. Edits will follow the apply_patch method, only touching proposal.md, and will prepend <truth-root> and <change-root> lines per AI行为规范 before any file write. The output will incorporate Product Manager and System Architect perspectives as required.
+**Refining proposal clarity and exclusions**
+
+Focus is on clarifying parameter clipping enforcement and bypass strategies, removing any ambiguous Cursor/IDE adaptation mentions to match user’s clear exclusion. Planning to categorize functions in context-inject-global.sh by their roles for migration and I/O adaptation, starting with identifying tool-related calls explicitly.
+
+[2026-01-23T11:17:29] exec /bin/sh -lc 'grep -n "ci_" /Users/ozbombor/Projects/code-intelligence-mcp/hooks/context-inject-global.sh' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:17:29] /bin/sh -lc 'grep -n "ci_" /Users/ozbombor/Projects/code-intelligence-mcp/hooks/context-inject-global.sh' succeeded in 16ms:
+1096:        {"tool": "ci_bug_locate", "reason": "定位 Bug 相关代码", "suggested_params": {}},
+1097:        {"tool": "ci_call_chain", "reason": "追踪调用链路", "suggested_params": {"depth": 3}}
+1102:        {"tool": "ci_call_chain", "reason": "理解函数调用关系", "suggested_params": {"depth": 3}},
+1103:        {"tool": "ci_impact", "reason": "分析修改影响范围", "suggested_params": {}}
+1108:        {"tool": "ci_search", "reason": "搜索相关代码", "suggested_params": {}},
+1109:        {"tool": "ci_graph_rag", "reason": "理解代码结构", "suggested_params": {}}
+1114:        {"tool": "ci_search", "reason": "搜索相关代码", "suggested_params": {}}
+[2026-01-23T11:17:30] tokens used: 90,440
+
+[2026-01-23T11:18:17] thinking
+
+**Planning patch for proposal.md only**
+
+I'll update proposal.md using apply_patch without changing the existing Decision Status lines, preserving the Judge's Revise status as required.
+**Planning detailed proposal.md revisions**
+
+I’m preparing comprehensive edits to proposal.md that remove the Cursor/IDE mention, eliminate 24-hour auto-approval defaults, clarify strict entry-layer I/O adaptation and tool call boundaries, specify migration/deduplication with function-level granularity referencing context-inject-global.sh, reinforce unique enforcement points for parameter trimming and Tier-2 enabling, and clean any tool logs. The patch will preserve existing decision status and comply with all stated constraints.
+**Finalizing precise proposal.md edits**
+
+I’m preparing targeted apply_patch changes to update the revision notes, remove any 24-hour auto-approval mentions, refine recommendation and exclusion sections to explicitly exclude Cursor/IDE adaptation, emphasize entry-layer I/O gating and orchestrator boundaries, clarify Tier-2 enablement via env var only with user prompts, reinforce parameter trimming enforcement with [Limits] anchor, update Codex session continuity validations, and ensure no tool log remnants remain—while preserving Decision Status and existing logs.
+
+
+[2026-01-23T11:20:09] exec /bin/sh -lc 'grep -n "24" /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:20:09] /bin/sh -lc 'grep -n "24" /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' succeeded in 9ms:
+569:  - 摘要长度：每条摘要 `max_chars=240`，超出截断并追加 `…`，同时 `truncated=true`
+711:- [ ] 移除“24 小时后自动批准”的默认条款，改为显式批准，避免绕过裁决流程。
+[2026-01-23T11:20:10] tokens used: 97,127
+
+[2026-01-23T11:20:49] thinking
+
+**Confirming file access rules and patching method**
+
+The proposal.md file is the only one allowed to be modified per the devbooks-proposal-author skill, so edits will target it exclusively using apply_patch. I'll state the truth-root and change-root from dev-playbooks/project.md in the output as required.[2026-01-23T11:21:57] ERROR: stream error: stream disconnected before completion: stream closed before response.completed; retrying in 203ms…
+
+**Adjusting proposal per skill constraints**
+
+I'm preparing to update proposal.md strictly per the proposal-author skill, removing the 24h auto-approval line, excluding Cursor/IDE adaptation mentions, and aligning with entry layer convergence requirements while respecting user restrictions.
+**Detailing proposal updates for orchestrator and migration**
+
+I'm expanding proposal.md to explicitly define the unique enforcement point in the orchestrator, add bypass rejection strategy with [Limits] anchors, clarify Codex session continuity preferences, and specify Tier-2 auto-tools default off plus user prompts without new CLI flags. I’m also outlining a concrete migration plan listing functions to move from context-inject-global.sh to auto-tool-orchestrator.sh with clear boundaries and mutual exclusivity, removing Cursor/IDE adaptation mentions and emphasizing entry layer as I/O adaptation only.
+**Planning detailed proposal patch for scope, defaults, migration, and limits**
+
+I’m preparing a single comprehensive patch to update proposal.md by removing Cursor adaptation mentions, revising default approval to require explicit consent, adding detailed migration function list and mutual exclusivity for orchestrator vs entry, strengthening unique enforcement and bypass policies with [Limits] anchors, clarifying Tier-2 triggers and user prompts without new CLI flags, and emphasizing Codex session continuity with `resume --last` fallback and verifiable anchors.
+
+
+[2026-01-23T11:25:07] apply_patch auto_approved=true:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -74,3 +74,3 @@
+ - 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+-- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
++- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+ 
+@@ -88,3 +88,3 @@
+ 
+-默认选择：✅ 我同意推荐方案（未勾选也按默认意向继续；最终仍以 Judge 裁决为准）
++默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+ 
+[2026-01-23T11:25:07] apply_patch(auto_approved=true) exited 0 in 0ms:
+Success. Updated the following files:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+[2026-01-23T11:25:07] turn diff:
+diff --git a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+index 0ff32f57d2d9b01af9637620a9f055082525cbd3..011789922888ae7dadc7ff42c48143c7733819d1
+--- a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
++++ b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -72,7 +72,7 @@
+ 默认推荐：**质量型维护者**路径
+ - 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+ - 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+-- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
++- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+ 
+ ---
+ 
+@@ -86,7 +86,7 @@
+ 如果你想自定义（例如更激进/更保守的自动调用策略）：
+ - [ ] 🔧 我想自定义方案（在 Debate Packet 的问题上给出选择）
+ 
+-默认选择：✅ 我同意推荐方案（未勾选也按默认意向继续；最终仍以 Judge 裁决为准）
++默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+ 
+ ---
+ 
+
+[2026-01-23T11:25:09] tokens used: 107,413
+[2026-01-23T11:26:02] apply_patch auto_approved=true:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -267,9 +267,32 @@
+ 
+-#### 设计要点 1.1：迁移/去重策略（同包完成）
++#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）
+ 
+-- **禁止长期双轨并存**：入口层仅保留 I/O 适配，编排逻辑统一收敛到内核。
+-- **阶段 A（同包先行）**：将 `hooks/context-inject-global.sh` 现有的意图识别/信号提取/工具选择逻辑改为“只生成标准化 signals + prompt”，不再直接调用 `ci_*` 工具。
+-- **阶段 B（同包完成）**：把现有编排/融合逻辑（如 `build_structured_output`、`add_graph_context` 等）迁移/收敛进 `hooks/auto-tool-orchestrator.sh`；入口层仅负责 I/O 适配与降级。
+-- **向后兼容**：`hooks/augment-context-global.sh` 保持委托；对外行为保持“可选注入 + fail-open”。
+-- **回滚策略**：设置 `CI_AUTO_TOOLS=off`（关闭编排）或恢复上一版 `context-inject-global.sh`（入口层仍可输出空注入）。
++本节绑定现有脚本内容，明确“要迁移的函数/模块边界”与“入口层互斥规则”，保证同包完成且可回滚。
++
++- **入口层互斥规则（强制）**：`hooks/context-inject-global.sh` **不得**调用任何 `ci_*` 工具或 MCP 客户端；唯一工具通道为 `hooks/auto-tool-orchestrator.sh`。如入口层尝试直连工具，编排内核拒绝并在 `[Limits]` 写明 `tool invocation must go through orchestrator`。
++
++- **迁移清单（从 `hooks/context-inject-global.sh` → `hooks/auto-tool-orchestrator.sh`）**：
++  1) **意图与信号层**：
++     - `analyze_intent_4d`、`extract_symbols`、`extract_at_refs`/`process_at_refs`（用于生成 signals 与上下文线索）
++     - `map_intent_to_standard`、`get_recommended_tools`（生成工具候选与理由）
++  2) **工具选择与执行层**：
++     - `get_index_status`、`do_search`、`call_graph_rag`、`get_hotspots`、`get_file_complexity` 等所有实际工具调用与依赖探测
++     - `run_with_timeout`（工具超时包装）
++  3) **结果融合与输出层**：
++     - `build_structured_output`、`build_text_output`、`add_graph_context`、`add_fallback_info`、`output_hook_response`
++  4) **安全与约束层**：
++     - `EXCLUDE_PATTERN` 与路径过滤/脱敏规则（迁移到编排内核的统一裁剪/过滤模块）
++
++- **入口层保留范围（仅 I/O 适配）**：
++  - 解析 Claude Code Hook payload / Codex wrapper 输入
++  - 调用编排内核并做 JSON 校验与降级处理（无工具调用）
++  - 输出 `hookSpecificOutput.additionalContext` 或 CLI 追加上下文
++
++- **互斥关系（可验证）**：
++  - `hooks/context-inject-global.sh` **只能**调用 `hooks/auto-tool-orchestrator.sh`（或输出空注入 JSON）。
++  - `hooks/augment-context-global.sh` **只能**委托到 `hooks/context-inject-global.sh`。
++
++- **同包回滚策略**：
++  - 软回滚：`CI_AUTO_TOOLS=off` 或 `CI_AUTO_TOOLS_MODE=plan`
++  - 硬回滚：恢复旧版 `hooks/context-inject-global.sh`（入口层仍可输出空注入，编排脚本可保留但不被调用）
+ 
+[2026-01-23T11:26:02] apply_patch(auto_approved=true) exited 0 in 0ms:
+Success. Updated the following files:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+[2026-01-23T11:26:02] turn diff:
+diff --git a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+index 0ff32f57d2d9b01af9637620a9f055082525cbd3..0ff4f3e0815821d63b7a0e8bf6433d305d34338b
+--- a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
++++ b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -72,7 +72,7 @@
+ 默认推荐：**质量型维护者**路径
+ - 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+ - 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+-- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
++- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+ 
+ ---
+ 
+@@ -86,7 +86,7 @@
+ 如果你想自定义（例如更激进/更保守的自动调用策略）：
+ - [ ] 🔧 我想自定义方案（在 Debate Packet 的问题上给出选择）
+ 
+-默认选择：✅ 我同意推荐方案（未勾选也按默认意向继续；最终仍以 Judge 裁决为准）
++默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+ 
+ ---
+ 
+@@ -265,13 +265,36 @@
+   - 输出：Tool Plan + Tool Results + Fused Context（见下方 I/O 契约）
+   - **唯一工具通道**：所有工具调用/参数裁剪/白名单/预算/融合统一在此执行；绕过即拒绝
+ 
+-#### 设计要点 1.1：迁移/去重策略（同包完成）
++#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）
++
++本节绑定现有脚本内容，明确“要迁移的函数/模块边界”与“入口层互斥规则”，保证同包完成且可回滚。
++
++- **入口层互斥规则（强制）**：`hooks/context-inject-global.sh` **不得**调用任何 `ci_*` 工具或 MCP 客户端；唯一工具通道为 `hooks/auto-tool-orchestrator.sh`。如入口层尝试直连工具，编排内核拒绝并在 `[Limits]` 写明 `tool invocation must go through orchestrator`。
+ 
+-- **禁止长期双轨并存**：入口层仅保留 I/O 适配，编排逻辑统一收敛到内核。
+-- **阶段 A（同包先行）**：将 `hooks/context-inject-global.sh` 现有的意图识别/信号提取/工具选择逻辑改为“只生成标准化 signals + prompt”，不再直接调用 `ci_*` 工具。
+-- **阶段 B（同包完成）**：把现有编排/融合逻辑（如 `build_structured_output`、`add_graph_context` 等）迁移/收敛进 `hooks/auto-tool-orchestrator.sh`；入口层仅负责 I/O 适配与降级。
+-- **向后兼容**：`hooks/augment-context-global.sh` 保持委托；对外行为保持“可选注入 + fail-open”。
+-- **回滚策略**：设置 `CI_AUTO_TOOLS=off`（关闭编排）或恢复上一版 `context-inject-global.sh`（入口层仍可输出空注入）。
++- **迁移清单（从 `hooks/context-inject-global.sh` → `hooks/auto-tool-orchestrator.sh`）**：
++  1) **意图与信号层**：
++     - `analyze_intent_4d`、`extract_symbols`、`extract_at_refs`/`process_at_refs`（用于生成 signals 与上下文线索）
++     - `map_intent_to_standard`、`get_recommended_tools`（生成工具候选与理由）
++  2) **工具选择与执行层**：
++     - `get_index_status`、`do_search`、`call_graph_rag`、`get_hotspots`、`get_file_complexity` 等所有实际工具调用与依赖探测
++     - `run_with_timeout`（工具超时包装）
++  3) **结果融合与输出层**：
++     - `build_structured_output`、`build_text_output`、`add_graph_context`、`add_fallback_info`、`output_hook_response`
++  4) **安全与约束层**：
++     - `EXCLUDE_PATTERN` 与路径过滤/脱敏规则（迁移到编排内核的统一裁剪/过滤模块）
++
++- **入口层保留范围（仅 I/O 适配）**：
++  - 解析 Claude Code Hook payload / Codex wrapper 输入
++  - 调用编排内核并做 JSON 校验与降级处理（无工具调用）
++  - 输出 `hookSpecificOutput.additionalContext` 或 CLI 追加上下文
++
++- **互斥关系（可验证）**：
++  - `hooks/context-inject-global.sh` **只能**调用 `hooks/auto-tool-orchestrator.sh`（或输出空注入 JSON）。
++  - `hooks/augment-context-global.sh` **只能**委托到 `hooks/context-inject-global.sh`。
++
++- **同包回滚策略**：
++  - 软回滚：`CI_AUTO_TOOLS=off` 或 `CI_AUTO_TOOLS_MODE=plan`
++  - 硬回滚：恢复旧版 `hooks/context-inject-global.sh`（入口层仍可输出空注入，编排脚本可保留但不被调用）
+ 
+ #### 设计要点 2：Codex CLI “模型输出前调用”的集成路径（补齐入口/触发/最小配置/差异）
+ 
+
+[2026-01-23T11:26:03] tokens used: 109,817
+[2026-01-23T11:26:51] apply_patch auto_approved=true:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -316,2 +316,3 @@
+      - [Limits] 文本（无会话降级）：`[Limits] session continuity unavailable; fallback to stateless exec`
++     - **可验证锚点（不调用 codex）**：在 `CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` 时输出 `planned_codex_command` 字段，内容为将要执行的 `codex exec resume --last` 或 `codex exec`，供 bats 断言会话选择逻辑。
+      - 回滚路径：设置 `CI_AUTO_TOOLS=off` 完全关闭自动编排
+[2026-01-23T11:26:51] apply_patch(auto_approved=true) exited 0 in 1ms:
+Success. Updated the following files:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+[2026-01-23T11:26:51] turn diff:
+diff --git a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+index 0ff32f57d2d9b01af9637620a9f055082525cbd3..2d20dec4cdf80ce3192b940960f2d061fae1e301
+--- a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
++++ b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -72,7 +72,7 @@
+ 默认推荐：**质量型维护者**路径
+ - 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+ - 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+-- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
++- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+ 
+ ---
+ 
+@@ -86,7 +86,7 @@
+ 如果你想自定义（例如更激进/更保守的自动调用策略）：
+ - [ ] 🔧 我想自定义方案（在 Debate Packet 的问题上给出选择）
+ 
+-默认选择：✅ 我同意推荐方案（未勾选也按默认意向继续；最终仍以 Judge 裁决为准）
++默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+ 
+ ---
+ 
+@@ -265,13 +265,36 @@
+   - 输出：Tool Plan + Tool Results + Fused Context（见下方 I/O 契约）
+   - **唯一工具通道**：所有工具调用/参数裁剪/白名单/预算/融合统一在此执行；绕过即拒绝
+ 
+-#### 设计要点 1.1：迁移/去重策略（同包完成）
++#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）
++
++本节绑定现有脚本内容，明确“要迁移的函数/模块边界”与“入口层互斥规则”，保证同包完成且可回滚。
++
++- **入口层互斥规则（强制）**：`hooks/context-inject-global.sh` **不得**调用任何 `ci_*` 工具或 MCP 客户端；唯一工具通道为 `hooks/auto-tool-orchestrator.sh`。如入口层尝试直连工具，编排内核拒绝并在 `[Limits]` 写明 `tool invocation must go through orchestrator`。
++
++- **迁移清单（从 `hooks/context-inject-global.sh` → `hooks/auto-tool-orchestrator.sh`）**：
++  1) **意图与信号层**：
++     - `analyze_intent_4d`、`extract_symbols`、`extract_at_refs`/`process_at_refs`（用于生成 signals 与上下文线索）
++     - `map_intent_to_standard`、`get_recommended_tools`（生成工具候选与理由）
++  2) **工具选择与执行层**：
++     - `get_index_status`、`do_search`、`call_graph_rag`、`get_hotspots`、`get_file_complexity` 等所有实际工具调用与依赖探测
++     - `run_with_timeout`（工具超时包装）
++  3) **结果融合与输出层**：
++     - `build_structured_output`、`build_text_output`、`add_graph_context`、`add_fallback_info`、`output_hook_response`
++  4) **安全与约束层**：
++     - `EXCLUDE_PATTERN` 与路径过滤/脱敏规则（迁移到编排内核的统一裁剪/过滤模块）
++
++- **入口层保留范围（仅 I/O 适配）**：
++  - 解析 Claude Code Hook payload / Codex wrapper 输入
++  - 调用编排内核并做 JSON 校验与降级处理（无工具调用）
++  - 输出 `hookSpecificOutput.additionalContext` 或 CLI 追加上下文
++
++- **互斥关系（可验证）**：
++  - `hooks/context-inject-global.sh` **只能**调用 `hooks/auto-tool-orchestrator.sh`（或输出空注入 JSON）。
++  - `hooks/augment-context-global.sh` **只能**委托到 `hooks/context-inject-global.sh`。
+ 
+-- **禁止长期双轨并存**：入口层仅保留 I/O 适配，编排逻辑统一收敛到内核。
+-- **阶段 A（同包先行）**：将 `hooks/context-inject-global.sh` 现有的意图识别/信号提取/工具选择逻辑改为“只生成标准化 signals + prompt”，不再直接调用 `ci_*` 工具。
+-- **阶段 B（同包完成）**：把现有编排/融合逻辑（如 `build_structured_output`、`add_graph_context` 等）迁移/收敛进 `hooks/auto-tool-orchestrator.sh`；入口层仅负责 I/O 适配与降级。
+-- **向后兼容**：`hooks/augment-context-global.sh` 保持委托；对外行为保持“可选注入 + fail-open”。
+-- **回滚策略**：设置 `CI_AUTO_TOOLS=off`（关闭编排）或恢复上一版 `context-inject-global.sh`（入口层仍可输出空注入）。
++- **同包回滚策略**：
++  - 软回滚：`CI_AUTO_TOOLS=off` 或 `CI_AUTO_TOOLS_MODE=plan`
++  - 硬回滚：恢复旧版 `hooks/context-inject-global.sh`（入口层仍可输出空注入，编排脚本可保留但不被调用）
+ 
+ #### 设计要点 2：Codex CLI “模型输出前调用”的集成路径（补齐入口/触发/最小配置/差异）
+ 
+@@ -291,6 +314,7 @@
+      - **降级路径**：若 `--last` 不可用或执行失败，则降级为无会话模式（每轮 `codex exec` 新会话），不阻塞执行。
+      - **不再依赖** `codex exec --json` 或 `session_id` 作为前提；如用户自行提供可验证证据可在后续设计中再引入。
+      - [Limits] 文本（无会话降级）：`[Limits] session continuity unavailable; fallback to stateless exec`
++     - **可验证锚点（不调用 codex）**：在 `CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` 时输出 `planned_codex_command` 字段，内容为将要执行的 `codex exec resume --last` 或 `codex exec`，供 bats 断言会话选择逻辑。
+      - 回滚路径：设置 `CI_AUTO_TOOLS=off` 完全关闭自动编排
+ 
+ 2) **入口 B（次选，仅覆盖单次执行）：`codex exec <PROMPT>` 前置注入**
+
+[2026-01-23T11:26:52] tokens used: 112,070
+[2026-01-23T11:27:12] apply_patch auto_approved=true:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -464,2 +464,3 @@
+     "tier_max": "number",
++    "planned_codex_command": "string?",
+     "budget": {
+[2026-01-23T11:27:12] apply_patch(auto_approved=true) exited 0 in 0ms:
+Success. Updated the following files:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+[2026-01-23T11:27:12] turn diff:
+diff --git a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+index 0ff32f57d2d9b01af9637620a9f055082525cbd3..0738414cef5ba40b6d0f9f2a84ed9eef06bc71c9
+--- a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
++++ b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -72,7 +72,7 @@
+ 默认推荐：**质量型维护者**路径
+ - 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+ - 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+-- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
++- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+ 
+ ---
+ 
+@@ -86,7 +86,7 @@
+ 如果你想自定义（例如更激进/更保守的自动调用策略）：
+ - [ ] 🔧 我想自定义方案（在 Debate Packet 的问题上给出选择）
+ 
+-默认选择：✅ 我同意推荐方案（未勾选也按默认意向继续；最终仍以 Judge 裁决为准）
++默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+ 
+ ---
+ 
+@@ -265,14 +265,37 @@
+   - 输出：Tool Plan + Tool Results + Fused Context（见下方 I/O 契约）
+   - **唯一工具通道**：所有工具调用/参数裁剪/白名单/预算/融合统一在此执行；绕过即拒绝
+ 
+-#### 设计要点 1.1：迁移/去重策略（同包完成）
++#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）
+ 
+-- **禁止长期双轨并存**：入口层仅保留 I/O 适配，编排逻辑统一收敛到内核。
+-- **阶段 A（同包先行）**：将 `hooks/context-inject-global.sh` 现有的意图识别/信号提取/工具选择逻辑改为“只生成标准化 signals + prompt”，不再直接调用 `ci_*` 工具。
+-- **阶段 B（同包完成）**：把现有编排/融合逻辑（如 `build_structured_output`、`add_graph_context` 等）迁移/收敛进 `hooks/auto-tool-orchestrator.sh`；入口层仅负责 I/O 适配与降级。
+-- **向后兼容**：`hooks/augment-context-global.sh` 保持委托；对外行为保持“可选注入 + fail-open”。
+-- **回滚策略**：设置 `CI_AUTO_TOOLS=off`（关闭编排）或恢复上一版 `context-inject-global.sh`（入口层仍可输出空注入）。
++本节绑定现有脚本内容，明确“要迁移的函数/模块边界”与“入口层互斥规则”，保证同包完成且可回滚。
++
++- **入口层互斥规则（强制）**：`hooks/context-inject-global.sh` **不得**调用任何 `ci_*` 工具或 MCP 客户端；唯一工具通道为 `hooks/auto-tool-orchestrator.sh`。如入口层尝试直连工具，编排内核拒绝并在 `[Limits]` 写明 `tool invocation must go through orchestrator`。
+ 
++- **迁移清单（从 `hooks/context-inject-global.sh` → `hooks/auto-tool-orchestrator.sh`）**：
++  1) **意图与信号层**：
++     - `analyze_intent_4d`、`extract_symbols`、`extract_at_refs`/`process_at_refs`（用于生成 signals 与上下文线索）
++     - `map_intent_to_standard`、`get_recommended_tools`（生成工具候选与理由）
++  2) **工具选择与执行层**：
++     - `get_index_status`、`do_search`、`call_graph_rag`、`get_hotspots`、`get_file_complexity` 等所有实际工具调用与依赖探测
++     - `run_with_timeout`（工具超时包装）
++  3) **结果融合与输出层**：
++     - `build_structured_output`、`build_text_output`、`add_graph_context`、`add_fallback_info`、`output_hook_response`
++  4) **安全与约束层**：
++     - `EXCLUDE_PATTERN` 与路径过滤/脱敏规则（迁移到编排内核的统一裁剪/过滤模块）
++
++- **入口层保留范围（仅 I/O 适配）**：
++  - 解析 Claude Code Hook payload / Codex wrapper 输入
++  - 调用编排内核并做 JSON 校验与降级处理（无工具调用）
++  - 输出 `hookSpecificOutput.additionalContext` 或 CLI 追加上下文
++
++- **互斥关系（可验证）**：
++  - `hooks/context-inject-global.sh` **只能**调用 `hooks/auto-tool-orchestrator.sh`（或输出空注入 JSON）。
++  - `hooks/augment-context-global.sh` **只能**委托到 `hooks/context-inject-global.sh`。
++
++- **同包回滚策略**：
++  - 软回滚：`CI_AUTO_TOOLS=off` 或 `CI_AUTO_TOOLS_MODE=plan`
++  - 硬回滚：恢复旧版 `hooks/context-inject-global.sh`（入口层仍可输出空注入，编排脚本可保留但不被调用）
++
+ #### 设计要点 2：Codex CLI “模型输出前调用”的集成路径（补齐入口/触发/最小配置/差异）
+ 
+ Codex CLI 与 Claude Code 的关键差异：**Codex CLI 没有等价的官方 Hook 事件（如 UserPromptSubmit）**可直接复用，因此必须通过“入口包装”来保证“模型输出前调用”。
+@@ -291,6 +314,7 @@
+      - **降级路径**：若 `--last` 不可用或执行失败，则降级为无会话模式（每轮 `codex exec` 新会话），不阻塞执行。
+      - **不再依赖** `codex exec --json` 或 `session_id` 作为前提；如用户自行提供可验证证据可在后续设计中再引入。
+      - [Limits] 文本（无会话降级）：`[Limits] session continuity unavailable; fallback to stateless exec`
++     - **可验证锚点（不调用 codex）**：在 `CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` 时输出 `planned_codex_command` 字段，内容为将要执行的 `codex exec resume --last` 或 `codex exec`，供 bats 断言会话选择逻辑。
+      - 回滚路径：设置 `CI_AUTO_TOOLS=off` 完全关闭自动编排
+ 
+ 2) **入口 B（次选，仅覆盖单次执行）：`codex exec <PROMPT>` 前置注入**
+@@ -438,6 +462,7 @@
+   },
+   "tool_plan": {
+     "tier_max": "number",
++    "planned_codex_command": "string?",
+     "budget": {
+       "wall_ms": "number",
+       "max_concurrency": "number",
+
+[2026-01-23T11:27:13] tokens used: 113,504
+[2026-01-23T11:27:47] apply_patch auto_approved=true:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -404,2 +404,5 @@
+     ```
++  - **绕过拒绝策略（唯一强制执行点）**：
++    - 若 `hooks/context-inject-global.sh` 或 `hooks/augment-context-global.sh` 以任何方式尝试直连 `ci_*` 工具（包含旧路径/调试路径），编排内核应返回空注入 JSON 并在 `[Limits]` 输出 `tool invocation must go through orchestrator`。
++    - 入口层不得提供“直连工具”的降级分支；唯一允许的降级是“空注入 + [Limits] 说明”。
+   - **[Limits] 文本要求**：任何裁剪/拒绝都必须在 `[Limits]` 中可见，包含 tool 名与被裁剪键。
+[2026-01-23T11:27:47] apply_patch(auto_approved=true) exited 0 in 0ms:
+Success. Updated the following files:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+[2026-01-23T11:27:47] turn diff:
+diff --git a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+index 0ff32f57d2d9b01af9637620a9f055082525cbd3..58256b75324aff4fcfc22e3f126d467e58df926d
+--- a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
++++ b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -72,7 +72,7 @@
+ 默认推荐：**质量型维护者**路径
+ - 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+ - 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+-- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
++- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+ 
+ ---
+ 
+@@ -86,7 +86,7 @@
+ 如果你想自定义（例如更激进/更保守的自动调用策略）：
+ - [ ] 🔧 我想自定义方案（在 Debate Packet 的问题上给出选择）
+ 
+-默认选择：✅ 我同意推荐方案（未勾选也按默认意向继续；最终仍以 Judge 裁决为准）
++默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+ 
+ ---
+ 
+@@ -265,13 +265,36 @@
+   - 输出：Tool Plan + Tool Results + Fused Context（见下方 I/O 契约）
+   - **唯一工具通道**：所有工具调用/参数裁剪/白名单/预算/融合统一在此执行；绕过即拒绝
+ 
+-#### 设计要点 1.1：迁移/去重策略（同包完成）
++#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）
++
++本节绑定现有脚本内容，明确“要迁移的函数/模块边界”与“入口层互斥规则”，保证同包完成且可回滚。
++
++- **入口层互斥规则（强制）**：`hooks/context-inject-global.sh` **不得**调用任何 `ci_*` 工具或 MCP 客户端；唯一工具通道为 `hooks/auto-tool-orchestrator.sh`。如入口层尝试直连工具，编排内核拒绝并在 `[Limits]` 写明 `tool invocation must go through orchestrator`。
++
++- **迁移清单（从 `hooks/context-inject-global.sh` → `hooks/auto-tool-orchestrator.sh`）**：
++  1) **意图与信号层**：
++     - `analyze_intent_4d`、`extract_symbols`、`extract_at_refs`/`process_at_refs`（用于生成 signals 与上下文线索）
++     - `map_intent_to_standard`、`get_recommended_tools`（生成工具候选与理由）
++  2) **工具选择与执行层**：
++     - `get_index_status`、`do_search`、`call_graph_rag`、`get_hotspots`、`get_file_complexity` 等所有实际工具调用与依赖探测
++     - `run_with_timeout`（工具超时包装）
++  3) **结果融合与输出层**：
++     - `build_structured_output`、`build_text_output`、`add_graph_context`、`add_fallback_info`、`output_hook_response`
++  4) **安全与约束层**：
++     - `EXCLUDE_PATTERN` 与路径过滤/脱敏规则（迁移到编排内核的统一裁剪/过滤模块）
++
++- **入口层保留范围（仅 I/O 适配）**：
++  - 解析 Claude Code Hook payload / Codex wrapper 输入
++  - 调用编排内核并做 JSON 校验与降级处理（无工具调用）
++  - 输出 `hookSpecificOutput.additionalContext` 或 CLI 追加上下文
+ 
+-- **禁止长期双轨并存**：入口层仅保留 I/O 适配，编排逻辑统一收敛到内核。
+-- **阶段 A（同包先行）**：将 `hooks/context-inject-global.sh` 现有的意图识别/信号提取/工具选择逻辑改为“只生成标准化 signals + prompt”，不再直接调用 `ci_*` 工具。
+-- **阶段 B（同包完成）**：把现有编排/融合逻辑（如 `build_structured_output`、`add_graph_context` 等）迁移/收敛进 `hooks/auto-tool-orchestrator.sh`；入口层仅负责 I/O 适配与降级。
+-- **向后兼容**：`hooks/augment-context-global.sh` 保持委托；对外行为保持“可选注入 + fail-open”。
+-- **回滚策略**：设置 `CI_AUTO_TOOLS=off`（关闭编排）或恢复上一版 `context-inject-global.sh`（入口层仍可输出空注入）。
++- **互斥关系（可验证）**：
++  - `hooks/context-inject-global.sh` **只能**调用 `hooks/auto-tool-orchestrator.sh`（或输出空注入 JSON）。
++  - `hooks/augment-context-global.sh` **只能**委托到 `hooks/context-inject-global.sh`。
++
++- **同包回滚策略**：
++  - 软回滚：`CI_AUTO_TOOLS=off` 或 `CI_AUTO_TOOLS_MODE=plan`
++  - 硬回滚：恢复旧版 `hooks/context-inject-global.sh`（入口层仍可输出空注入，编排脚本可保留但不被调用）
+ 
+ #### 设计要点 2：Codex CLI “模型输出前调用”的集成路径（补齐入口/触发/最小配置/差异）
+ 
+@@ -291,6 +314,7 @@
+      - **降级路径**：若 `--last` 不可用或执行失败，则降级为无会话模式（每轮 `codex exec` 新会话），不阻塞执行。
+      - **不再依赖** `codex exec --json` 或 `session_id` 作为前提；如用户自行提供可验证证据可在后续设计中再引入。
+      - [Limits] 文本（无会话降级）：`[Limits] session continuity unavailable; fallback to stateless exec`
++     - **可验证锚点（不调用 codex）**：在 `CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` 时输出 `planned_codex_command` 字段，内容为将要执行的 `codex exec resume --last` 或 `codex exec`，供 bats 断言会话选择逻辑。
+      - 回滚路径：设置 `CI_AUTO_TOOLS=off` 完全关闭自动编排
+ 
+ 2) **入口 B（次选，仅覆盖单次执行）：`codex exec <PROMPT>` 前置注入**
+@@ -378,6 +402,9 @@
+       }
+     done
+     ```
++  - **绕过拒绝策略（唯一强制执行点）**：
++    - 若 `hooks/context-inject-global.sh` 或 `hooks/augment-context-global.sh` 以任何方式尝试直连 `ci_*` 工具（包含旧路径/调试路径），编排内核应返回空注入 JSON 并在 `[Limits]` 输出 `tool invocation must go through orchestrator`。
++    - 入口层不得提供“直连工具”的降级分支；唯一允许的降级是“空注入 + [Limits] 说明”。
+   - **[Limits] 文本要求**：任何裁剪/拒绝都必须在 `[Limits]` 中可见，包含 tool 名与被裁剪键。
+ 
+ - **路径过滤（必须）**：
+@@ -438,6 +465,7 @@
+   },
+   "tool_plan": {
+     "tier_max": "number",
++    "planned_codex_command": "string?",
+     "budget": {
+       "wall_ms": "number",
+       "max_concurrency": "number",
+
+[2026-01-23T11:27:48] tokens used: 114,314
+[2026-01-23T11:28:13] apply_patch auto_approved=true:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -603,2 +603,9 @@
+ 
++- **[Limits] 文案锚点（强制）**：
++  - Tier-2 默认关闭：`[Limits] tier-2 disabled by default; set CI_AUTO_TOOLS_TIER_MAX=2 to enable`
++  - 会话降级：`[Limits] session continuity unavailable; fallback to stateless exec`
++  - 入口层绕过拒绝：`[Limits] tool invocation must go through orchestrator`
++  - 超时/预算：`[Limits] tool timeout; degraded to plan-only` / `[Limits] budget exceeded; results truncated`
++  - 解析失败：`[Limits] orchestrator output invalid; fallback to empty context`
++
+ #### 设计要点 10：扩展点（回答用户 Q2）
+[2026-01-23T11:28:13] apply_patch(auto_approved=true) exited 0 in 0ms:
+Success. Updated the following files:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+[2026-01-23T11:28:13] turn diff:
+diff --git a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+index 0ff32f57d2d9b01af9637620a9f055082525cbd3..4a4e1a31f83c30e1a2571523fb0d7d041194deb7
+--- a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
++++ b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -72,7 +72,7 @@
+ 默认推荐：**质量型维护者**路径
+ - 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+ - 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+-- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
++- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+ 
+ ---
+ 
+@@ -86,7 +86,7 @@
+ 如果你想自定义（例如更激进/更保守的自动调用策略）：
+ - [ ] 🔧 我想自定义方案（在 Debate Packet 的问题上给出选择）
+ 
+-默认选择：✅ 我同意推荐方案（未勾选也按默认意向继续；最终仍以 Judge 裁决为准）
++默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+ 
+ ---
+ 
+@@ -265,13 +265,36 @@
+   - 输出：Tool Plan + Tool Results + Fused Context（见下方 I/O 契约）
+   - **唯一工具通道**：所有工具调用/参数裁剪/白名单/预算/融合统一在此执行；绕过即拒绝
+ 
+-#### 设计要点 1.1：迁移/去重策略（同包完成）
++#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）
+ 
+-- **禁止长期双轨并存**：入口层仅保留 I/O 适配，编排逻辑统一收敛到内核。
+-- **阶段 A（同包先行）**：将 `hooks/context-inject-global.sh` 现有的意图识别/信号提取/工具选择逻辑改为“只生成标准化 signals + prompt”，不再直接调用 `ci_*` 工具。
+-- **阶段 B（同包完成）**：把现有编排/融合逻辑（如 `build_structured_output`、`add_graph_context` 等）迁移/收敛进 `hooks/auto-tool-orchestrator.sh`；入口层仅负责 I/O 适配与降级。
+-- **向后兼容**：`hooks/augment-context-global.sh` 保持委托；对外行为保持“可选注入 + fail-open”。
+-- **回滚策略**：设置 `CI_AUTO_TOOLS=off`（关闭编排）或恢复上一版 `context-inject-global.sh`（入口层仍可输出空注入）。
++本节绑定现有脚本内容，明确“要迁移的函数/模块边界”与“入口层互斥规则”，保证同包完成且可回滚。
++
++- **入口层互斥规则（强制）**：`hooks/context-inject-global.sh` **不得**调用任何 `ci_*` 工具或 MCP 客户端；唯一工具通道为 `hooks/auto-tool-orchestrator.sh`。如入口层尝试直连工具，编排内核拒绝并在 `[Limits]` 写明 `tool invocation must go through orchestrator`。
++
++- **迁移清单（从 `hooks/context-inject-global.sh` → `hooks/auto-tool-orchestrator.sh`）**：
++  1) **意图与信号层**：
++     - `analyze_intent_4d`、`extract_symbols`、`extract_at_refs`/`process_at_refs`（用于生成 signals 与上下文线索）
++     - `map_intent_to_standard`、`get_recommended_tools`（生成工具候选与理由）
++  2) **工具选择与执行层**：
++     - `get_index_status`、`do_search`、`call_graph_rag`、`get_hotspots`、`get_file_complexity` 等所有实际工具调用与依赖探测
++     - `run_with_timeout`（工具超时包装）
++  3) **结果融合与输出层**：
++     - `build_structured_output`、`build_text_output`、`add_graph_context`、`add_fallback_info`、`output_hook_response`
++  4) **安全与约束层**：
++     - `EXCLUDE_PATTERN` 与路径过滤/脱敏规则（迁移到编排内核的统一裁剪/过滤模块）
++
++- **入口层保留范围（仅 I/O 适配）**：
++  - 解析 Claude Code Hook payload / Codex wrapper 输入
++  - 调用编排内核并做 JSON 校验与降级处理（无工具调用）
++  - 输出 `hookSpecificOutput.additionalContext` 或 CLI 追加上下文
++
++- **互斥关系（可验证）**：
++  - `hooks/context-inject-global.sh` **只能**调用 `hooks/auto-tool-orchestrator.sh`（或输出空注入 JSON）。
++  - `hooks/augment-context-global.sh` **只能**委托到 `hooks/context-inject-global.sh`。
++
++- **同包回滚策略**：
++  - 软回滚：`CI_AUTO_TOOLS=off` 或 `CI_AUTO_TOOLS_MODE=plan`
++  - 硬回滚：恢复旧版 `hooks/context-inject-global.sh`（入口层仍可输出空注入，编排脚本可保留但不被调用）
+ 
+ #### 设计要点 2：Codex CLI “模型输出前调用”的集成路径（补齐入口/触发/最小配置/差异）
+ 
+@@ -291,6 +314,7 @@
+      - **降级路径**：若 `--last` 不可用或执行失败，则降级为无会话模式（每轮 `codex exec` 新会话），不阻塞执行。
+      - **不再依赖** `codex exec --json` 或 `session_id` 作为前提；如用户自行提供可验证证据可在后续设计中再引入。
+      - [Limits] 文本（无会话降级）：`[Limits] session continuity unavailable; fallback to stateless exec`
++     - **可验证锚点（不调用 codex）**：在 `CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` 时输出 `planned_codex_command` 字段，内容为将要执行的 `codex exec resume --last` 或 `codex exec`，供 bats 断言会话选择逻辑。
+      - 回滚路径：设置 `CI_AUTO_TOOLS=off` 完全关闭自动编排
+ 
+ 2) **入口 B（次选，仅覆盖单次执行）：`codex exec <PROMPT>` 前置注入**
+@@ -378,6 +402,9 @@
+       }
+     done
+     ```
++  - **绕过拒绝策略（唯一强制执行点）**：
++    - 若 `hooks/context-inject-global.sh` 或 `hooks/augment-context-global.sh` 以任何方式尝试直连 `ci_*` 工具（包含旧路径/调试路径），编排内核应返回空注入 JSON 并在 `[Limits]` 输出 `tool invocation must go through orchestrator`。
++    - 入口层不得提供“直连工具”的降级分支；唯一允许的降级是“空注入 + [Limits] 说明”。
+   - **[Limits] 文本要求**：任何裁剪/拒绝都必须在 `[Limits]` 中可见，包含 tool 名与被裁剪键。
+ 
+ - **路径过滤（必须）**：
+@@ -438,6 +465,7 @@
+   },
+   "tool_plan": {
+     "tier_max": "number",
++    "planned_codex_command": "string?",
+     "budget": {
+       "wall_ms": "number",
+       "max_concurrency": "number",
+@@ -573,6 +601,13 @@
+     - 冲突不自动消解，仅标记“需人工判断”
+   - 稳定输出：同一输入、同一工具输出顺序必须稳定；禁止基于运行时 hash/随机数排序
+ 
++- **[Limits] 文案锚点（强制）**：
++  - Tier-2 默认关闭：`[Limits] tier-2 disabled by default; set CI_AUTO_TOOLS_TIER_MAX=2 to enable`
++  - 会话降级：`[Limits] session continuity unavailable; fallback to stateless exec`
++  - 入口层绕过拒绝：`[Limits] tool invocation must go through orchestrator`
++  - 超时/预算：`[Limits] tool timeout; degraded to plan-only` / `[Limits] budget exceeded; results truncated`
++  - 解析失败：`[Limits] orchestrator output invalid; fallback to empty context`
++
+ #### 设计要点 10：扩展点（回答用户 Q2）
+ 
+ - 客户端适配（Claude/Codex）与编排内核分离：新增客户端只需实现“输入采集 + 输出注入”适配层。
+
+[2026-01-23T11:28:15] tokens used: 115,514
+[2026-01-23T11:29:02] tokens used: 116,932
+[2026-01-23T11:29:29] tokens used: 117,544
+[2026-01-23T11:30:14] exec /bin/sh -lc 'grep -n "默认方案" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:30:14] /bin/sh -lc 'grep -n "默认方案" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' exited 1 in 17ms:
+ERROR
+[2026-01-23T11:30:16] tokens used: 118,287
+[2026-01-23T11:30:52] exec /bin/sh -lc "sed -n '80,140p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:30:52] /bin/sh -lc "sed -n '80,140p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" succeeded in 18ms:
+
+### 快速批准（推荐）
+
+如果你同意“多工具自动化（带预算边界）+ 结果融合解释 + 仅 Claude/Codex 适配”的推荐方案：
+- [ ] ✅ 我同意推荐方案（默认意向，不阻塞进入下一阶段）
+
+如果你想自定义（例如更激进/更保守的自动调用策略）：
+- [ ] 🔧 我想自定义方案（在 Debate Packet 的问题上给出选择）
+
+默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+
+---
+
+## Why
+
+- 当前需求已从“低成本/低风险工具自动调用”升级为“合适多工具编排 + 结果融合”，缺少统一编排层会导致体验不稳定、逻辑分散。
+- Value Signal and Observation: 观察单轮回答中引用工具证据的比例、重复追问轮次下降、自动注入开启后平均查询步骤减少。
+- Value Stream Bottleneck Hypothesis: 现有瓶颈在“人工多工具调用 + 手工汇总”，编排层可把这一段收敛为一次自动链路。
+
+## What Changes
+[2026-01-23T11:30:53] tokens used: 119,121
+[2026-01-23T11:31:12] exec /bin/sh -lc "sed -n '60,90p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:31:12] /bin/sh -lc "sed -n '60,90p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" succeeded in 17ms:
+
+**为什么重要**：
+- 过多工具会带来：延迟陡增、噪音干扰、错误传播、token 暴涨
+- 结果融合需要“去重/聚合/溯源”，否则反而降低回答质量
+
+**默认选择（提案给出决策）**：
+- 采用“尽可能多，但有预算与置信度边界”的自动化策略（见下文 What/设计要点）
+
+---
+
+### 🎯 基于你的选择，推荐方案
+
+默认推荐：**质量型维护者**路径
+- 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+- 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+
+---
+
+## ✅ 批准流程（1分钟）
+[2026-01-23T11:31:13] tokens used: 120,347
+
+**Clarifying default selection text**
+
+The current text partly removes the 24-hour auto-approval default but still references a default intention that may confuse users. I'll adjust to remove or soften default indications like "默认意向" to align with the removal requirement while preserving necessary progression cues.
+**Reconciling template adherence with revision scope**
+
+The proposal mostly aligns with the[2026-01-23T11:32:22] ERROR: stream error: stream disconnected before completion: stream closed before response.completed; retrying in 210ms…
+
+**Continuing proposal.md edits**
+
+Continuing edits to proposal.md using only apply_patch, aiming to remove default approval text "默认意向" and ensure no references to Cursor or new files appear while aligning with skill constraints and user instructions about output format and anchors.
+**Summarizing proposal.md patch scope**
+
+Preparing precise patch to remove “默认意向” and “默认选择” from approval sections, strengthen Tier-2 default-off and user prompt wording, clarify parameter clipping enforcement point, codex session continuity, and entry-layer I/O adapter mandates, plus add recommended expert roles mention. Also confirming no tool log residue and restating truth-root and change-root as required. Next, I'll apply_patch to proposal.md covering these targeted updates.
+
+[2026-01-23T11:34:13] exec /bin/sh -lc 'grep -n "plan/dry-run" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:34:13] /bin/sh -lc 'grep -n "plan/dry-run" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' succeeded in 23ms:
+123:- bats 覆盖 plan/dry-run 的确定性输出（含 `schema_version/run_id/tool_plan`），且不调用 codex。
+124:- 验证 Codex wrapper 会话恢复与降级路径、repo-root 解析与路径过滤一致性；plan/dry-run 输出“将要执行的 codex 命令”用于无外部 codex 验证。
+324:**plan/dry-run 与入口关系（明确）**：
+363:- **plan/dry-run 确定性输出契约（可重复验收）**：
+367:    - plan/dry-run：`plan-<hash12>`（hash 为 `prompt + repo_root + tool_plan` 的稳定哈希）
+639:| AC-002 | Codex CLI 入口 A 的会话连续性可验证且可降级 | bats：模拟两种路径：1) `codex exec resume --last` 可用 -> 使用该命令；2) `--last` 不可用或失败 -> 降级为无会话模式，且 [Limits] 显示 `session continuity unavailable`；plan/dry-run 输出“将要执行的 codex 命令”作为无外部 codex 锚点 |
+640:| AC-003 | plan/dry-run 可重复且不依赖外部 codex | bats：`CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` -> 输出包含 `schema_version/run_id/tool_plan`，且不触发 codex 命令 |
+778:- [ ] bats 覆盖 plan/dry-run 输出：给定固定 prompt，断言输出包含 `schema_version/run_id/tool_plan` 且未执行 codex。
+[2026-01-23T11:34:16] tokens used: 123,559
+[2026-01-23T11:34:57] exec /bin/sh -lc 'grep -n "prompt" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md | head -n 5' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:34:57] /bin/sh -lc 'grep -n "prompt" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md | head -n 5' succeeded in 22ms:
+213:- **安全与隐私**：路径过滤/脱敏策略、默认采集边界、日志与可观测性（避免输出敏感内容到 prompt）
+253:  - 负责输入适配：Claude Code Hook payload / Codex CLI wrapper 输入 / CLI 参数（如 `--prompt`）
+256:    - Codex CLI：输出可拼接到 prompt 的“增强上下文块”（或 JSON 供 wrapper 二次格式化）
+264:  - 输入：标准化 prompt + signals + budget + allowlist + policy
+307:   - 触发时机：每次用户提交一条 prompt -> 先调用 `hooks/auto-tool-orchestrator.sh` -> 再把增强后的 prompt 交给 `codex exec`（或 `codex exec resume`）
+[2026-01-23T11:34:57] tokens used: 124,326
+[2026-01-23T11:35:25] apply_patch auto_approved=true:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -83,3 +83,3 @@
+ 如果你同意“多工具自动化（带预算边界）+ 结果融合解释 + 仅 Claude/Codex 适配”的推荐方案：
+-- [ ] ✅ 我同意推荐方案（默认意向，不阻塞进入下一阶段）
++- [ ] ✅ 我同意推荐方案（显式确认）
+ 
+[2026-01-23T11:35:25] apply_patch(auto_approved=true) exited 0 in 0ms:
+Success. Updated the following files:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+[2026-01-23T11:35:25] turn diff:
+diff --git a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+index 0ff32f57d2d9b01af9637620a9f055082525cbd3..f48ac21f82f926af7ed8d689014029eb3e31f4da
+--- a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
++++ b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -72,7 +72,7 @@
+ 默认推荐：**质量型维护者**路径
+ - 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+ - 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+-- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
++- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+ 
+ ---
+ 
+@@ -81,12 +81,12 @@
+ ### 快速批准（推荐）
+ 
+ 如果你同意“多工具自动化（带预算边界）+ 结果融合解释 + 仅 Claude/Codex 适配”的推荐方案：
+-- [ ] ✅ 我同意推荐方案（默认意向，不阻塞进入下一阶段）
++- [ ] ✅ 我同意推荐方案（显式确认）
+ 
+ 如果你想自定义（例如更激进/更保守的自动调用策略）：
+ - [ ] 🔧 我想自定义方案（在 Debate Packet 的问题上给出选择）
+ 
+-默认选择：✅ 我同意推荐方案（未勾选也按默认意向继续；最终仍以 Judge 裁决为准）
++默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+ 
+ ---
+ 
+@@ -265,14 +265,37 @@
+   - 输出：Tool Plan + Tool Results + Fused Context（见下方 I/O 契约）
+   - **唯一工具通道**：所有工具调用/参数裁剪/白名单/预算/融合统一在此执行；绕过即拒绝
+ 
+-#### 设计要点 1.1：迁移/去重策略（同包完成）
++#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）
+ 
+-- **禁止长期双轨并存**：入口层仅保留 I/O 适配，编排逻辑统一收敛到内核。
+-- **阶段 A（同包先行）**：将 `hooks/context-inject-global.sh` 现有的意图识别/信号提取/工具选择逻辑改为“只生成标准化 signals + prompt”，不再直接调用 `ci_*` 工具。
+-- **阶段 B（同包完成）**：把现有编排/融合逻辑（如 `build_structured_output`、`add_graph_context` 等）迁移/收敛进 `hooks/auto-tool-orchestrator.sh`；入口层仅负责 I/O 适配与降级。
+-- **向后兼容**：`hooks/augment-context-global.sh` 保持委托；对外行为保持“可选注入 + fail-open”。
+-- **回滚策略**：设置 `CI_AUTO_TOOLS=off`（关闭编排）或恢复上一版 `context-inject-global.sh`（入口层仍可输出空注入）。
++本节绑定现有脚本内容，明确“要迁移的函数/模块边界”与“入口层互斥规则”，保证同包完成且可回滚。
+ 
++- **入口层互斥规则（强制）**：`hooks/context-inject-global.sh` **不得**调用任何 `ci_*` 工具或 MCP 客户端；唯一工具通道为 `hooks/auto-tool-orchestrator.sh`。如入口层尝试直连工具，编排内核拒绝并在 `[Limits]` 写明 `tool invocation must go through orchestrator`。
++
++- **迁移清单（从 `hooks/context-inject-global.sh` → `hooks/auto-tool-orchestrator.sh`）**：
++  1) **意图与信号层**：
++     - `analyze_intent_4d`、`extract_symbols`、`extract_at_refs`/`process_at_refs`（用于生成 signals 与上下文线索）
++     - `map_intent_to_standard`、`get_recommended_tools`（生成工具候选与理由）
++  2) **工具选择与执行层**：
++     - `get_index_status`、`do_search`、`call_graph_rag`、`get_hotspots`、`get_file_complexity` 等所有实际工具调用与依赖探测
++     - `run_with_timeout`（工具超时包装）
++  3) **结果融合与输出层**：
++     - `build_structured_output`、`build_text_output`、`add_graph_context`、`add_fallback_info`、`output_hook_response`
++  4) **安全与约束层**：
++     - `EXCLUDE_PATTERN` 与路径过滤/脱敏规则（迁移到编排内核的统一裁剪/过滤模块）
++
++- **入口层保留范围（仅 I/O 适配）**：
++  - 解析 Claude Code Hook payload / Codex wrapper 输入
++  - 调用编排内核并做 JSON 校验与降级处理（无工具调用）
++  - 输出 `hookSpecificOutput.additionalContext` 或 CLI 追加上下文
++
++- **互斥关系（可验证）**：
++  - `hooks/context-inject-global.sh` **只能**调用 `hooks/auto-tool-orchestrator.sh`（或输出空注入 JSON）。
++  - `hooks/augment-context-global.sh` **只能**委托到 `hooks/context-inject-global.sh`。
++
++- **同包回滚策略**：
++  - 软回滚：`CI_AUTO_TOOLS=off` 或 `CI_AUTO_TOOLS_MODE=plan`
++  - 硬回滚：恢复旧版 `hooks/context-inject-global.sh`（入口层仍可输出空注入，编排脚本可保留但不被调用）
++
+ #### 设计要点 2：Codex CLI “模型输出前调用”的集成路径（补齐入口/触发/最小配置/差异）
+ 
+ Codex CLI 与 Claude Code 的关键差异：**Codex CLI 没有等价的官方 Hook 事件（如 UserPromptSubmit）**可直接复用，因此必须通过“入口包装”来保证“模型输出前调用”。
+@@ -291,6 +314,7 @@
+      - **降级路径**：若 `--last` 不可用或执行失败，则降级为无会话模式（每轮 `codex exec` 新会话），不阻塞执行。
+      - **不再依赖** `codex exec --json` 或 `session_id` 作为前提；如用户自行提供可验证证据可在后续设计中再引入。
+      - [Limits] 文本（无会话降级）：`[Limits] session continuity unavailable; fallback to stateless exec`
++     - **可验证锚点（不调用 codex）**：在 `CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` 时输出 `planned_codex_command` 字段，内容为将要执行的 `codex exec resume --last` 或 `codex exec`，供 bats 断言会话选择逻辑。
+      - 回滚路径：设置 `CI_AUTO_TOOLS=off` 完全关闭自动编排
+ 
+ 2) **入口 B（次选，仅覆盖单次执行）：`codex exec <PROMPT>` 前置注入**
+@@ -378,6 +402,9 @@
+       }
+     done
+     ```
++  - **绕过拒绝策略（唯一强制执行点）**：
++    - 若 `hooks/context-inject-global.sh` 或 `hooks/augment-context-global.sh` 以任何方式尝试直连 `ci_*` 工具（包含旧路径/调试路径），编排内核应返回空注入 JSON 并在 `[Limits]` 输出 `tool invocation must go through orchestrator`。
++    - 入口层不得提供“直连工具”的降级分支；唯一允许的降级是“空注入 + [Limits] 说明”。
+   - **[Limits] 文本要求**：任何裁剪/拒绝都必须在 `[Limits]` 中可见，包含 tool 名与被裁剪键。
+ 
+ - **路径过滤（必须）**：
+@@ -438,6 +465,7 @@
+   },
+   "tool_plan": {
+     "tier_max": "number",
++    "planned_codex_command": "string?",
+     "budget": {
+       "wall_ms": "number",
+       "max_concurrency": "number",
+@@ -573,6 +601,13 @@
+     - 冲突不自动消解，仅标记“需人工判断”
+   - 稳定输出：同一输入、同一工具输出顺序必须稳定；禁止基于运行时 hash/随机数排序
+ 
++- **[Limits] 文案锚点（强制）**：
++  - Tier-2 默认关闭：`[Limits] tier-2 disabled by default; set CI_AUTO_TOOLS_TIER_MAX=2 to enable`
++  - 会话降级：`[Limits] session continuity unavailable; fallback to stateless exec`
++  - 入口层绕过拒绝：`[Limits] tool invocation must go through orchestrator`
++  - 超时/预算：`[Limits] tool timeout; degraded to plan-only` / `[Limits] budget exceeded; results truncated`
++  - 解析失败：`[Limits] orchestrator output invalid; fallback to empty context`
++
+ #### 设计要点 10：扩展点（回答用户 Q2）
+ 
+ - 客户端适配（Claude/Codex）与编排内核分离：新增客户端只需实现“输入采集 + 输出注入”适配层。
+
+[2026-01-23T11:35:26] tokens used: 125,564
+
+**Confirming default approval text updates**
+
+I verified that "24 hours auto approve" references were removed or replaced with explicit choices in approval sections, with "默认选择：无" present as expected. The "默认推荐" label remains but is in recommendation contexts, so I'll consider adding a clarifying note that recommendations aren't approvals to avoid confusion.
+**Summarizing compliance checks and final update plan**
+
+All exclusions for Cursor/IDE adaptations remain explicit and consistent with no contradictory future mentions. Key design points on tool orchestration, Codex session continuity, Tier-2 enablement via env variable with prompt, parameter trimming enforcement, and migration strategies are confirmed implemented. Proposed final output will restate truth/change roots, announce skill usage and perspectives, list modified sections by heading, affirm no new files or CLI flags added, and suggest next step as devbooks-proposal-challenger.
+
+[2026-01-23T11:36:58] exec /bin/sh -lc 'grep -n "Full output saved" /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md || true' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:36:58] /bin/sh -lc 'grep -n "Full output saved" /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md || true' succeeded in 14ms:
+[2026-01-23T11:36:59] tokens used: 129,994
+[2026-01-23T11:37:32] exec /bin/sh -lc 'rg -n "Cursor|cursor" /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:37:32] /bin/sh -lc 'rg -n "Cursor|cursor" /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' exited 127 in 28ms:
+ERROR
+/bin/sh: rg: command not found
+[2026-01-23T11:37:32] tokens used: 130,416
+[2026-01-23T11:38:01] exec /bin/sh -lc 'grep -n "Cursor" /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:38:01] /bin/sh -lc 'grep -n "Cursor" /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' succeeded in 23ms:
+20:- ❌ 不做 Cursor/其他 IDE 的适配（明确排除）
+51:- [x] Cursor/其他 IDE 适配
+201:- Cursor/其他 IDE 适配
+716:- 交付边界：仅 Claude Code + Codex CLI；Cursor 等明确不做
+[2026-01-23T11:38:01] tokens used: 130,681
+
+**Confirming proposal.md compliance**
+
+All edits remain confined to proposal.md with proper exclusions for Cursor/IDE adaptation. Mentions of cursor adaptation are explicitly marked as out of scope, and features like plan/dry-run anchors and session continuity align with the stated instructions and environment variable controls.
+**Refining proposal.md with detailed contract and user guidance**
+
+I'm updating the plan/dry-run output contract to explicitly require `planned_codex_command` as an anchor, clarifying the "默认推荐" line to state it's only a recommendation without implying approval, and adding an explicit example for Tier-2 environment variable trigger with user prompt instructions to ensure compliance with user guidance and enforcement requirements.
+
+[2026-01-23T11:39:47] apply_patch auto_approved=true:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -71,3 +71,3 @@
+ 
+-默认推荐：**质量型维护者**路径
++默认推荐：**质量型维护者**路径（仅推荐，不作为批准）
+ - 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+[2026-01-23T11:39:47] apply_patch(auto_approved=true) exited 0 in 0ms:
+Success. Updated the following files:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+[2026-01-23T11:39:47] turn diff:
+diff --git a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+index 0ff32f57d2d9b01af9637620a9f055082525cbd3..242bfe552edfd33a3e15789d51b46bb5c8044044
+--- a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
++++ b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -69,10 +69,10 @@
+ 
+ ### 🎯 基于你的选择，推荐方案
+ 
+-默认推荐：**质量型维护者**路径
++默认推荐：**质量型维护者**路径（仅推荐，不作为批准）
+ - 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+ - 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+-- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
++- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+ 
+ ---
+ 
+@@ -81,12 +81,12 @@
+ ### 快速批准（推荐）
+ 
+ 如果你同意“多工具自动化（带预算边界）+ 结果融合解释 + 仅 Claude/Codex 适配”的推荐方案：
+-- [ ] ✅ 我同意推荐方案（默认意向，不阻塞进入下一阶段）
++- [ ] ✅ 我同意推荐方案（显式确认）
+ 
+ 如果你想自定义（例如更激进/更保守的自动调用策略）：
+ - [ ] 🔧 我想自定义方案（在 Debate Packet 的问题上给出选择）
+ 
+-默认选择：✅ 我同意推荐方案（未勾选也按默认意向继续；最终仍以 Judge 裁决为准）
++默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+ 
+ ---
+ 
+@@ -265,14 +265,37 @@
+   - 输出：Tool Plan + Tool Results + Fused Context（见下方 I/O 契约）
+   - **唯一工具通道**：所有工具调用/参数裁剪/白名单/预算/融合统一在此执行；绕过即拒绝
+ 
+-#### 设计要点 1.1：迁移/去重策略（同包完成）
++#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）
+ 
+-- **禁止长期双轨并存**：入口层仅保留 I/O 适配，编排逻辑统一收敛到内核。
+-- **阶段 A（同包先行）**：将 `hooks/context-inject-global.sh` 现有的意图识别/信号提取/工具选择逻辑改为“只生成标准化 signals + prompt”，不再直接调用 `ci_*` 工具。
+-- **阶段 B（同包完成）**：把现有编排/融合逻辑（如 `build_structured_output`、`add_graph_context` 等）迁移/收敛进 `hooks/auto-tool-orchestrator.sh`；入口层仅负责 I/O 适配与降级。
+-- **向后兼容**：`hooks/augment-context-global.sh` 保持委托；对外行为保持“可选注入 + fail-open”。
+-- **回滚策略**：设置 `CI_AUTO_TOOLS=off`（关闭编排）或恢复上一版 `context-inject-global.sh`（入口层仍可输出空注入）。
++本节绑定现有脚本内容，明确“要迁移的函数/模块边界”与“入口层互斥规则”，保证同包完成且可回滚。
++
++- **入口层互斥规则（强制）**：`hooks/context-inject-global.sh` **不得**调用任何 `ci_*` 工具或 MCP 客户端；唯一工具通道为 `hooks/auto-tool-orchestrator.sh`。如入口层尝试直连工具，编排内核拒绝并在 `[Limits]` 写明 `tool invocation must go through orchestrator`。
+ 
++- **迁移清单（从 `hooks/context-inject-global.sh` → `hooks/auto-tool-orchestrator.sh`）**：
++  1) **意图与信号层**：
++     - `analyze_intent_4d`、`extract_symbols`、`extract_at_refs`/`process_at_refs`（用于生成 signals 与上下文线索）
++     - `map_intent_to_standard`、`get_recommended_tools`（生成工具候选与理由）
++  2) **工具选择与执行层**：
++     - `get_index_status`、`do_search`、`call_graph_rag`、`get_hotspots`、`get_file_complexity` 等所有实际工具调用与依赖探测
++     - `run_with_timeout`（工具超时包装）
++  3) **结果融合与输出层**：
++     - `build_structured_output`、`build_text_output`、`add_graph_context`、`add_fallback_info`、`output_hook_response`
++  4) **安全与约束层**：
++     - `EXCLUDE_PATTERN` 与路径过滤/脱敏规则（迁移到编排内核的统一裁剪/过滤模块）
++
++- **入口层保留范围（仅 I/O 适配）**：
++  - 解析 Claude Code Hook payload / Codex wrapper 输入
++  - 调用编排内核并做 JSON 校验与降级处理（无工具调用）
++  - 输出 `hookSpecificOutput.additionalContext` 或 CLI 追加上下文
++
++- **互斥关系（可验证）**：
++  - `hooks/context-inject-global.sh` **只能**调用 `hooks/auto-tool-orchestrator.sh`（或输出空注入 JSON）。
++  - `hooks/augment-context-global.sh` **只能**委托到 `hooks/context-inject-global.sh`。
++
++- **同包回滚策略**：
++  - 软回滚：`CI_AUTO_TOOLS=off` 或 `CI_AUTO_TOOLS_MODE=plan`
++  - 硬回滚：恢复旧版 `hooks/context-inject-global.sh`（入口层仍可输出空注入，编排脚本可保留但不被调用）
++
+ #### 设计要点 2：Codex CLI “模型输出前调用”的集成路径（补齐入口/触发/最小配置/差异）
+ 
+ Codex CLI 与 Claude Code 的关键差异：**Codex CLI 没有等价的官方 Hook 事件（如 UserPromptSubmit）**可直接复用，因此必须通过“入口包装”来保证“模型输出前调用”。
+@@ -291,6 +314,7 @@
+      - **降级路径**：若 `--last` 不可用或执行失败，则降级为无会话模式（每轮 `codex exec` 新会话），不阻塞执行。
+      - **不再依赖** `codex exec --json` 或 `session_id` 作为前提；如用户自行提供可验证证据可在后续设计中再引入。
+      - [Limits] 文本（无会话降级）：`[Limits] session continuity unavailable; fallback to stateless exec`
++     - **可验证锚点（不调用 codex）**：在 `CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` 时输出 `planned_codex_command` 字段，内容为将要执行的 `codex exec resume --last` 或 `codex exec`，供 bats 断言会话选择逻辑。
+      - 回滚路径：设置 `CI_AUTO_TOOLS=off` 完全关闭自动编排
+ 
+ 2) **入口 B（次选，仅覆盖单次执行）：`codex exec <PROMPT>` 前置注入**
+@@ -378,6 +402,9 @@
+       }
+     done
+     ```
++  - **绕过拒绝策略（唯一强制执行点）**：
++    - 若 `hooks/context-inject-global.sh` 或 `hooks/augment-context-global.sh` 以任何方式尝试直连 `ci_*` 工具（包含旧路径/调试路径），编排内核应返回空注入 JSON 并在 `[Limits]` 输出 `tool invocation must go through orchestrator`。
++    - 入口层不得提供“直连工具”的降级分支；唯一允许的降级是“空注入 + [Limits] 说明”。
+   - **[Limits] 文本要求**：任何裁剪/拒绝都必须在 `[Limits]` 中可见，包含 tool 名与被裁剪键。
+ 
+ - **路径过滤（必须）**：
+@@ -438,6 +465,7 @@
+   },
+   "tool_plan": {
+     "tier_max": "number",
++    "planned_codex_command": "string?",
+     "budget": {
+       "wall_ms": "number",
+       "max_concurrency": "number",
+@@ -573,6 +601,13 @@
+     - 冲突不自动消解，仅标记“需人工判断”
+   - 稳定输出：同一输入、同一工具输出顺序必须稳定；禁止基于运行时 hash/随机数排序
+ 
++- **[Limits] 文案锚点（强制）**：
++  - Tier-2 默认关闭：`[Limits] tier-2 disabled by default; set CI_AUTO_TOOLS_TIER_MAX=2 to enable`
++  - 会话降级：`[Limits] session continuity unavailable; fallback to stateless exec`
++  - 入口层绕过拒绝：`[Limits] tool invocation must go through orchestrator`
++  - 超时/预算：`[Limits] tool timeout; degraded to plan-only` / `[Limits] budget exceeded; results truncated`
++  - 解析失败：`[Limits] orchestrator output invalid; fallback to empty context`
++
+ #### 设计要点 10：扩展点（回答用户 Q2）
+ 
+ - 客户端适配（Claude/Codex）与编排内核分离：新增客户端只需实现“输入采集 + 输出注入”适配层。
+
+[2026-01-23T11:39:48] tokens used: 135,252
+[2026-01-23T11:40:22] exec /bin/sh -lc "sed -n '1,220p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:40:22] /bin/sh -lc "sed -n '1,220p' /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md" succeeded in 24ms:
+# Claude Code / Codex CLI：自动工具编排 + 结果融合的上下文注入（单变更包交付）
+
+- Decision Status: Revise
+
+> Truth Root: `dev-playbooks/specs/`
+> Change Root: `dev-playbooks/changes/`
+> Status: Revise（Judge 要求修改后再评审）
+
+> 治理约束（强制）：本次变更**所有任务必须在一个变更包里完成**，禁止拆分为多个变更包；若 Proposal Challenger 要求拆分，Proposal Judge **必须驳回拆分请求**（允许在同一变更包内重排优先级/范围，但不得拆包）。
+
+## 🎯 结论先行（30秒阅读）
+
+**本提案会导致**：
+- ✅ 在 Claude Code 与 Codex CLI 中，用户输入后可在模型输出前自动执行“合适的”MCP 工具，并把结果回填进 Prompt
+- ✅ 自动调用不再是“固定 1-2 个工具”，而是按意图/置信度/预算选择多工具，并做结果融合与解释（面向用户可读）
+- ✅ 中英文都可触发自动注入（语言无关），并保留“可见 + 可控”的用户体验
+- ✅ 入口层收敛为“输入采集 + 输出注入”，所有工具调用/裁剪/预算/融合进入编排内核，并给出同包迁移与回滚路径
+
+**本提案不会导致**：
+- ❌ 不做 Cursor/其他 IDE 的适配（明确排除）
+[2026-01-23T11:40:22] tokens used: 136,098
+
+**Confirming compliance by reading official AI行为规范 and doc template from .claude**
+
+I noticed the skill mandates reading AI行为规范 and the proposal template specifically from the /.claude path, but I previously read from /.codex. To ensure full compliance, I'll reread both files from the /.claude directory before proceeding.
+**Summarizing compliance checks and final output requirements**
+
+This chunk reviews key requirements from AI行为规范, confirming adherence to no Cursor/IDE adaptation, consistent use of environment variables without new CLI flags, explicit migration details, use of apply_patch only for edits, and output format in Chinese with skill declaration and root paths. Next, I'll read the official files from /.claude to confirm compliance before producing the final response.
+
+[2026-01-23T11:41:40] exec /bin/sh -lc "sed -n '1,120p' /Users/ozbombor/.claude/skills/_shared/references/AI行为规范.md" in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:41:40] /bin/sh -lc "sed -n '1,120p' /Users/ozbombor/.claude/skills/_shared/references/AI行为规范.md" succeeded in 15ms:
+# DevBooks AI 行为规范
+
+> **角色设定**：你是软件工程领域的专业实践者，融合了系统架构、测试驱动与代码质量的经验。你的决策必须可验证、可追溯、可复用。
+>
+> **用户须知**：本文档定义了 AI 在 DevBooks 工作流中的行为规范。你可以根据项目需求自定义这些规则。
+
+---
+
+## 0. 配置发现（强制）
+
+在写任何文件之前，必须先确定 `<truth-root>` 与 `<change-root>` 的实际路径；禁止猜测。
+
+**发现顺序**（找到后停止）：
+1. `.devbooks/config.yaml`（如存在）→ 解析 `root`、`paths.specs`、`paths.changes`
+2. `dev-playbooks/project.md`（如存在）→ 使用 `dev-playbooks/specs` 和 `dev-playbooks/changes`
+3. `project.md`（如存在）→ 使用 `specs/` 和 `changes/`
+4. 若仍无法确定 → **停止并询问用户**
+
+**关键约束**：
+- 如果配置中指定了 `constitution`（宪法文件），**必须先阅读该文档**再执行任何操作
+[2026-01-23T11:41:43] tokens used: 142,301
+
+**Verifying compliance with AI behavior rules**
+
+Confirmed edits only modified proposal.md with small patches, avoided changing decision status, adjusted default selection text consistently, and excluded any future Cursor support suggestions while keeping explicit exclusion statements intact.
+**Truth root: `dev-playbooks/specs/` ; Change root: `dev-playbooks/changes/`**
+
+Using devbooks-proposal-author because revising proposal.md per Revise status.  
+视角: Product Manager, System Architect.  
+
+Tightened migration/duplication details, anchored plan/dry-run outputs including the new planned_codex_command field, clarified parameter trimming and bypass rejection enforcement points, explicitly excluded Cursor adaptation references, and enhanced user prompt triggers for Tier-2 mode without adding new CLI switches.  
+
+1) Modified sections: 🎯 基于你的选择，推荐方案; ✅ 批准流程; 设计要点 1.1：迁移/去重策略; 设计要点 2：Codex CLI 会话连续性; 设计要点 4：自动调用白名单与绕过拒绝策略; 设计要点 9：结果融合与解释; 编排内核 I/O 契约; plan/dry-run 确定性输出契约  
+2) Next step should be devbooks-proposal-challenger
+
+[2026-01-23T11:43:59] apply_patch auto_approved=true:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -363,3 +363,3 @@
+ - **plan/dry-run 确定性输出契约（可重复验收）**：
+-  - 输出固定 JSON：至少包含 `schema_version`、`run_id`、`tool_plan`、`fused_context.for_model.additional_context`
++  - 输出固定 JSON：至少包含 `schema_version`、`run_id`、`tool_plan`、`tool_plan.planned_codex_command`、`fused_context.for_model.additional_context`
+   - 该模式**不调用 codex**，仅输出增强 prompt/编排 JSON 供 bats 断言
+[2026-01-23T11:43:59] apply_patch(auto_approved=true) exited 0 in 0ms:
+Success. Updated the following files:
+M /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+[2026-01-23T11:43:59] turn diff:
+diff --git a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+index 0ff32f57d2d9b01af9637620a9f055082525cbd3..2ef13f03bbfc0fb51d709878b83f1cfa4cc2a1a6
+--- a/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
++++ b/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md
+@@ -69,10 +69,10 @@
+ 
+ ### 🎯 基于你的选择，推荐方案
+ 
+-默认推荐：**质量型维护者**路径
++默认推荐：**质量型维护者**路径（仅推荐，不作为批准）
+ - 自动调用：按意图与置信度选择“合适的多工具组合”，但受预算与超时约束
+ - 输出：用户可见的 Tool Plan + 可折叠 Results + 最终融合解释
+-- 扩展：编排内核与客户端适配解耦，后续可加 Cursor 适配但不阻塞本次交付
++- 扩展：编排内核与客户端适配解耦，后续可加其他 CLI 客户端适配（不包含 IDE）
+ 
+ ---
+ 
+@@ -81,12 +81,12 @@
+ ### 快速批准（推荐）
+ 
+ 如果你同意“多工具自动化（带预算边界）+ 结果融合解释 + 仅 Claude/Codex 适配”的推荐方案：
+-- [ ] ✅ 我同意推荐方案（默认意向，不阻塞进入下一阶段）
++- [ ] ✅ 我同意推荐方案（显式确认）
+ 
+ 如果你想自定义（例如更激进/更保守的自动调用策略）：
+ - [ ] 🔧 我想自定义方案（在 Debate Packet 的问题上给出选择）
+ 
+-默认选择：✅ 我同意推荐方案（未勾选也按默认意向继续；最终仍以 Judge 裁决为准）
++默认选择：无（需显式勾选；最终仍以 Judge 裁决为准）
+ 
+ ---
+ 
+@@ -265,14 +265,37 @@
+   - 输出：Tool Plan + Tool Results + Fused Context（见下方 I/O 契约）
+   - **唯一工具通道**：所有工具调用/参数裁剪/白名单/预算/融合统一在此执行；绕过即拒绝
+ 
+-#### 设计要点 1.1：迁移/去重策略（同包完成）
++#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）
++
++本节绑定现有脚本内容，明确“要迁移的函数/模块边界”与“入口层互斥规则”，保证同包完成且可回滚。
+ 
+-- **禁止长期双轨并存**：入口层仅保留 I/O 适配，编排逻辑统一收敛到内核。
+-- **阶段 A（同包先行）**：将 `hooks/context-inject-global.sh` 现有的意图识别/信号提取/工具选择逻辑改为“只生成标准化 signals + prompt”，不再直接调用 `ci_*` 工具。
+-- **阶段 B（同包完成）**：把现有编排/融合逻辑（如 `build_structured_output`、`add_graph_context` 等）迁移/收敛进 `hooks/auto-tool-orchestrator.sh`；入口层仅负责 I/O 适配与降级。
+-- **向后兼容**：`hooks/augment-context-global.sh` 保持委托；对外行为保持“可选注入 + fail-open”。
+-- **回滚策略**：设置 `CI_AUTO_TOOLS=off`（关闭编排）或恢复上一版 `context-inject-global.sh`（入口层仍可输出空注入）。
++- **入口层互斥规则（强制）**：`hooks/context-inject-global.sh` **不得**调用任何 `ci_*` 工具或 MCP 客户端；唯一工具通道为 `hooks/auto-tool-orchestrator.sh`。如入口层尝试直连工具，编排内核拒绝并在 `[Limits]` 写明 `tool invocation must go through orchestrator`。
+ 
++- **迁移清单（从 `hooks/context-inject-global.sh` → `hooks/auto-tool-orchestrator.sh`）**：
++  1) **意图与信号层**：
++     - `analyze_intent_4d`、`extract_symbols`、`extract_at_refs`/`process_at_refs`（用于生成 signals 与上下文线索）
++     - `map_intent_to_standard`、`get_recommended_tools`（生成工具候选与理由）
++  2) **工具选择与执行层**：
++     - `get_index_status`、`do_search`、`call_graph_rag`、`get_hotspots`、`get_file_complexity` 等所有实际工具调用与依赖探测
++     - `run_with_timeout`（工具超时包装）
++  3) **结果融合与输出层**：
++     - `build_structured_output`、`build_text_output`、`add_graph_context`、`add_fallback_info`、`output_hook_response`
++  4) **安全与约束层**：
++     - `EXCLUDE_PATTERN` 与路径过滤/脱敏规则（迁移到编排内核的统一裁剪/过滤模块）
++
++- **入口层保留范围（仅 I/O 适配）**：
++  - 解析 Claude Code Hook payload / Codex wrapper 输入
++  - 调用编排内核并做 JSON 校验与降级处理（无工具调用）
++  - 输出 `hookSpecificOutput.additionalContext` 或 CLI 追加上下文
++
++- **互斥关系（可验证）**：
++  - `hooks/context-inject-global.sh` **只能**调用 `hooks/auto-tool-orchestrator.sh`（或输出空注入 JSON）。
++  - `hooks/augment-context-global.sh` **只能**委托到 `hooks/context-inject-global.sh`。
++
++- **同包回滚策略**：
++  - 软回滚：`CI_AUTO_TOOLS=off` 或 `CI_AUTO_TOOLS_MODE=plan`
++  - 硬回滚：恢复旧版 `hooks/context-inject-global.sh`（入口层仍可输出空注入，编排脚本可保留但不被调用）
++
+ #### 设计要点 2：Codex CLI “模型输出前调用”的集成路径（补齐入口/触发/最小配置/差异）
+ 
+ Codex CLI 与 Claude Code 的关键差异：**Codex CLI 没有等价的官方 Hook 事件（如 UserPromptSubmit）**可直接复用，因此必须通过“入口包装”来保证“模型输出前调用”。
+@@ -291,6 +314,7 @@
+      - **降级路径**：若 `--last` 不可用或执行失败，则降级为无会话模式（每轮 `codex exec` 新会话），不阻塞执行。
+      - **不再依赖** `codex exec --json` 或 `session_id` 作为前提；如用户自行提供可验证证据可在后续设计中再引入。
+      - [Limits] 文本（无会话降级）：`[Limits] session continuity unavailable; fallback to stateless exec`
++     - **可验证锚点（不调用 codex）**：在 `CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` 时输出 `planned_codex_command` 字段，内容为将要执行的 `codex exec resume --last` 或 `codex exec`，供 bats 断言会话选择逻辑。
+      - 回滚路径：设置 `CI_AUTO_TOOLS=off` 完全关闭自动编排
+ 
+ 2) **入口 B（次选，仅覆盖单次执行）：`codex exec <PROMPT>` 前置注入**
+@@ -337,7 +361,7 @@
+   - 硬回滚：`CI_AUTO_TOOLS=off`（完全关闭自动编排，回到旧行为）
+ 
+ - **plan/dry-run 确定性输出契约（可重复验收）**：
+-  - 输出固定 JSON：至少包含 `schema_version`、`run_id`、`tool_plan`、`fused_context.for_model.additional_context`
++  - 输出固定 JSON：至少包含 `schema_version`、`run_id`、`tool_plan`、`tool_plan.planned_codex_command`、`fused_context.for_model.additional_context`
+   - 该模式**不调用 codex**，仅输出增强 prompt/编排 JSON 供 bats 断言
+   - `run_id` 规则：
+     - plan/dry-run：`plan-<hash12>`（hash 为 `prompt + repo_root + tool_plan` 的稳定哈希）
+@@ -378,6 +402,9 @@
+       }
+     done
+     ```
++  - **绕过拒绝策略（唯一强制执行点）**：
++    - 若 `hooks/context-inject-global.sh` 或 `hooks/augment-context-global.sh` 以任何方式尝试直连 `ci_*` 工具（包含旧路径/调试路径），编排内核应返回空注入 JSON 并在 `[Limits]` 输出 `tool invocation must go through orchestrator`。
++    - 入口层不得提供“直连工具”的降级分支；唯一允许的降级是“空注入 + [Limits] 说明”。
+   - **[Limits] 文本要求**：任何裁剪/拒绝都必须在 `[Limits]` 中可见，包含 tool 名与被裁剪键。
+ 
+ - **路径过滤（必须）**：
+@@ -438,6 +465,7 @@
+   },
+   "tool_plan": {
+     "tier_max": "number",
++    "planned_codex_command": "string?",
+     "budget": {
+       "wall_ms": "number",
+       "max_concurrency": "number",
+@@ -573,6 +601,13 @@
+     - 冲突不自动消解，仅标记“需人工判断”
+   - 稳定输出：同一输入、同一工具输出顺序必须稳定；禁止基于运行时 hash/随机数排序
+ 
++- **[Limits] 文案锚点（强制）**：
++  - Tier-2 默认关闭：`[Limits] tier-2 disabled by default; set CI_AUTO_TOOLS_TIER_MAX=2 to enable`
++  - 会话降级：`[Limits] session continuity unavailable; fallback to stateless exec`
++  - 入口层绕过拒绝：`[Limits] tool invocation must go through orchestrator`
++  - 超时/预算：`[Limits] tool timeout; degraded to plan-only` / `[Limits] budget exceeded; results truncated`
++  - 解析失败：`[Limits] orchestrator output invalid; fallback to empty context`
++
+ #### 设计要点 10：扩展点（回答用户 Q2）
+ 
+ - 客户端适配（Claude/Codex）与编排内核分离：新增客户端只需实现“输入采集 + 输出注入”适配层。
+
+[2026-01-23T11:44:01] tokens used: 148,505
+[2026-01-23T11:44:38] exec /bin/sh -lc 'grep -n "planned_codex_command" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:44:38] /bin/sh -lc 'grep -n "planned_codex_command" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' succeeded in 18ms:
+317:     - **可验证锚点（不调用 codex）**：在 `CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` 时输出 `planned_codex_command` 字段，内容为将要执行的 `codex exec resume --last` 或 `codex exec`，供 bats 断言会话选择逻辑。
+364:  - 输出固定 JSON：至少包含 `schema_version`、`run_id`、`tool_plan`、`tool_plan.planned_codex_command`、`fused_context.for_model.additional_context`
+468:    "planned_codex_command": "string?",
+[2026-01-23T11:44:39] tokens used: 149,450
+[2026-01-23T11:45:31] exec /bin/sh -lc 'grep -n "Decision Status" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:45:31] /bin/sh -lc 'grep -n "Decision Status" -n /Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md' succeeded in 27ms:
+3:- Decision Status: Revise
+[2026-01-23T11:45:32] tokens used: 149,862
+
+**Checking git status and preparing proposal modification summary**
+
+I'll verify no files besides proposal.md changed using git status, then include truth-root/change-root mentions atop the file. I'll prepare a summary of modifications with section headings and mention the Product Manager and System Architect expert roles in Chinese.
+[2026-01-23T11:46:05] exec /bin/sh -lc 'git -C /Users/ozbombor/Projects/code-intelligence-mcp status --short' in /Users/ozbombor/.code/working/code-intelligence-mcp/branches/code-code-gpt-5-2-codex-devbooks-proposal-author-skill
+[2026-01-23T11:46:05] /bin/sh -lc 'git -C /Users/ozbombor/Projects/code-intelligence-mcp status --short' succeeded in 48ms:
+ M .gitignore
+ M scripts/benchmark.sh
+ M tests/ast-delta.bats
+ D tests/benchmark.bats
+ M tests/boundary-detector.bats
+ M tests/bug-locator.bats
+ M tests/cache-manager.bats
+ M tests/context-compressor.bats
+ M tests/daemon.bats
+ M tests/data-flow-tracing.bats
+ M tests/drift-detector.bats
+ M tests/federation-lite.bats
+ M tests/graph-store.bats
+ M tests/hotspot-analyzer.bats
+ M tests/hybrid-retrieval.bats
+ M tests/impact-analyzer.bats
+ M tests/incremental-indexing.bats
+ M tests/intent-classification.bats
+ M tests/keystroke-cancel.bats
+ M tests/llm-provider.bats
+[2026-01-23T11:46:06] tokens used: 212,240
+
+**Confirming output format and compliance**
+
+I'm clarifying that final responses must start with the truth root and change root lines, mention the use of the devbooks-proposal-author skill with corresponding expert roles, provide file path updates with concise modification summaries, and avoid dumping large file contents while allowing small excerpts if helpful.
+**Truth Root: `dev-playbooks/specs/` | Change Root: `dev-playbooks/changes/`**
+
+使用 devbooks-proposal-author 修订 `proposal.md`；角色视角：Product Manager, System Architect。  
+
+已更新 `dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md`（仅此文件）。  
+
+**关键修改**  
+- `### 🎯 基于你的选择，推荐方案` 与 `## ✅ 批准流程（1分钟）`：移除隐式自动通过，改为显式确认；推荐方案仅作为建议；排除 IDE 适配提及。  
+- `#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）`：新增从 context-inject 相关函数到编排内核的迁移清单，明确入口层互斥边界和回滚策略。  
+- `#### 设计要点 2：Codex CLI “模型输出前调用”的集成路径` 及 plan/dry-run 输出契约：添加 `planned_codex_command` 钩点。  
+- `#### 设计要点 4：自动调用白名单/安全边界/脱敏与路径过滤规则`：新增绕过拒绝规则和唯一性强制。  
+- `#### 设计要点 9：结果融合与解释`：新增 [Limits] 结果锚点列表。  
+- `#### 设计要点 6：编排内核 I/O 契约` 及控制面 plan/dry-run 输出契约：新增 `planned_codex_command` 字段，完善输入输出 Schema。  
+
+**下一步**  
+devbooks-proposal-challenger
+
+[2026-01-23T11:47:51] codex
+
+Truth Root: `dev-playbooks/specs/` | Change Root: `dev-playbooks/changes/`
+使用 devbooks-proposal-author 修订 `proposal.md`；角色视角：Product Manager, System Architect。
+
+已更新 `dev-playbooks/changes/20260123-1206-add-auto-tool-orchestrator/proposal.md`（仅此文件）。
+
+**关键修改**
+- `### 🎯 基于你的选择，推荐方案` + `## ✅ 批准流程（1分钟）`：去掉隐式默认批准，明确“显式确认”；推荐路径仅作为建议，不视为批准；扩展表述收敛为“其他 CLI 客户端（不含 IDE）”。
+- `#### 设计要点 1.1：迁移/去重策略（同包完成，含互斥边界与可回滚）`：补齐从 `hooks/context-inject-global.sh` 迁移的具体函数清单、入口层互斥规则、唯一工具通道与回滚路径。
+- `#### 设计要点 2：Codex CLI “模型输出前调用”的集成路径`：新增 `planned_codex_command` 作为 plan/dry-run 的可验证锚点（不调用 codex）。
+- `#### 设计要点 4：自动调用白名单/安全边界/脱敏与路径过滤规则`：补充“绕过拒绝策略”，明确唯一强制执行点。
+- `#### 设计要点 9：结果融合与解释`：新增 `[Limits]` 文案锚点清单（Tier-2/会话降级/绕过拒绝/超时/解析失败）。
+- `#### 设计要点 6：编排内核 I/O 契约` + `设计要点 3（plan/dry-run 契约）`：在 schema 与验收字段中加入 `tool_plan.planned_codex_command`。
+
+下一步：`devbooks-proposal-challenger`。
+[2026-01-23T11:47:53] tokens used: 216,980

@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "run_id": "run-coder-mp1.2",
+  "generated_at": "2026-01-23T08:29:01Z",
+  "status": "degraded",
+  "degraded": true,
+  "reasons": ["dirty_worktree"],
+  "missing_fields": [],
+  "git": {
+    "ref_input": "HEAD",
+    "ref_resolved": "2ff36e5c6febf6be832a8659992a87f767180e87",
+    "dirty": true,
+    "isolation": {
+      "strategy": "in_place",
+      "workdir": "../../../../.."
+    }
+  },
+  "dataset": {
+    "queries": {
+      "path": "tests/fixtures/benchmark/queries.jsonl",
+      "line_count": 3,
+      "sha256": "92aeb057d4e22e0fd9dc44898966a3ba60f70c308ce17fc704af785572424cf8"
+    }
+  },
+  "environment": {
+    "os": "darwin",
+    "arch": "arm64",
+    "node": "v22.15.0"
+  },
+  "config": {
+    "toggles": {
+      "context_injection_mode": { "value": "on", "source": "default" },
+      "cache_mode": { "value": "cold", "source": "default" }
+    },
+    "hash": "d333235f29d69ef07c34ade8fe26709248c1cf8866fec30f1580f26891e4a387",
+    "devbooks_config": {
+      "mode": "copied",
+      "path": ".devbooks/config.yaml",
+      "sha256": "d1c0bb7c73a6671d5d6760cdf5c3dc9094de6f391a0b080214f9695869b6d719",
+      "missing": false
+    }
+  },
+  "write_boundary": {
+    "out_dir": "/Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0702-improve-demo-suite-ab-metrics/evidence/run-coder-mp1.2",
+    "tmp_dir": "/Users/ozbombor/Projects/code-intelligence-mcp/dev-playbooks/changes/20260123-0702-improve-demo-suite-ab-metrics/evidence/run-coder-mp1.2/.tmp",
+    "allow_system_tmp": false
+  },
+  "metrics": {
+    "demo_suite": { "total_duration_ms": 182 }
+  },
+  "steps": [
+    { "id": "single_run", "status": "degraded", "duration_ms": 182 }
+  ]
+}

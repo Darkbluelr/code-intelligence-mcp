@@ -1,0 +1,77 @@
+{
+  "name": "@ozbombor/code-intelligence-mcp",
+  "version": "0.3.0",
+  "description": "MCP Server for code intelligence capabilities (Embedding, Graph-RAG, Call-chain tracing, Bug locator)",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "code-intelligence-mcp": "./bin/code-intelligence-mcp",
+    "ci": "./bin/ci",
+    "ci-search": "./bin/ci-search",
+    "ci-setup-hook": "./bin/ci-setup-hook"
+  },
+  "files": [
+    "dist/",
+    "bin/ci-search",
+    "bin/ci",
+    "bin/ci-setup-hook",
+    "bin/code-intelligence-mcp",
+    "scripts/",
+    "hooks/",
+    "config/arch-rules.yaml",
+    "config/ci-config.yaml.template",
+    "config/boundaries.yaml",
+    "config/config.yaml.template",
+    "config/features.yaml",
+    "config/federation.yaml",
+    "config/llm-providers.yaml",
+    "docs/TECHNICAL.md",
+    "docs/TECHNICAL_zh.md",
+    "install.sh",
+    "README.md",
+    "README.zh-CN.md",
+    "scripts/postinstall.js"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "postinstall": "node scripts/postinstall.js",
+    "start": "node dist/server.js",
+    "lint": "shellcheck scripts/*.sh hooks/*.sh",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Darkbluelr/code-intelligence-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Darkbluelr/code-intelligence-mcp/issues"
+  },
+  "homepage": "https://github.com/Darkbluelr/code-intelligence-mcp#readme",
+  "keywords": [
+    "mcp",
+    "code-intelligence",
+    "embedding",
+    "graph-rag",
+    "devbooks"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "protobufjs": "^8.0.0",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-typescript": "^0.23.2",
+    "typescript": "^5.0.0"
+  },
+  "overrides": {
+    "hono": ">=4.11.4"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

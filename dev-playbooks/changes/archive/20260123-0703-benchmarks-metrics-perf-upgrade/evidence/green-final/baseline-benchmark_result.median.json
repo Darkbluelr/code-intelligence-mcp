@@ -1,0 +1,102 @@
+{
+  "cache_hit_p95_ms": 75.0,
+  "compression_latency_ms": 8.951750001870096,
+  "environment": {
+    "cpu": {
+      "arch": "arm64",
+      "cores": 10,
+      "model": "Apple M4",
+      "threads": 10
+    },
+    "dependencies": {
+      "git": "git version 2.51.2",
+      "jq": "jq-1.7.1-apple",
+      "rg": "ripgrep 15.1.0"
+    },
+    "memory": {
+      "total_mb": 16384
+    },
+    "os": {
+      "kernel": "25.2.0",
+      "name": "Darwin",
+      "version": "Darwin Kernel Version 25.2.0: Tue Nov 18 21:08:48 PST 2025; root:xnu-12377.61.12~1/RELEASE_ARM64_T8132"
+    },
+    "runtime": {
+      "node": "v22.15.0",
+      "python": "Python 3.12.9"
+    }
+  },
+  "full_query_p95_ms": 89.0,
+  "generated_at": "2026-01-24T06:27:38.888012Z",
+  "git_commit": "3547af120636a4f2fa8635a238dd3cc5994b5321",
+  "hit_rate_at_10": 1.0,
+  "metrics": {
+    "cache": {
+      "cache_hit_p95_ms": 75.0,
+      "full_query_p95_ms": 89.0,
+      "iterations": 20,
+      "precommit_deps_p95_ms": 27.0,
+      "precommit_staged_p95_ms": 35.0
+    },
+    "context_compression": {
+      "compression_latency_ms": 8.951750001870096,
+      "compression_level": "medium",
+      "compression_ratio": 0.0,
+      "information_retention": 0.0,
+      "iterations": 1,
+      "tokens_after": 0,
+      "tokens_before": 0
+    },
+    "graph_rag": {
+      "cold_latency_p50_ms": 841.8174580438063,
+      "cold_latency_p95_ms": 862.6393749727868,
+      "cold_latency_p99_ms": 862.6393749727868,
+      "iterations": 3,
+      "speedup_pct": 91.95897091883498,
+      "warm_latency_p50_ms": 69.08054102677852,
+      "warm_latency_p95_ms": 69.36508300714195,
+      "warm_latency_p99_ms": 69.36508300714195
+    },
+    "retrieval_quality": {
+      "dataset": "self",
+      "expected_count": 13,
+      "hit_rate_at_10": 1.0,
+      "iterations": 12,
+      "latency_p50_ms": 5.721958004869521,
+      "latency_p95_ms": 6.098040961660445,
+      "latency_p99_ms": 6.595375016331673,
+      "mrr_at_10": 0.42638888888888893,
+      "precision_at_10": 0.3377314814814815,
+      "query_count": 12,
+      "recall_at_10": 1.0
+    },
+    "semantic_search": {
+      "iterations": 3,
+      "latency_p50_ms": 209.0,
+      "latency_p95_ms": 222.0,
+      "latency_p99_ms": 222.0
+    }
+  },
+  "mrr_at_10": 0.42638888888888893,
+  "p50_latency_ms": 5.721958004869521,
+  "p95_latency_ms": 6.098040961660445,
+  "p99_latency_ms": 6.595375016331673,
+  "precision_at_10": 0.3377314814814815,
+  "precommit_deps_p95_ms": 27.0,
+  "precommit_staged_p95_ms": 35.0,
+  "project_root": "/Users/ozbombor/Projects/code-intelligence-mcp-worktree-benchmarks",
+  "queries_version": "sha256:2a944e88",
+  "recall_at_10": 1.0,
+  "run": {
+    "cache_clear": [
+      "rm -rf ${TMPDIR:-/tmp}/.ci-cache",
+      "rm -rf ${TMPDIR:-/tmp}/.devbooks-cache/graph-rag",
+      "scripts/cache-manager.sh cache-clear"
+    ],
+    "cold_definition": "cache_clear before each cold sample",
+    "mode": "full",
+    "random_seed": 42,
+    "warm_definition": "no cache_clear for warm samples"
+  },
+  "schema_version": "1.1"
+}

@@ -1,0 +1,1749 @@
+{
+  "schema_version": "1.0.0",
+  "indexed_at": "2026-01-14T06:32:46Z",
+  "time_window_days": 90,
+  "files": [
+    {
+      "path": ".claude/commands/devbooks/apply.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/archive.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/backport.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/bootstrap.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/c4.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/challenger.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/code.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/debate.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/delivery.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/design.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/entropy.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/federation.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/gardener.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/impact.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/index.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/judge.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/plan.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/proposal.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/quick.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/review.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/router.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/test-review.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".claude/commands/devbooks/test.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/.migrate-checkpoint",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/commands-openspec-20260113191922/apply.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/commands-openspec-20260113191922/archive.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/commands-openspec-20260113191922/proposal.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/AGENTS.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/design.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/evidence/baseline-metrics.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/evidence/red-baseline/summary.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/proposal.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/specs/boundary-detection/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/specs/data-flow-tracing/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/specs/hotspot-analysis/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/specs/incremental-indexing/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/specs/intent-analysis/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/specs/pattern-learning/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/specs/subgraph-retrieval/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/tasks.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/changes/archive/enhance-code-intelligence/verification.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/project.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/_meta/key-concepts.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/_meta/project-profile.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/_meta/verification-baseline.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/architecture/c4.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/architecture/module-graph.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/boundary-detection/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/data-flow-tracing/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/hotspot-analysis/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/incremental-indexing/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/intent-analysis/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/pattern-learning/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/backup/openspec-20260113191922/specs/subgraph-retrieval/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".devbooks/config.yaml",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": ".gitignore",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "AGENTS.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "Augment-Comparison-Upgrade.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "bin/ci-search",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "bin/code-intelligence-mcp",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "CLAUDE.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "config/boundaries.yaml",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "config/config.yaml.template",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/design.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/evidence/baseline-metrics.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/evidence/red-baseline/summary.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/specs/boundary-detection/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/specs/data-flow-tracing/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/specs/hotspot-analysis/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/specs/incremental-indexing/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/specs/intent-analysis/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/specs/pattern-learning/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/specs/subgraph-retrieval/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/changes/archive/enhance-code-intelligence/verification.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/constitution.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/project.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/README.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/_meta/glossary.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/_meta/key-concepts.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/_meta/project-profile.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/_meta/verification-baseline.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/architecture/c4.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/architecture/fitness-rules.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/architecture/hotspots.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/architecture/module-graph.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/boundary-detection/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/data-flow-tracing/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/hotspot-analysis/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/incremental-indexing/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/intent-analysis/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/pattern-learning/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "dev-playbooks/specs/subgraph-retrieval/spec.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "docs/Augment-Comparison-Upgrade.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "docs/Augment.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "hooks/augment-context-global.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "hooks/augment-context-with-embedding.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "hooks/augment-context.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "hooks/cache-manager.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "index.scip",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "install.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "package-lock.json",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "package.json",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "README.md",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/ast-diff.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/boundary-detector.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/bug-locator.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/cache-utils.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/call-chain.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/common.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/complexity.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/embedding.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/entropy-viz.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/graph-rag.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/hotspot-analyzer.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/indexer.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/pattern-learner.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/reranker.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "scripts/test-embedding.sh",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "src/server.ts",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/boundary-detector.bats",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/bug-locator.bats",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/data-flow-tracing.bats",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/feature-toggle.bats",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/helpers/common.bash",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/hotspot-analyzer.bats",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/incremental-indexing.bats",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/intent-analysis.bats",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/mcp-contract.bats",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/pattern-learner.bats",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tests/subgraph-retrieval.bats",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    },
+    {
+      "path": "tsconfig.json",
+      "bug_fix_count": 0,
+      "bug_fix_commits": [],
+      "last_bug_fix": null,
+      "commit_types": {
+        "fix": 0,
+        "feat": 0,
+        "refactor": 0,
+        "docs": 0,
+        "chore": 1
+      }
+    }
+  ]
+}

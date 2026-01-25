@@ -1,0 +1,327 @@
+total 104
+drwxr-xr-x   4 ozbombor  staff    128 Jan 17 01:29 .
+drwxr-xr-x  11 ozbombor  staff    352 Jan 17 17:08 ..
+-rw-r--r--   1 ozbombor  staff   7166 Jan 17 01:29 DevBooks配置指南.md
+-rw-r--r--   1 ozbombor  staff  42338 Jan 17 01:29 推荐MCP.md
+--- dev-playbooks/docs/DevBooks配置指南.md
+# DevBooks 配置指南
+
+> 本指南帮助你在项目中集成 DevBooks 工作流。
+
+---
+
+## 快速开始（让 AI 自动配置）
+
+将以下提示词发送给 AI，它会自动完成配置：
+
+```text
+你是"DevBooks 上下文协议适配器安装员（DevBooks Context Protocol Adapter Installer）"。你的目标是在目标项目中，把 DevBooks 的协议无关约定（<truth-root>/<change-root> + 角色隔离 + DoD + Skills 索引）集成到该项目的上下文协议里。
+
+前置条件（先检查，缺失则停止并说明原因）：
+- 系统依赖已安装（必需：jq、ripgrep；推荐：scc、radon）
+  检查命令：command -v jq rg scc radon
+  若缺失，运行：<devbooks-root>/scripts/install-dependencies.sh
+- 你能定位该项目的"标牌文件（signpost file）"（由上下文协议决定，常见：CLAUDE.md / AGENTS.md / PROJECT.md / <protocol>/project.md）。
+
+硬约束（必须遵守）：
+1) 本次安装只允许改"上下文/文档标牌"，不得修改业务代码、tests、也不得引入新依赖。
+2) 若目标项目已有"上下文协议托管区块（managed block）"，自定义内容必须放在托管区块之外，避免被后续自动更新覆盖。
+3) 安装必须明确写出两个目录根：
+   - <truth-root>：当前真理目录根
+   - <change-root>：变更包目录根
+
+任务（按顺序执行）：
+0) 检查系统依赖：
+   - 运行：command -v jq rg scc radon
+   - 若缺失必需依赖（jq、rg），提示用户先运行：./scripts/install-dependencies.sh
+   - 若缺失推荐依赖（scc、radon），说明这是可选项，用于启用"复杂度加权热点"等能力
+1) 识别上下文协议类型（至少两条分支）：
+   - 若检测到 DevBooks（存在 dev-playbooks/project.md）：使用 DevBooks 默认值（<truth-root>=dev-playbooks/specs，<change-root>=dev-playbooks/changes）
+   - 否则：使用手动配置部分进行集成
+2) 为该项目确定目录根：
+   - 若项目已有 specs/changes 等目录约定：直接沿用作为 <truth-root>/<change-root>
+   - 若项目没有定义：推荐在仓库根目录使用 `specs/` 与 `changes/`
+3) 将模板内容合入标牌文件（以追加方式合并）：
+   - 写入：<truth-root>/<change-root>、变更包结构约定、角色隔离、DoD、devbooks-* Skills 索引
+4) 验证（必须输出检查结果）：
+   - 产物落点是否一致（proposal/design/tasks/verification/specs/evidence）
+   - 是否包含 Test Owner/Coder 隔离与"Coder 禁止修改 tests"
+   - 是否包含 DoD（MECE）
+   - 是否包含 devbooks-* Skills 索引
+
+完成后输出：
+- 系统依赖检查结果（哪些已安装、哪些缺失）
+- 你修改了哪些文件（列表）
+- 该项目最终的 <truth-root>/<change-root> 值
+- 下一步最短路径示例（用自然语言点 2-3 个关键 skills）
+```
+
+---
+
+## 手动配置
+
+如果你想手动配置，将以下内容添加到项目的标牌文件（`CLAUDE.md`、`AGENTS.md` 或 `PROJECT.md`）中：
+
+### 目录根配置
+
+```yaml
+# DevBooks 目录约定
+truth_root: dev-playbooks/specs/    # 当前真理目录根
+change_root: dev-playbooks/changes/ # 变更包目录根
+```
+
+### 单次变更包结构
+
+每次变更的产物按以下结构组织：
+
+| 产物 | 路径 | 说明 |
+|------|------|------|
+| 提案 | `<change-root>/<change-id>/proposal.md` | Why/What/Impact |
+| 设计 | `<change-root>/<change-id>/design.md` | What/Constraints + AC-xxx |
+| 计划 | `<change-root>/<change-id>/tasks.md` | 可跟踪的编码任务 |
+| 验证 | `<change-root>/<change-id>/verification.md` | 追溯矩阵 + MANUAL-* 清单 |
+| 规格增量 | `<change-root>/<change-id>/specs/**` | 本次变更的规格 delta |
+| 证据 | `<change-root>/<change-id>/evidence/**` | Red/Green 证据（按需） |
+
+### 当前真理目录结构
+
+```
+<truth-root>/
+├── _meta/
+│   ├── project-profile.md    # 项目画像/约束/闸门
+│   └── glossary.md           # 统一语言术语表
+├── architecture/
+│   └── c4.md                 # C4 架构地图
+└── engineering/
+    └── pitfalls.md           # 高 ROI 坑库（可选）
+```
+
+### 角色隔离（强制）
+
+```markdown
+## DevBooks 角色隔离规则
+
+- Test Owner 与 Coder 必须在**独立对话/独立实例**中工作
+- 允许并行，但不允许共享上下文造成"自证式测试"
+- Coder **禁止修改** `tests/**`
+- 如需调整测试，必须交回 Test Owner 决策与修改
+```
+
+### DoD（完成定义，MECE）
+
+每次变更必须声明覆盖哪些闸门，未覆盖项必须写明原因：
+
+| 闸门 | 类型 | 示例 |
+|------|------|------|
+| 行为 | unit/integration/e2e | pytest, jest |
+| 契约 | OpenAPI/Proto/Schema | contract tests |
+| 结构 | 分层/依赖方向/无环 | fitness tests |
+| 静态/安全 | lint/typecheck/build | SAST/secret scan |
+| 证据 | 截图/录像/报告 | UI、性能（按需） |
+
+---
+
+## Skills 索引
+
+### 按角色
+
+| 角色 | Skill | 产物落点 |
+|------|-------|----------|
+| Router | `devbooks-router` | 路由与下一步建议 |
+| Proposal Author | `devbooks-proposal-author` | `proposal.md` |
+| Proposal Challenger | `devbooks-proposal-challenger` | 质疑报告 |
+| Proposal Judge | `devbooks-proposal-judge` | 裁决回写 |
+| Impact Analyst | `devbooks-impact-analysis` | Impact 章节 |
+| Design Owner | `devbooks-design-doc` | `design.md` |
+| Spec & Contract | `devbooks-spec-contract` | `specs/**` |
+| Planner | `devbooks-implementation-plan` | `tasks.md` |
+| Test Owner | `devbooks-test-owner` | `verification.md` + `tests/` |
+| Coder | `devbooks-coder` | 按 tasks 实现（禁止改 tests） |
+| Reviewer | `devbooks-code-review` | 评审意见 |
+| Archiver | `devbooks-archiver` | 归档修剪 + C4 合并 |
+| Design Backport | `devbooks-design-backport` | 回写设计缺口 |
+
+### 按工作流
+
+| 工作流 | Skill | 说明 |
+|--------|-------|------|
+| Delivery | `devbooks-delivery-workflow` | 变更闭环 |
+| Brownfield Bootstrap | `devbooks-brownfield-bootstrap` | 存量项目初始化 |
+
+### 度量
+
+| 功能 | Skill | 说明 |
+|------|-------|------|
+| Entropy Monitor | `devbooks-entropy-monitor` | 系统熵度量 |
+
+---
+
+## 高级选项
+
+### 自定义目录映射
+
+在 `.devbooks/config.yaml` 中配置：
+
+```yaml
+# 目录映射
+--- dev-playbooks/docs/推荐MCP.md
+# 已配置的 MCP 服务器
+
+> 本项目推荐使用的 MCP 服务器详细配置和使用指南
+>
+> 日期：2025-12-30
+> 配置级别：User Scope（所有项目可用）
+
+---
+
+## 📋 目录
+
+1. [概览](#概览)
+2. [TaskMaster AI](#taskmaster-ai)
+3. [CKB (Code Knowledge Backend)](#ckb-code-knowledge-backend)
+4. [tree-sitter-mcp](#tree-sitter-mcp)
+5. [Context7](#context7)
+6. [GitHub MCP Server](#github-mcp-server)
+7. [Playwright MCP](#playwright-mcp)
+8. [配置位置](#配置位置)
+
+---
+
+## 概览
+
+### 当前已配置的 MCP 服务器
+
+| 服务器 | 类型 | 作用域 | 主要功能 |
+|--------|------|--------|----------|
+| **task-master** | 任务管理 | User Scope | AI 驱动的任务管理系统 |
+| **ckb** | 代码分析 | User Scope | 代码符号搜索、引用查找 |
+| **tree-sitter-mcp** | 代码搜索 | User Scope | 语义代码搜索和分析 |
+| **context7** | 代码文档 | User Scope | 实时获取最新的库文档和代码示例 |
+| **github** | GitHub集成 | User Scope | GitHub仓库、Issues、PR管理和自动化 |
+| **playwright** | 浏览器自动化 | User Scope | 网页自动化测试、爬取和交互 |
+
+**配置文件**：`~/.claude.json` (顶层 `mcpServers` 字段)
+
+**作用范围**：✅ 所有项目
+
+---
+
+## TaskMaster AI
+
+### 基本信息
+
+- **npm 包**：`task-master-ai`
+- **类型**：AI 驱动的任务管理系统
+- **安装方式**：npx（自动下载）
+- **官方文档**：[https://docs.task-master.dev](https://docs.task-master.dev)
+- **GitHub**：[eyaltoledano/claude-task-master](https://github.com/eyaltoledano/claude-task-master)
+
+### 功能特性
+
+- ✅ **任务管理**：创建、更新、删除、搜索任务
+- ✅ **优先级管理**：设置任务优先级（高、中、低）
+- ✅ **状态跟踪**：待办、进行中、已完成
+- ✅ **智能分析**：AI 驱动的任务分析和建议
+- ✅ **自然语言交互**：通过对话管理任务
+- ✅ **多模型支持**：支持 Claude、GPT 等多种 AI 模型
+
+### 配置
+
+```json
+{
+  "mcpServers": {
+    "task-master": {
+      "command": "npx",
+      "args": ["-y", "task-master-ai"],
+      "env": {
+        "ANTHROPIC_API_KEY": "sk-...",
+        "ANTHROPIC_BASE_URL": "https://anyrouter.top",
+        "OPENAI_API_KEY": "sk-...",
+        "OPENAI_BASE_URL": "https://anyrouter.top/v1",
+        "TASK_MASTER_TOOLS": "core"
+      }
+    }
+  }
+}
+```
+
+### 环境变量说明
+
+| 变量 | 必需 | 说明 |
+|------|------|------|
+| `ANTHROPIC_API_KEY` | ✅ | Claude 模型的 API Key |
+| `ANTHROPIC_BASE_URL` | ❌ | 自定义 Anthropic API 端点 |
+| `OPENAI_API_KEY` | ❌ | OpenAI GPT 模型的 API Key |
+| `OPENAI_BASE_URL` | ❌ | 自定义 OpenAI API 端点 |
+| `TASK_MASTER_TOOLS` | ❌ | 启用的工具集合：`core`/`standard`/`all`/自定义逗号列表 |
+
+### 工具集合（TASK_MASTER_TOOLS）
+
+> 说明：`task-master-ai` 实际读取的是 `TASK_MASTER_TOOLS`（不是 `TASK_MASTER_TOOL_MODE`）。
+
+常见取值：
+
+- `core`：精简工具集（默认/推荐）
+- `standard`：标准工具集
+- `all`：启用全部工具
+- `tool_a,tool_b,...`：自定义工具白名单（逗号分隔）
+
+**当前使用**：`core` 模式
+
+### 使用示例
+
+**创建任务**：
+```
+使用 task-master 创建任务：完成 MCP 配置文档
+```
+
+**列出任务**：
+```
+使用 task-master 列出所有待办任务
+```
+
+**更新任务状态**：
+```
+使用 task-master 将任务标记为已完成
+```
+
+**搜索任务**：
+```
+使用 task-master 搜索关于"文档"的任务
+```
+
+### 模型配置（可选）
+
+如果想指定使用的 AI 模型，可以创建配置文件：
+
+```bash
+# 交互式配置
+npx task-master-ai models --setup
+
+# 或直接设置
+npx task-master-ai models --set-main=gpt-4o
+npx task-master-ai models --set-research=claude-3-5-sonnet-20241022
+npx task-master-ai models --set-fallback=gpt-3.5-turbo
+```
+
+配置文件位置：`~/.taskmaster/config.json`
+
+### 支持的 API 提供商
+
+- Anthropic (Claude)
+- OpenAI (GPT-4, GPT-3.5)
+- Perplexity
+- Google (Gemini)
+- Mistral
+- Groq
+- OpenRouter
+- xAI (Grok)
+- Azure OpenAI
+- Ollama (本地)
+
+---
+
+## CKB (Code Knowledge Backend)
+
+### 基本信息
+

@@ -1,0 +1,200 @@
+# C4 Architecture Map: Code Intelligence MCP Server
+
+> **Version**: 1.4.0
+> **Owner**: Architecture Owner
+> **Created**: 2026-01-11
+> **Last Updated**: 2026-01-18 (upgrade-code-intelligence-capabilities：边类型解析扩展、Schema v3 迁移、CKB MCP 集成、图+向量融合查询、自动预热)
+> **Freshness Check**: 90 days
+
+---
+
+## C1: System Context
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              External Users                              │
+│                                                                          │
+│    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
+│    │ Claude Code  │    │ AI Assistants│    │   IDE        │             │
+│    │   (CLI)      │    │              │    │  Plugins     │             │
+│    └──────────────┘    └──────────────┘    └──────────────┘             │
+│              │                  │                  │                     │
+│              └──────────────────┼──────────────────┘                     │
+│                                 │                                        │
+│                                 │ MCP Protocol (stdio)                   │
+│                                 ▼                                        │
+│    ┌────────────────────────────────────────────────────────────────┐   │
+│    │                                                                │   │
+│    │               Code Intelligence MCP Server                     │   │
+│    │                                                                │   │
+│    │   Provides: semantic search, call chain tracing, bug          │   │
+│    │             localization, complexity analysis, graph RAG      │   │
+│    │                                                                │   │
+│    └────────────────────────────────────────────────────────────────┘   │
+│                                 │                                        │
+│                                 │                                        │
+│              ┌──────────────────┼──────────────────┐                     │
+│              │                  │                  │                     │
+│              ▼                  ▼                  ▼                     │
+│    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
+│    │   Ollama /   │    │   CKB MCP    │    │   Git        │             │
+│    │   OpenAI     │    │   Server     │    │   Repository │             │
+│    │ (Embedding)  │    │ (Graph)      │    │              │             │
+│    └──────────────┘    └──────────────┘    └──────────────┘             │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### System Boundary
+
+| 元素 | 类型 | 描述 |
+|------|------|------|
+| Code Intelligence MCP Server | System | 本系统：为 AI 编程助手提供代码智能能力 |
+| Claude Code | External User | 主要用户：Anthropic 官方 CLI 工具 |
+| AI Assistants | External User | 其他 AI 编程助手 |
+| IDE Plugins | External User | IDE 集成插件 |
+| Ollama / OpenAI | External System | Embedding 生成服务（可选） |
+| CKB MCP Server | External System | 图基代码分析服务（可选） |
+| Git Repository | External System | 目标代码仓库 |
+
+---
+
+## C2: Container Level
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      Code Intelligence MCP Server                        │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │                        Integration Layer                            ││
+│  │                                                                     ││
+│  │  ┌─────────────────┐    ┌─────────────────────────────────────────┐││
+│  │  │  src/server.ts  │    │          hooks/*.sh                     │││
+│  │  │  (MCP Thin      │    │  (augment-context-global.sh             │││
+│  │  │   Shell)        │    │   augment-context-with-embedding.sh     │││
+│  │  │                 │    │   pre-commit)  [NEW: Phase 2]           │││
+│  │  └─────────────────┘    └─────────────────────────────────────────┘││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                               │                                          │
+│                               │ execAsync                                │
+│                               ▼                                          │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │                          Core Layer                                 ││
+│  │                                                                     ││
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐││
+│  │  │ embedding   │  │ call-chain  │  │ bug-locator │  │ complexity  │││
+│  │  │    .sh      │  │    .sh      │  │    .sh      │  │    .sh      │││
+│  │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘││
+│  │                                                                     ││
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐││
+│  │  │ graph-rag   │  │  indexer    │  │ hotspot-    │  │ boundary-   │││
+│  │  │    .sh      │  │    .sh      │  │ analyzer.sh │  │ detector.sh │││
+│  │  └─────────────┘  └─────────────┘  └───────┬─────┘  └─────────────┘││
+│  │                                            │                        ││
+│  │  ┌─────────────┐  ┌─────────────┐          │ [ENHANCED: Phase 2]   ││
+│  │  │ pattern-    │  │  ast-diff   │          │ --with-bug-history    ││
+│  │  │ learner.sh  │  │    .sh      │          │                        ││
+│  │  └─────────────┘  └─────────────┘          │                        ││
+│  │                                            ▼                        ││
+│  │  ┌──────────────────────────────────────────────────────────────┐  ││
+│  │  │              [NEW: Phase 2 Containers]                       │  ││
+│  │  │                                                              │  ││
+│  │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │  ││
+│  │  │  │ cache-      │  │ dependency- │  │ context-    │          │  ││
+│  │  │  │ manager.sh  │  │ guard.sh    │  │ layer.sh    │          │  ││
+│  │  │  │             │  │             │  │             │          │  ││
+│  │  │  │ L1内存+L2文件│  │ 循环检测    │  │ Commit分类   │          │  ││
+│  │  │  │ blob hash  │  │ 规则校验    │  │ Bug历史     │          │  ││
+│  │  │  └─────────────┘  └─────────────┘  └─────────────┘          │  ││
+│  │  │                                                              │  ││
+│  │  │  ┌─────────────┐                                            │  ││
+│  │  │  │ federation- │                                            │  ││
+│  │  │  │ lite.sh     │                                            │  ││
+│  │  │  │             │                                            │  ││
+│  │  │  │ 跨仓库契约   │                                            │  ││
+│  │  │  └─────────────┘                                            │  ││
+│  │  └──────────────────────────────────────────────────────────────┘  ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                               │                                          │
+│                               │ source                                   │
+│                               ▼                                          │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │                         Shared Layer                                ││
+│  │                                                                     ││
+│  │  ┌─────────────────────────┐    ┌─────────────────────────┐        ││
+│  │  │      common.sh          │    │     cache-utils.sh      │        ││
+│  │  │  (shared functions,     │    │  (caching utilities)    │        ││
+│  │  │   config, logging)      │    │  [被 cache-manager.sh   │        ││
+│  │  │  [ENHANCED: Phase 2]    │    │   调用，协作层]          │        ││
+│  │  └─────────────────────────┘    └─────────────────────────┘        ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │                      Config Layer [NEW: Phase 2]                    ││
+│  │                                                                     ││
+│  │  ┌─────────────────────────┐    ┌─────────────────────────┐        ││
+│  │  │  config/arch-rules.yaml │    │  config/federation.yaml │        ││
+│  │  │  (架构规则定义)          │    │  (联邦仓库配置)          │        ││
+│  │  └─────────────────────────┘    └─────────────────────────┘        ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Container Inventory
+
+| Container | 路径 | 类型 | 职责 | 技术栈 |
+|-----------|------|------|------|--------|
+| MCP Server | `src/server.ts` | Application | MCP 协议处理，工具调度 | TypeScript, Node.js |
+| Global Hook | `hooks/augment-context-global.sh` | Hook | 全局上下文注入，4 维意图分析 | Bash |
+| **Pre-commit Hook** | `hooks/pre-commit` | Hook | 架构规则校验 + 循环依赖检测 | Bash |
+| Embedding Search | `scripts/embedding.sh` | Script | 语义代码搜索 | Bash |
+| Call Chain | `scripts/call-chain.sh` | Script | 调用链追踪，数据流追踪 | Bash |
+| Bug Locator | `scripts/bug-locator.sh` | Script | Bug 位置定位（集成热点算法） | Bash |
+| Complexity | `scripts/complexity.sh` | Script | 圈复杂度分析 | Bash |
+| Graph-RAG | `scripts/graph-rag.sh` | Script | 子图检索，边界过滤 | Bash |
+| Indexer | `scripts/indexer.sh` | Script | Embedding 索引管理 | Bash |
+| Hotspot Analyzer | `scripts/hotspot-analyzer.sh` | Script | Frequency × Complexity 热点计算，**Phase 2: Bug 修复历史权重** | Bash |
+| Boundary Detector | `scripts/boundary-detector.sh` | Script | 用户/库/生成代码边界识别 | Bash |
+| Pattern Learner | `scripts/pattern-learner.sh` | Script | 语义模式学习与异常检测 | Bash |
+| AST Diff | `scripts/ast-diff.sh` | Script | SCIP 增量索引 | Bash |
+| **Cache Manager** | `scripts/cache-manager.sh` | Script | **多级缓存（L1 内存 + L2 文件）、mtime + blob hash 精确失效、LRU 淘汰** | Bash |
+| **Dependency Guard** | `scripts/dependency-guard.sh` | Script | **循环依赖检测（DFS）、架构规则校验、Pre-commit 集成** | Bash |
+| **Context Layer** | `scripts/context-layer.sh` | Script | **Commit 语义分类（fix/feat/refactor）、Bug 修复历史提取** | Bash |
+| **Federation Lite** | `scripts/federation-lite.sh` | Script | **跨仓库契约发现、符号提取、联邦索引管理** | Bash |
+| Common | `scripts/common.sh` | Shared | 共享函数、配置、日志，**Phase 2: 新增缓存共享函数** | Bash |
+| Cache Utils | `scripts/cache-utils.sh` | Shared | 缓存管理（L2 基础函数），**被 cache-manager.sh 调用** | Bash |
+| **Arch Rules Config** | `config/arch-rules.yaml` | Config | **架构规则定义（禁止导入、循环检测白名单）** | YAML |
+| **Federation Config** | `config/federation.yaml` | Config | **联邦仓库配置（显式路径 + 自动发现）** | YAML |
+| ***Graph Store*** | `scripts/graph-store.sh` | Script | ***SQLite 图存储，9 种边类型 CRUD，Schema v3 迁移，孤儿节点查询*** | Bash |
+| ***SCIP Parser*** | `scripts/scip-to-graph.sh` | Script | ***SCIP 索引解析，symbol_roles 映射，IMPLEMENTS/EXTENDS/RETURNS_TYPE 边类型提取，正则降级*** | Bash |
+| ***Daemon*** | `scripts/daemon.sh` | Script | ***常驻守护进程，Unix Socket 通信，自动预热，P95 < 500ms*** | Bash |
+| ***Features Config*** | `config/features.yaml` | Config | ***功能开关配置（LLM 重排序、孤儿检测、模式发现）*** | YAML |
+| ****AST Delta TS**** | `src/ast-delta.ts` | Module | ****TypeScript tree-sitter 解析薄壳，AST 差异计算**** | TypeScript |
+| ****AST Delta**** | `scripts/ast-delta.sh` | Script | ****增量 AST 解析协调，缓存管理，图更新触发**** | Bash |
+| ****Impact Analyzer**** | `scripts/impact-analyzer.sh` | Script | ****传递性影响分析，BFS 图遍历，置信度衰减**** | Bash |
+| ****COD Visualizer**** | `scripts/cod-visualizer.sh` | Script | ****架构可视化，Mermaid + D3.js JSON 输出**** | Bash |
+| ****Intent Learner**** | `scripts/intent-learner.sh` | Script | ****查询历史记录，偏好分数计算，90 天自动清理**** | Bash |
+| ****Vuln Tracker**** | `scripts/vuln-tracker.sh` | Script | ****npm audit 集成，漏洞扫描，依赖传播追踪**** | Bash |
+| *****ADR Parser***** | `scripts/adr-parser.sh` | Script | *****ADR 解析与关联，MADR/Nygard 格式支持，生成 ADR_RELATED 边***** | Bash |
+| *****GitHub Action***** | `.github/workflows/arch-check.yml` | CI/CD | *****PR 自动架构检查，循环依赖/孤儿模块/架构规则检测***** | YAML |
+| *****GitLab CI Template***** | `.gitlab-ci.yml.template` | CI/CD | *****GitLab MR 架构检查模板***** | YAML |
+| ******CKB Client Manager****** | `src/server.ts::CKBClientManager` | Component | ******CKB MCP 调用管理，健康检查，降级状态管理，60s 冷却期****** | TypeScript |
+| ******Fusion Search****** | `scripts/embedding.sh::fusion_search()` | Function | ******图+向量融合查询，1-hop 图扩展，Token 预算分配****** | Bash |
+
+**注**：粗体为 `augment-upgrade-phase2` 变更新增或增强的 Container。斜体粗体为 `augment-parity` 变更新增的 Container。四星粗体为 `achieve-augment-full-parity` 变更新增的 Container。五星粗体为 `augment-parity-final-gaps` 变更新增的 Container。六星粗体为 `upgrade-code-intelligence-capabilities` 变更新增的 Container。
+
+**augment-parity-final-gaps 增强的 Container**：
+| Container | 增强内容 |
+|-----------|----------|
+| `scripts/scip-to-graph.sh` | 边类型扩展：IMPLEMENTS/EXTENDS/RETURNS_TYPE/ADR_RELATED |
+| `scripts/graph-store.sh` | 新增 `find-path`（A-B 最短路径）、`migrate`（Schema 迁移） |
+| `scripts/intent-learner.sh` | 对话上下文持久化、会话管理、连续性加权 |
+| `scripts/daemon.sh` | 预热机制（warmup）、请求取消协议 |
+| `scripts/cache-manager.sh` | 子图 LRU 缓存（SQLite 持久化，跨进程共享） |
+| `scripts/bug-locator.sh` | 影响分析融合（--with-impact, --impact-depth） |
+| `hooks/augment-context-global.sh` | 5 层结构化上下文输出、DevBooks 适配注入 |
+| `scripts/common.sh` | 新增 detect_devbooks()、load_devbooks_context() |
+
+**upgrade-code-intelligence-capabilities 增强的 Container**：
+| Container | 增强内容 |

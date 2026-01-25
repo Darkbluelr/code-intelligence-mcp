@@ -1,0 +1,156 @@
+#!/bin/bash
+# codex-auto - Codex CLI wrapper with pre-prompt auto-tool orchestration
+#
+# This script is designed to be usable in:
+# - plan/dry-run mode (CI-safe, no external `codex` dependency)
+# - run mode (best-effort; degrades if `codex` is unavailable)
+
+set -euo pipefail
+
+VERSION="0.1.0"
+resolve_script_dir() {
+  local source="${BASH_SOURCE[0]}"
+  while [ -h "$source" ]; do
+    local dir
+    dir="$(cd -P "$(dirname "$source")" && pwd)"
+    source="$(readlink "$source")"
+    [[ "$source" != /* ]] && source="$dir/$source"
+  done
+  cd -P "$(dirname "$source")" && pwd
+}
+
+SCRIPT_DIR="$(resolve_script_dir)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+ORCH="${PROJECT_ROOT}/hooks/auto-tool-orchestrator.sh"
+
+MODE="${CI_AUTO_TOOLS_MODE:-run}"
+DRY_RUN="${CI_AUTO_TOOLS_DRY_RUN:-0}"
+SESSION_MODE="${CI_CODEX_SESSION_MODE:-resume_last}"
+
+show_help() {
+  cat <<EOF
+codex-auto - Codex CLI wrapper v${VERSION}
+
+Usage:
+  codex-auto [--mode plan|run] [--dry-run] [--session-mode resume_last|exec] [--exec] <prompt...>
+
+Options:
+  --mode <plan|run>            Default: \$CI_AUTO_TOOLS_MODE or run
+  --dry-run                    Sets CI_AUTO_TOOLS_DRY_RUN=1 (implies plan)
+  --session-mode <resume_last|exec>  Controls planned codex command (default: \$CI_CODEX_SESSION_MODE or resume_last)
+  --exec                       After printing JSON, attempt to run \`codex\` with injected context (best-effort)
+  --json                       Print orchestrator JSON only (default behavior)
+  --help                       Show help
+  --version                    Show version
+
+Notes:
+  - plan/dry-run never invokes external \`codex\`; it only prints orchestrator JSON.
+  - run mode will attempt to execute the planned codex command; if unavailable, it degrades to JSON-only.
+EOF
+}
+
+show_version() {
+  echo "codex-auto v${VERSION}"
+}
+
+OUTPUT_JSON_ONLY=true
+PROMPT_PARTS=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --help|-h)
+      show_help
+      exit 0
+      ;;
+    --version|-v)
+      show_version
+      exit 0
+      ;;
+    --mode)
+      MODE="${2:-run}"
+      shift 2
+      ;;
+    --dry-run)
+      DRY_RUN=1
+      MODE="plan"
+      shift
+      ;;
+    --session-mode)
+      SESSION_MODE="${2:-resume_last}"
+      shift 2
+      ;;
+    --json)
+      OUTPUT_JSON_ONLY=true
+      shift
+      ;;
+    --exec)
+      OUTPUT_JSON_ONLY=false
+      shift
+      ;;
+    *)
+      PROMPT_PARTS+=("$1")
+      shift
+      ;;
+  esac
+done
+
+PROMPT="${PROMPT_PARTS[*]:-}"
+if [[ -z "$PROMPT" ]]; then
+  echo "Error: prompt is required" >&2
+  show_help >&2
+  exit 1
+fi
+
+command -v jq >/dev/null 2>&1 || {
+  echo "Error: jq is required" >&2
+  exit 2
+}
+
+if [[ ! -x "$ORCH" ]]; then
+  echo "Error: orchestrator not found or not executable: $ORCH" >&2
+  exit 10
+fi
+
+INPUT_JSON="$(jq -n --arg p "$PROMPT" '{prompt:$p}')"
+
+ORCH_JSON="$(echo "$INPUT_JSON" | \
+  CI_ORCH_CLIENT_NAME="codex-cli" CI_ORCH_CLIENT_EVENT="cli" \
+  CI_AUTO_TOOLS_MODE="$MODE" CI_AUTO_TOOLS_DRY_RUN="$DRY_RUN" \
+  CI_CODEX_SESSION_MODE="$SESSION_MODE" \
+  "$ORCH")"
+
+echo "$ORCH_JSON"
+
+if [[ "$OUTPUT_JSON_ONLY" == true ]]; then
+  exit 0
+fi
+
+# Best-effort run mode (kept minimal; may be extended later)
+if [[ "$MODE" == "plan" || "$DRY_RUN" == "1" ]]; then
+  exit 0
+fi
+
+if ! command -v codex >/dev/null 2>&1; then
+  # Degrade: JSON already printed
+  exit 40
+fi
+
+PLANNED="$(echo "$ORCH_JSON" | jq -r '.tool_plan.planned_codex_command // "codex exec"')"
+ADD_CTX="$(echo "$ORCH_JSON" | jq -r '.fused_context.for_model.additional_context // ""')"
+
+if [[ -n "$ADD_CTX" ]]; then
+  PROMPT="${PROMPT}"$'\n\n'"${ADD_CTX}"
+fi
+
+case "$PLANNED" in
+  "codex exec resume --last")
+    codex exec resume --last -- "$PROMPT"
+    ;;
+  "codex exec")
+    codex exec -- "$PROMPT"
+    ;;
+  *)
+    codex exec -- "$PROMPT"
+    ;;
+esac

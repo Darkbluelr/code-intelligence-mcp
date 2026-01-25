@@ -1,0 +1,1356 @@
+demo/demo-context-injection.sh:66:        "refactor the search logic to improve performance"
+src/server.ts:87:    description: "Analyze code complexity metrics (cyclomatic complexity, lines of code, etc.). Use this to identify complex code that may need refactoring. Best for: code quality assessment, finding technical debt, prioritizing refactoring.",
+src/server.ts:123:          description: "Action to perform: status (check index status), build (rebuild embedding index), clear (clean embedding cache). Default: status",
+src/server.ts:231:          enum: ["update", "batch", "status", "clear-cache"],
+src/server.ts:232:          description: "Action to perform: update (single file), batch (multiple files), status, clear-cache",
+src/server.ts:366:    name: "ci_warmup",
+src/server.ts:367:    description: "Pre-warm daemon caches for hot subgraphs. Uses daemon warmup pipeline to reduce cold-start latency.",
+src/server.ts:372:        hotspot_limit: { type: "number", description: "Number of hotspot files to cache (default: 10)" },
+src/server.ts:373:        queries: { type: "string", description: "Comma-separated warmup query list" },
+src/server.ts:379:        async: { type: "boolean", description: "Run warmup in background" },
+src/server.ts:402:        cache: { type: "boolean", description: "Enable cache" },
+src/server.ts:450:    name: "ci_benchmark",
+src/server.ts:451:    description: "Run performance benchmarks or compare benchmark reports.",
+src/server.ts:457:          enum: ["dataset", "compare", "cache", "full", "precommit", "all"],
+src/server.ts:458:          description: "Action to perform: dataset/compare or legacy cache/full/precommit/all",
+tests/keystroke-cancel.bats:13:    export METRICS_LOG="${TEMP_DIR}/metrics.log"
+tests/keystroke-cancel.bats:27:@test "T-KC-001: Single process cancel latency < 10ms (P95)" {
+tests/keystroke-cancel.bats:38:        cancel_token=$(echo "$result" | jq -r '.cancel_token')
+tests/keystroke-cancel.bats:49:        latency=$(( (end - start) / 1000000 ))  # 转换为毫秒
+tests/keystroke-cancel.bats:50:        latencies+=($latency)
+tests/keystroke-cancel.bats:58:    echo "P95 latency: ${p95}ms"
+tests/keystroke-cancel.bats:118:    latency=$(( (end - start) / 1000000 ))
+tests/keystroke-cancel.bats:119:    echo "Cancel propagation latency: ${latency}ms"
+tests/keystroke-cancel.bats:127:    [ "$latency" -lt 15 ]
+tests/keystroke-cancel.bats:166:@test "T-KC-007: Cancel token lifecycle is properly managed" {
+tests/keystroke-cancel.bats:174:    cancel_token=$(echo "$result" | jq -r '.cancel_token')
+tests/keystroke-cancel.bats:177:    [ -e "$cancel_token" ]
+tests/keystroke-cancel.bats:185:    [ ! -e "$cancel_token" ]
+tests/keystroke-cancel.bats:220:    latency=$(( (end - start) / 1000000 ))
+tests/keystroke-cancel.bats:221:    echo "Concurrent cancel latency: ${latency}ms"
+tests/keystroke-cancel.bats:230:    [ "$latency" -lt 15 ]
+tests/keystroke-cancel.bats:298:@test "T-PERF-KC-001: Cancel latency P95 < 10ms (hot), < 50ms (cold)" {
+tests/keystroke-cancel.bats:309:    cold_latency=$(( (cold_end - cold_start) / 1000000 ))
+tests/keystroke-cancel.bats:311:    echo "Cold start latency: ${cold_latency}ms"
+tests/keystroke-cancel.bats:312:    [ "$cold_latency" -lt 50 ]
+tests/keystroke-cancel.bats:324:        latency=$(( (end - start) / 1000000 ))
+tests/keystroke-cancel.bats:325:        hot_latencies+=($latency)
+tests/keystroke-cancel.bats:332:    echo "Hot start P95 latency: ${p95}ms"
+scripts/call-chain-dataflow.sh:359:  local cached_value=""
+scripts/call-chain-dataflow.sh:361:    cached_value=$(echo "$DATA_FLOW_SYMBOL_INDEX" | jq -r --arg s "$symbol" '.[$s] // empty')
+scripts/call-chain-dataflow.sh:362:    if [ -n "$cached_value" ]; then
+scripts/call-chain-dataflow.sh:363:      echo "$cached_value"
+scripts/call-chain-dataflow.sh:571:# Build a single linear data-flow path for performance.
+src/ast-delta.ts:118:let cachedParser: TreeSitterParser | null = null;
+src/ast-delta.ts:151:  if (cachedParser) {
+src/ast-delta.ts:152:    return cachedParser;
+src/ast-delta.ts:168:    cachedParser = parser;
+src/tool-handlers.ts:287:    case "clear-cache":
+src/tool-handlers.ts:288:      scriptArgs.push("clear-cache");
+src/tool-handlers.ts:503:  const scriptArgs: string[] = ["warmup", "--format", format];
+src/tool-handlers.ts:531:  const cache = validateBoolean(args.cache, 'cache', false);
+src/tool-handlers.ts:540:  if (cache) {
+src/tool-handlers.ts:541:    scriptArgs.push("--cache");
+src/tool-handlers.ts:683:    case "cache":
+src/tool-handlers.ts:684:      scriptArgs.push("--cache");
+src/tool-handlers.ts:706:  const { stdout, stderr } = await runScript("benchmark.sh", scriptArgs);
+src/tool-handlers.ts:729:  ci_warmup: handleCiWarmup,
+src/tool-handlers.ts:733:  ci_benchmark: handleCiBenchmark,
+tests/ast-delta.bats:31:    export AST_CACHE_DIR="$TEST_TEMP_DIR/.ast-cache"
+tests/ast-delta.bats:97:# Usage: create_ast_cache <file_path> [version_stamp]
+tests/ast-delta.bats:98:create_ast_cache() {
+tests/ast-delta.bats:101:    local cache_file="$AST_CACHE_DIR/$(echo "$file_path" | tr '/' '_').ast"
+tests/ast-delta.bats:103:    cat > "$cache_file" << EOF
+tests/ast-delta.bats:115:    echo "$cache_file"
+tests/ast-delta.bats:155:    sqlite3 "$GRAPH_DB_PATH" "INSERT OR REPLACE INTO metadata (key, value) VALUES ('ast_cache_version', '$version');"
+tests/ast-delta.bats:191:    create_ast_cache "$test_file" "v1.0"
+tests/ast-delta.bats:216:    create_ast_cache "$test_file" "v1.0"
+tests/ast-delta.bats:256:        create_ast_cache "$TEST_REPO_DIR/src/module$i.ts" "v1.0"
+tests/ast-delta.bats:308:@test "T-AD-003: ast-delta triggers full rebuild when cache version mismatch" {
+tests/ast-delta.bats:314:    create_ast_cache "$test_file" "v2.0"  # 版本不匹配
+tests/ast-delta.bats:322:    skip_if_not_ready "$status" "$output" "ast-delta.sh update (cache mismatch)"
+tests/ast-delta.bats:328:    assert_contains_any "$output" "FULL_REBUILD" "full_rebuild" "cache invalidated" "rebuilding" "FALLBACK" "fallback"
+tests/ast-delta.bats:332:@test "T-AD-003b: ast-delta triggers rebuild when cache missing" {
+tests/ast-delta.bats:342:    skip_if_not_ready "$status" "$output" "ast-delta.sh update (no cache)"
+tests/ast-delta.bats:465:@test "T-AD-006: ast-delta single file update P95 latency <= 120ms" {
+tests/ast-delta.bats:472:    create_ast_cache "$test_file" "v1.0"
+tests/ast-delta.bats:476:    skip_if_not_ready "$status" "$output" "ast-delta.sh update (warmup)"
+tests/ast-delta.bats:493:    echo "  P95 latency: ${p95}ms"
+tests/ast-delta.bats:510:    create_ast_cache "$test_file" "v1.0"
+tests/ast-delta.bats:514:    skip_if_not_ready "$status" "$output" "ast-delta.sh (speed warmup)"
+tests/ast-delta.bats:593:    create_ast_cache "$test_file" "v1.0"
+tests/ast-delta.bats:629:        create_ast_cache "$TEST_REPO_DIR/src/concurrent$i.ts" "v1.0"
+scripts/ast-delta.sh:12:#   clear-cache            - 清理 AST 缓存
+scripts/ast-delta.sh:38:: "${AST_CACHE_DIR:=$DEVBOOKS_DIR/ast-cache}"
+scripts/ast-delta.sh:99:get_cache_path() {
+scripts/ast-delta.sh:181:    sqlite3 "$GRAPH_DB_PATH" "SELECT value FROM metadata WHERE key = 'ast_cache_version';" 2>/dev/null || echo ""
+scripts/ast-delta.sh:195:    sqlite3 "$GRAPH_DB_PATH" "INSERT OR REPLACE INTO metadata (key, value) VALUES ('ast_cache_version', '$version');" 2>/dev/null
+scripts/ast-delta.sh:222:atomic_write_cache() {
+scripts/ast-delta.sh:225:    local cache_file
+scripts/ast-delta.sh:226:    cache_file=$(get_cache_path "$file_path")
+scripts/ast-delta.sh:227:    local tmp_file="$cache_file.tmp.$$"
+scripts/ast-delta.sh:230:    mkdir -p "$(dirname "$cache_file")"
+scripts/ast-delta.sh:242:    mv "$tmp_file" "$cache_file"
+scripts/ast-delta.sh:368:    local cache_version
+scripts/ast-delta.sh:369:    cache_version=$(cat "$VERSION_STAMP_FILE" 2>/dev/null | grep -o '"timestamp"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
+scripts/ast-delta.sh:374:    if [[ -n "$db_version" ]] && [[ "$cache_version" != "$db_version" ]]; then
+scripts/ast-delta.sh:466:    # 内联 cache_path 计算以避免子进程开销
+scripts/ast-delta.sh:468:    local cache_file="$AST_CACHE_DIR/${file_path//\//_}.ast"
+scripts/ast-delta.sh:469:    if [[ "$force_rebuild" != "true" ]] && [[ -f "$cache_file" ]] && ! [[ "$file_path" -nt "$cache_file" ]]; then
+scripts/ast-delta.sh:471:        local cache_version_ok=true
+scripts/ast-delta.sh:473:            local cache_ts db_ts
+scripts/ast-delta.sh:474:            cache_ts=$(grep -o '"timestamp"[[:space:]]*:[[:space:]]*"[^"]*"' "$VERSION_STAMP_FILE" 2>/dev/null | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
+scripts/ast-delta.sh:475:            db_ts=$(sqlite3 "$GRAPH_DB_PATH" "SELECT value FROM metadata WHERE key = 'ast_cache_version';" 2>/dev/null || echo "")
+scripts/ast-delta.sh:476:            if [[ -n "$db_ts" ]] && [[ "$cache_ts" != "$db_ts" ]]; then
+scripts/ast-delta.sh:477:                cache_version_ok=false
+scripts/ast-delta.sh:481:        if [[ "$cache_version_ok" == "true" ]]; then
+scripts/ast-delta.sh:483:            echo "{\"status\":\"success\",\"mode\":\"cache_hit\",\"state\":\"CACHE_HIT\",\"file\":\"$file_path\"}"
+scripts/ast-delta.sh:509:            local cache_file
+scripts/ast-delta.sh:510:            cache_file=$(get_cache_path "$file_path")
+scripts/ast-delta.sh:511:            if [[ -f "$cache_file" ]] && ! [[ "$file_path" -nt "$cache_file" ]]; then
+scripts/ast-delta.sh:513:                mode="cache_hit"
+scripts/ast-delta.sh:514:                ast_json=$(cat "$cache_file")
+scripts/ast-delta.sh:528:            log_info "FULL_REBUILD: cache invalidated or missing"
+scripts/ast-delta.sh:542:            local cache_file_fb
+scripts/ast-delta.sh:543:            cache_file_fb=$(get_cache_path "$file_path")
+scripts/ast-delta.sh:544:            if [[ -f "$cache_file_fb" ]] && ! [[ "$file_path" -nt "$cache_file_fb" ]]; then
+scripts/ast-delta.sh:546:                mode="cache_hit"
+scripts/ast-delta.sh:547:                ast_json=$(cat "$cache_file_fb")
+scripts/ast-delta.sh:556:    if [[ "$mode" != "cache_hit" ]]; then
+scripts/ast-delta.sh:559:            atomic_write_cache "$file_path" "$ast_json"
+scripts/ast-delta.sh:710:    local cache_file_count
+scripts/ast-delta.sh:711:    cache_file_count=$(find "$AST_CACHE_DIR" -name "*.ast" 2>/dev/null | wc -l | tr -d ' ')
+scripts/ast-delta.sh:713:    local cache_size_kb
+scripts/ast-delta.sh:714:    cache_size_kb=$(du -sk "$AST_CACHE_DIR" 2>/dev/null | cut -f1 || echo "0")
+scripts/ast-delta.sh:730:    "cache_dir": "$AST_CACHE_DIR",
+scripts/ast-delta.sh:731:    "cache_file_count": $cache_file_count,
+scripts/ast-delta.sh:732:    "cache_size_kb": $cache_size_kb,
+scripts/ast-delta.sh:733:    "cache_max_size_mb": $AST_CACHE_MAX_SIZE_MB,
+scripts/ast-delta.sh:743:# ==================== 命令: clear-cache ====================
+scripts/ast-delta.sh:745:cmd_clear_cache() {
+scripts/ast-delta.sh:748:    log_info "Clearing AST cache..."
+scripts/ast-delta.sh:758:    log_ok "Cleared $file_count cache files"
+scripts/ast-delta.sh:775:    clear-cache            清理 AST 缓存
+scripts/ast-delta.sh:785:    AST_CACHE_DIR          AST 缓存目录（默认: .devbooks/ast-cache）
+scripts/ast-delta.sh:809:    ast-delta.sh clear-cache
+scripts/ast-delta.sh:829:        clear-cache)
+scripts/ast-delta.sh:830:            cmd_clear_cache "$@"
+scripts/show-context.sh:37:    grep -vE 'node_modules|dist|build|\.lock|\.md$|__pycache__|\.pyc$' | \
+docs/Augment.md:7:在企业级开发环境中，代码库规模往往超过 40 万个文件 1。传统的“长上下文窗口”策略，即使是达到 20 万甚至 100 万 token 的规模，在面对如此体量时也会陷入“上下文窗口错觉”（Context Window Illusion）2。这种策略只能提供系统的“管中窥豹”视图，无法感知微服务变更对远端前端组件的蝴蝶效应。Augment Code 的技术突破在于，它不再试图将整个代码库“塞入”模型的有限窗口中，而是通过工程化的手段，构建了一个确定性的、基于图论的代码库拓扑理解系统。这个“通用代码图谱”精确映射了代码中的语义关系——导入、函数调用、类继承、API 契约等——从而使系统能够将代码库视为一个连通的图（Graph），而非一堆离散的文本文件 3。
+docs/Augment.md:19:行业内目前普遍存在一种误解，认为只要扩大 LLM 的“上下文窗口”（Context Window），就能解决代码理解问题。虽然窗口大小已从 4k 扩展至 200k+ token，但这种线性扩展在面对指数级增长的软件复杂度时，存在根本性的物理与数学局限。
+docs/Augment.md:21:- **Token 的数学极限：** 一个典型的企业级代码库可能包含 40 万个文件。若按每个文件平均 100 个 token（这是一个极其保守的估计）计算，仅文件头部的导入和声明就已超过数千万 token。即使是目前最先进的 100 万 token 窗口，也仅能捕获大型企业仓库不到 1% 的内容 2。这意味着，单纯依赖窗口大小，模型对代码库的认知永远是碎片化的。
+docs/Augment.md:177:4. **重排序（Re-ranking）：** 初步检索可能会返回数百个候选片段。Augment 使用专门的重排序模型（通常是基于“LLM-as-a-judge”的集成策略）来筛选最相关的 20k-200k token 10。这一步至关重要，它过滤掉了同名异义词（Homonyms）——即名字相同但功能不同的函数——并确保只有严格相关的上下文被送入生成模型 7。
+docs/Augment.md:358:Augment 选择构建定制推理堆栈也是出于经济考量。为每一次击键运行 200k 上下文的 Prompt 在成本上是不可持续的。通过利用 UCG 精选出高度相关的 4k-8k token 上下文，他们不仅提高了相关性，还显著降低了单次请求的计算成本。上下文引擎实际上充当了一个**智能压缩算法**，将 1GB 的代码库压缩为 10KB 的 Prompt，同时保留了任务所需的全部关键语义信息。
+docs/Augment.md:377:| 延迟优化 | Daemon 预热机制 | ✅ | `scripts/daemon.sh warmup` |
+docs/Augment.md:379:| 延迟优化 | 子图 LRU 缓存 | ✅ | `scripts/cache-manager.sh` |
+docs/Augment.md:406:- **预热机制**：`daemon.sh warmup` 预加载热点子图和常用符号
+docs/Augment.md:422:  warmup:
+docs/Augment.md:440:| `.devbooks/subgraph-cache.db` | 子图 LRU 缓存 |
+tests/regression.bats:2:# regression.bats - Backward Compatibility Regression Tests
+tests/regression.bats:6:# Run: bats tests/regression.bats
+tests/regression.bats:23:# Build cache file path - use fixed name based on test file (not $$)
+tests/regression.bats:25:_get_build_cache_file() {
+tests/regression.bats:26:    local cache_dir
+tests/regression.bats:28:        cache_dir="$BATS_FILE_TMPDIR"
+tests/regression.bats:30:        cache_dir="$TMPDIR"
+tests/regression.bats:32:        cache_dir="/tmp"
+tests/regression.bats:34:        cache_dir="${BATS_TEST_DIRNAME:-.}"
+tests/regression.bats:36:    echo "${cache_dir}/.regression-build-cache"
+tests/regression.bats:41:    local cache_file
+tests/regression.bats:42:    cache_file="$(_get_build_cache_file)"
+tests/regression.bats:44:    # Run build once and cache results
+tests/regression.bats:48:        npm run build > "$cache_file" 2>&1
+tests/regression.bats:49:        echo "$?" >> "$cache_file"
+tests/regression.bats:55:    local cache_file
+tests/regression.bats:56:    cache_file="$(_get_build_cache_file)"
+tests/regression.bats:57:    rm -f "$cache_file" 2>/dev/null || true
+tests/regression.bats:60:# Get cached build output and status
+tests/regression.bats:62:    local cache_file
+tests/regression.bats:63:    cache_file="$(_get_build_cache_file)"
+tests/regression.bats:64:    if [ -f "$cache_file" ]; then
+tests/regression.bats:66:        BUILD_STATUS=$(tail -1 "$cache_file")
+tests/regression.bats:68:        BUILD_OUTPUT=$(sed '$d' "$cache_file")
+tests/regression.bats:71:        BUILD_OUTPUT="Build cache not available"
+tests/regression.bats:204:@test "CT-REG-SCRIPT-002: cache-utils.sh still sources correctly" {
+tests/regression.bats:205:    local script="./scripts/cache-utils.sh"
+tests/regression.bats:206:    [ -f "$script" ] || skip "cache-utils.sh not found"
+tests/graph-store.bats:976:# @test test_closure_table_performance: 使用闭包表查询多跳路径的 P95 延迟 < 200ms
+tests/graph-store.bats:977:@test "test_closure_table_performance: closure table multi-hop path query P95 latency < 200ms" {
+tests/graph-store.bats:1086:        local latency_ms
+tests/graph-store.bats:1087:        latency_ms=$(( (end_ms - start_ms) / 1000000 ))
+tests/graph-store.bats:1088:        latencies+=("$latency_ms")
+tests/graph-store.bats:1092:    local p95_latency
+tests/graph-store.bats:1093:    p95_latency=$(calculate_p95 "${latencies[@]}")
+tests/graph-store.bats:1095:    echo "# P95 latency: ${p95_latency}ms (threshold: 200ms)" >&3
+tests/graph-store.bats:1098:    if [ -z "$p95_latency" ] || [ "$p95_latency" -eq 0 ]; then
+tests/graph-store.bats:1102:    if [ "$p95_latency" -ge 200 ]; then
+tests/graph-store.bats:1103:        fail "P95 延迟 (${p95_latency}ms) 超过阈值 (200ms)"
+tests/data-flow-tracing.bats:19:FIXTURE_DIR="${PROJECT_ROOT}/tests/fixtures/performance/data-flow"
+tests/data-flow-tracing.bats:47:warmup_data_flow() {
+tests/data-flow-tracing.bats:289:@test "PERF-DFT-001: single hop latency within threshold" {
+tests/data-flow-tracing.bats:293:    warmup_data_flow "entry" "both" 1
+tests/data-flow-tracing.bats:310:    [ "$p95" -lt "$threshold" ] || fail "P95 latency ${p95}ms exceeds ${threshold}ms"
+tests/data-flow-tracing.bats:318:    warmup_data_flow "entry" "both" 5
+docs/augment-gap-report.md:60:| 缓存与预热 | 已具备 | `scripts/cache-manager.sh`, `scripts/daemon.sh` | 子图缓存与 warmup 已实现。 |
+scripts/indexer.sh:67:IGNORE_PATTERNS="node_modules|dist|build|\.git|__pycache__|\.lock"
+scripts/indexer.sh:115:clear_ast_cache() {
+scripts/indexer.sh:116:    local cache_dir="${DEVBOOKS_DIR:-.devbooks}/ast-cache"
+scripts/indexer.sh:117:    if [[ -d "$cache_dir" ]]; then
+scripts/indexer.sh:118:        rm -rf "$cache_dir"/*
+scripts/indexer.sh:161:    local cache_version db_version
+scripts/indexer.sh:162:    cache_version=$(read_version_stamp "$VERSION_STAMP_FILE")
+scripts/indexer.sh:165:    if [[ -n "$cache_version" && -n "$db_version" && "$cache_version" != "$db_version" ]]; then
+scripts/indexer.sh:166:        clear_ast_cache
+scripts/indexer.sh:168:        DISPATCH_REASON="cache_version_mismatch"
+scripts/indexer.sh:283:    clear_ast_cache
+scripts/indexer.sh:567:    local cache_version db_version version_match
+scripts/indexer.sh:568:    cache_version=$(read_version_stamp "$VERSION_STAMP_FILE")
+scripts/indexer.sh:570:    if [[ -n "$cache_version" && "$cache_version" == "$db_version" ]]; then
+scripts/indexer.sh:572:    elif [[ -z "$cache_version" && -z "$db_version" ]]; then
+scripts/indexer.sh:583:            --arg cache_version "${cache_version:-null}" \
+scripts/indexer.sh:589:                    cache: $cache_version,
+scripts/indexer.sh:605:        echo "    缓存: ${cache_version:-未设置}"
+tests/adr-parser.bats:112:Use SQLite with WAL mode for subgraph-cache.db.
+scripts/boundary-detector.sh:125:  "__pycache__/**|generated|0.99|Python缓存"
+scripts/bug-locator.sh:83:CACHE_MANAGER="${SCRIPT_DIR}/cache-manager.sh"
+scripts/bug-locator.sh:521:    grep -vE 'node_modules|dist|build|\.lock|\.md$|\.json$|__pycache__|\.pyc$' | \
+scripts/bug-locator.sh:723:_compute_bug_locator_cache_key() {
+scripts/bug-locator.sh:742:# 选择一个存在的缓存锚点文件（用于 cache-manager 校验）
+scripts/bug-locator.sh:743:_resolve_bug_locator_cache_anchor() {
+scripts/bug-locator.sh:764:_get_cached_bug_result() {
+scripts/bug-locator.sh:777:  # 使用真实文件作为缓存锚点，避免 cache-manager 直接 miss
+scripts/bug-locator.sh:778:  local cache_anchor
+scripts/bug-locator.sh:779:  cache_anchor=$(_resolve_bug_locator_cache_anchor "$CWD") || return 1
+scripts/bug-locator.sh:781:  local cache_result
+scripts/bug-locator.sh:782:  cache_result=$("$CACHE_MANAGER" --get "$cache_anchor" --query "$query_hash" 2>/dev/null)
+scripts/bug-locator.sh:784:  if [[ -n "$cache_result" ]] && echo "$cache_result" | jq -e '.candidates' &>/dev/null; then
+scripts/bug-locator.sh:786:    echo "$cache_result"
+scripts/bug-locator.sh:794:_set_cached_bug_result() {
+scripts/bug-locator.sh:808:  local cache_anchor
+scripts/bug-locator.sh:809:  cache_anchor=$(_resolve_bug_locator_cache_anchor "$CWD") || return 0
+scripts/bug-locator.sh:812:  "$CACHE_MANAGER" --set "$cache_anchor" --query "$query_hash" --value "$result" 2>/dev/null || true
+scripts/bug-locator.sh:822:  query_hash=$(_compute_bug_locator_cache_key "$error")
+scripts/bug-locator.sh:824:  local cached_result
+scripts/bug-locator.sh:825:  if cached_result=$(_get_cached_bug_result "$query_hash"); then
+scripts/bug-locator.sh:826:    echo "$cached_result"
+scripts/bug-locator.sh:899:  _set_cached_bug_result "$query_hash" "$result"
+scripts/bug-locator.sh:908:_compute_impact_cache_key() {
+scripts/bug-locator.sh:946:  local cache_key
+scripts/bug-locator.sh:947:  cache_key=$(_compute_impact_cache_key "$analysis_target" "$depth")
+scripts/bug-locator.sh:950:    local cached_result
+scripts/bug-locator.sh:951:    cached_result=$("$CACHE_MANAGER" cache-get "$cache_key" 2>/dev/null) || true
+scripts/bug-locator.sh:953:    if [[ -n "$cached_result" ]] && echo "$cached_result" | jq -e '.' >/dev/null 2>&1; then
+scripts/bug-locator.sh:954:      _maybe_log_info "影响分析缓存命中 (key=${cache_key:0:30}...)"
+scripts/bug-locator.sh:955:      echo "$cached_result"
+scripts/bug-locator.sh:1002:    "$CACHE_MANAGER" cache-set "$cache_key" "$impact_result" 2>/dev/null &
+tests/drift-detector.bats:138:    "metrics": {
+tests/drift-detector.bats:149:    "metrics": {
+tests/drift-detector.bats:182:    jq -e 'has("metrics")' "$SNAPSHOTS_DIR/new.json"
+tests/drift-detector.bats:183:    jq -e '.metrics | has("total_coupling")' "$SNAPSHOTS_DIR/new.json"
+tests/drift-detector.bats:184:    jq -e '.metrics | has("dependency_violations")' "$SNAPSHOTS_DIR/new.json"
+tests/drift-detector.bats:262:    "metrics": {
+tests/drift-detector.bats:279:    "metrics": {
+tests/drift-detector.bats:334:    jq -e 'has("metrics")' "$SNAPSHOTS_DIR/baseline.json"
+tests/drift-detector.bats:335:    jq -e '.metrics.total_coupling >= 0' "$SNAPSHOTS_DIR/baseline.json"
+tests/drift-detector.bats:356:        "$DRIFT_DETECTOR_SCRIPT" --snapshot "$TEMP_DIR/project" --output "$SNAPSHOTS_DIR/warmup-$i.json" >/dev/null 2>&1 || \
+tests/pattern-learner.bats:736:@test "CT-PD-005: decay performance - 1000 patterns under 100ms" {
+tests/pattern-learner.bats:780:    skip_if_not_ready "$status" "$output" "decay performance"
+tests/cache-manager.bats:2:# cache-manager.bats - Cache Manager Contract Tests
+tests/cache-manager.bats:4:# Purpose: Verify multi-level cache (L1/L2) with mtime + blob hash invalidation
+tests/cache-manager.bats:6:# Run: bats tests/cache-manager.bats
+tests/cache-manager.bats:17:CACHE_MANAGER="${PROJECT_ROOT}/scripts/cache-manager.sh"
+tests/cache-manager.bats:25:    # Create isolated cache directory for each test
+tests/cache-manager.bats:31:    export SUBGRAPH_CACHE_DB="$DEVBOOKS_DIR/subgraph-cache.db"
+tests/cache-manager.bats:44:@test "CT-CACHE-BASE-001: cache-manager.sh exists and is executable" {
+tests/cache-manager.bats:45:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:49:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:52:    [[ "$output" == *"cache"* ]] || [[ "$output" == *"Cache"* ]]
+tests/cache-manager.bats:57:# AC-002: L1 memory cache hit
+tests/cache-manager.bats:60:@test "CT-CACHE-001: L1 cache hit returns result in < 10ms" {
+tests/cache-manager.bats:61:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:67:    # First query - populate cache
+tests/cache-manager.bats:69:    [ "$status" -eq 0 ] || skip "cache-manager.sh get not yet implemented"
+tests/cache-manager.bats:81:        [ "$elapsed_ms" -lt 10 ] || skip "L1 hit latency ${elapsed_ms}ms > 10ms"
+tests/cache-manager.bats:86:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:93:    [ "$status" -eq 0 ] || skip "cache-manager.sh get not yet implemented"
+tests/cache-manager.bats:115:# AC-003: L2 file cache hit
+tests/cache-manager.bats:118:@test "CT-CACHE-002: L2 cache hit returns result in < 100ms" {
+tests/cache-manager.bats:119:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:124:    # First query - populate L2 cache
+tests/cache-manager.bats:126:    [ "$status" -eq 0 ] || skip "cache-manager.sh get not yet implemented"
+tests/cache-manager.bats:128:    # Clear L1 cache (simulate new session)
+tests/cache-manager.bats:137:    [ "$MEASURED_TIME_MS" -lt 100 ] || skip "L2 hit latency ${MEASURED_TIME_MS}ms > 100ms"
+tests/cache-manager.bats:141:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:148:    [ "$status" -eq 0 ] || skip "cache-manager.sh get not yet implemented"
+tests/cache-manager.bats:160:@test "CT-CACHE-003a: mtime change invalidates cache" {
+tests/cache-manager.bats:161:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:166:    # First query - set cache with known value
+tests/cache-manager.bats:167:    run "$CACHE_MANAGER" --set "$test_file" --query "test_query" --value "cached_value_1"
+tests/cache-manager.bats:168:    [ "$status" -eq 0 ] || skip "cache-manager.sh set not yet implemented"
+tests/cache-manager.bats:170:    # Verify cache hit returns the cached value
+tests/cache-manager.bats:172:    [ "$status" -eq 0 ] || skip "cache-manager.sh get not yet implemented"
+tests/cache-manager.bats:179:    # Second query - cache should be invalidated
+tests/cache-manager.bats:183:    # 1. Return cache miss (status != 0 or empty output)
+tests/cache-manager.bats:184:    # 2. Return different result if cache-manager recalculates
+tests/cache-manager.bats:191:    # If status != 0 or empty output, cache was correctly invalidated
+tests/cache-manager.bats:194:@test "CT-CACHE-003b: blob hash change invalidates cache (mtime spoofed)" {
+tests/cache-manager.bats:195:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:209:    [ "$status" -eq 0 ] || { cd - > /dev/null; skip "cache-manager.sh get not yet implemented"; }
+tests/cache-manager.bats:226:    # If blob hash is checked, cache should be invalidated
+tests/cache-manager.bats:233:@test "CT-CACHE-004: mtime change < 1s skips cache" {
+tests/cache-manager.bats:234:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:241:    [ "$status" -eq 0 ] || skip "cache-manager.sh get not yet implemented"
+tests/cache-manager.bats:246:    # Second query - should skip cache (file may be writing)
+tests/cache-manager.bats:260:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:282:    # Verify at least one cache entry was created
+tests/cache-manager.bats:283:    local cache_files
+tests/cache-manager.bats:284:    cache_files=$(find "$TEST_CACHE_DIR/l2" -name "*.json" 2>/dev/null | wc -l | tr -d ' ')
+tests/cache-manager.bats:285:    [ "${cache_files:-0}" -ge 1 ] || skip "No cache files created"
+tests/cache-manager.bats:292:            echo "Corrupted cache file: $f" >&2
+tests/cache-manager.bats:298:    [ "$corrupted" -eq 0 ] || { echo "Found $corrupted corrupted cache files" >&2; return 1; }
+tests/cache-manager.bats:307:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:309:    # Set very low cache limit
+tests/cache-manager.bats:312:    # Create many small cache entries
+tests/cache-manager.bats:320:    local cache_size_kb=$(du -sk "$TEST_CACHE_DIR/l2" 2>/dev/null | cut -f1 || echo "0")
+tests/cache-manager.bats:323:    [ "$cache_size_kb" -lt 1024 ] || skip "LRU eviction did not occur (${cache_size_kb}KB > 1024KB)"
+tests/cache-manager.bats:326:@test "CT-CACHE-006b: cache size stays under CACHE_MAX_SIZE_MB" {
+tests/cache-manager.bats:327:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:331:    # The cache should never exceed the limit
+tests/cache-manager.bats:347:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:367:@test "CT-CACHE-008: incompatible schema version invalidates cache" {
+tests/cache-manager.bats:368:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:376:    [ "$status" -eq 0 ] || skip "cache-manager.sh get not yet implemented"
+tests/cache-manager.bats:378:    # Find and modify cache entry schema version
+tests/cache-manager.bats:379:    local cache_file=$(find "$TEST_CACHE_DIR/l2" -name "*.json" -print -quit 2>/dev/null)
+tests/cache-manager.bats:380:    if [ -f "$cache_file" ]; then
+tests/cache-manager.bats:382:        jq '.schema_version = "0.0.1"' "$cache_file" > "${cache_file}.tmp" && mv "${cache_file}.tmp" "$cache_file"
+tests/cache-manager.bats:392:        skip "No cache file found"
+tests/cache-manager.bats:400:@test "CT-CACHE-FORMAT-001: cache entry JSON has required fields" {
+tests/cache-manager.bats:401:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:410:    local cache_file=$(find "$TEST_CACHE_DIR/l2" -name "*.json" -print -quit 2>/dev/null)
+tests/cache-manager.bats:411:    [ -f "$cache_file" ] || skip "No cache file created"
+tests/cache-manager.bats:414:    local content=$(cat "$cache_file")
+tests/cache-manager.bats:429:@test "test_lru_persistence: cache-manager uses sqlite persistence for subgraph cache" {
+tests/cache-manager.bats:430:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:433:    run "$CACHE_MANAGER" cache-set "key1" "value1"
+tests/cache-manager.bats:434:    skip_if_not_ready "$status" "$output" "cache-manager.sh cache-set"
+tests/cache-manager.bats:437:        skip_not_implemented "subgraph cache database not created"
+tests/cache-manager.bats:443:        skip_not_implemented "subgraph cache WAL mode"
+tests/cache-manager.bats:447:    run sqlite3 "$SUBGRAPH_CACHE_DB" ".schema subgraph_cache"
+tests/cache-manager.bats:449:        skip_not_implemented "subgraph_cache table not found"
+tests/cache-manager.bats:456:        skip_not_implemented "subgraph_cache table: key column missing"
+tests/cache-manager.bats:460:        skip_not_implemented "subgraph_cache table: value column missing"
+tests/cache-manager.bats:464:        skip_not_implemented "subgraph_cache table: access_time column missing"
+tests/cache-manager.bats:468:        skip_not_implemented "subgraph_cache table: created_time column missing"
+tests/cache-manager.bats:473:        skip_not_implemented "subgraph_cache table: PRIMARY KEY constraint missing"
+tests/cache-manager.bats:477:    run sqlite3 "$SUBGRAPH_CACHE_DB" ".indices subgraph_cache"
+tests/cache-manager.bats:482:@test "test_lru_hit_rate: cache-manager stats reports hit rate > 0.8 for repeated queries" {
+tests/cache-manager.bats:483:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:487:        "$CACHE_MANAGER" cache-set "hit-key" "hit-value" >/dev/null 2>&1 || true
+tests/cache-manager.bats:488:        "$CACHE_MANAGER" cache-get "hit-key" >/dev/null 2>&1 || true
+tests/cache-manager.bats:492:    skip_if_not_ready "$status" "$output" "cache-manager.sh stats"
+tests/cache-manager.bats:509:@test "test_lru_cross_process: cache entries are readable across processes" {
+tests/cache-manager.bats:510:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:514:    run "$CACHE_MANAGER" cache-set "cross-key" "cross-value"
+tests/cache-manager.bats:515:    skip_if_not_ready "$status" "$output" "cache-manager.sh cache-set"
+tests/cache-manager.bats:518:    run "$CACHE_MANAGER" cache-get "cross-key"
+tests/cache-manager.bats:519:    skip_if_not_ready "$status" "$output" "cache-manager.sh cache-get"
+tests/cache-manager.bats:522:        skip_not_implemented "cross-process cache get: value mismatch"
+tests/cache-manager.bats:529:        db_value=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT value FROM subgraph_cache WHERE key='cross-key';" 2>/dev/null || echo "")
+tests/cache-manager.bats:533:            db_value=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT value FROM cache WHERE key='cross-key';" 2>/dev/null || echo "")
+tests/cache-manager.bats:537:            skip_not_implemented "cross-process cache get: SQLite persistence mismatch"
+tests/cache-manager.bats:542:        access_time=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT access_time FROM subgraph_cache WHERE key='cross-key';" 2>/dev/null || \
+tests/cache-manager.bats:543:                     sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT accessed_at FROM subgraph_cache WHERE key='cross-key';" 2>/dev/null || \
+tests/cache-manager.bats:544:                     sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT last_access FROM cache WHERE key='cross-key';" 2>/dev/null || echo "")
+tests/cache-manager.bats:549:    # Test true cross-process by running cache-get in a subshell
+tests/cache-manager.bats:551:    subshell_result=$(bash -c "export DEVBOOKS_DIR='$DEVBOOKS_DIR'; export SUBGRAPH_CACHE_DB='$SUBGRAPH_CACHE_DB'; '$CACHE_MANAGER' cache-get 'cross-key' 2>/dev/null" || echo "")
+tests/cache-manager.bats:554:        skip_not_implemented "cross-process cache get: subshell read failed"
+tests/cache-manager.bats:558:@test "test_lru_eviction: cache evicts least recently used entries" {
+tests/cache-manager.bats:559:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:564:    "$CACHE_MANAGER" cache-set "k1" "v1" >/dev/null 2>&1 || true
+tests/cache-manager.bats:565:    "$CACHE_MANAGER" cache-set "k2" "v2" >/dev/null 2>&1 || true
+tests/cache-manager.bats:566:    "$CACHE_MANAGER" cache-set "k3" "v3" >/dev/null 2>&1 || true
+tests/cache-manager.bats:567:    "$CACHE_MANAGER" cache-set "k4" "v4" >/dev/null 2>&1 || true
+tests/cache-manager.bats:570:        skip_not_implemented "subgraph cache database not created"
+tests/cache-manager.bats:574:    count=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || echo "0")
+tests/cache-manager.bats:580:@test "test_lru_stats: cache-manager stats reports total entries and hit rate" {
+tests/cache-manager.bats:581:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:585:    skip_if_not_ready "$status" "$output" "cache-manager.sh stats"
+tests/cache-manager.bats:604:# Spec: dev-playbooks/changes/algorithm-optimization-parity/specs/cache-lru/spec.md
+tests/cache-manager.bats:610:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:617:    "$CACHE_MANAGER" cache-set "k1" "v1" >/dev/null 2>&1 || skip "cache-set not implemented"
+tests/cache-manager.bats:619:    "$CACHE_MANAGER" cache-set "k2" "v2" >/dev/null 2>&1 || true
+tests/cache-manager.bats:621:    "$CACHE_MANAGER" cache-set "k3" "v3" >/dev/null 2>&1 || true
+tests/cache-manager.bats:624:    "$CACHE_MANAGER" cache-get "k1" >/dev/null 2>&1 || true
+tests/cache-manager.bats:627:    "$CACHE_MANAGER" cache-set "k4" "v4" >/dev/null 2>&1 || true
+tests/cache-manager.bats:630:    run "$CACHE_MANAGER" cache-get "k2"
+tests/cache-manager.bats:636:    run "$CACHE_MANAGER" cache-get "k1"
+tests/cache-manager.bats:639:    run "$CACHE_MANAGER" cache-get "k4"
+tests/cache-manager.bats:645:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:653:        "$CACHE_MANAGER" cache-set "cap-k${i}" "cap-v${i}" >/dev/null 2>&1 || {
+tests/cache-manager.bats:655:                skip "cache-set not implemented"
+tests/cache-manager.bats:663:        count=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || \
+tests/cache-manager.bats:664:                sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM cache;" 2>/dev/null || echo "0")
+tests/cache-manager.bats:670:        skip_not_implemented "subgraph cache database not created"
+tests/cache-manager.bats:676:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:680:    "$CACHE_MANAGER" cache-set "access-key" "access-value" >/dev/null 2>&1 || skip "cache-set not implemented"
+tests/cache-manager.bats:683:        skip_not_implemented "subgraph cache database not created"
+tests/cache-manager.bats:689:        "SELECT access_time FROM subgraph_cache WHERE key='access-key';" 2>/dev/null || \
+tests/cache-manager.bats:691:        "SELECT accessed_at FROM subgraph_cache WHERE key='access-key';" 2>/dev/null || \
+tests/cache-manager.bats:693:        "SELECT last_access FROM cache WHERE key='access-key';" 2>/dev/null || echo "")
+tests/cache-manager.bats:703:    "$CACHE_MANAGER" cache-get "access-key" >/dev/null 2>&1 || true
+tests/cache-manager.bats:708:        "SELECT access_time FROM subgraph_cache WHERE key='access-key';" 2>/dev/null || \
+tests/cache-manager.bats:710:        "SELECT accessed_at FROM subgraph_cache WHERE key='access-key';" 2>/dev/null || \
+tests/cache-manager.bats:712:        "SELECT last_access FROM cache WHERE key='access-key';" 2>/dev/null || echo "")
+tests/cache-manager.bats:722:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:730:        "$CACHE_MANAGER" cache-set "batch-k${i}" "batch-v${i}" >/dev/null 2>&1 || {
+tests/cache-manager.bats:732:                skip "cache-set not implemented"
+tests/cache-manager.bats:738:        skip_not_implemented "subgraph cache database not created"
+tests/cache-manager.bats:743:    count_before=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || \
+tests/cache-manager.bats:744:                   sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM cache;" 2>/dev/null || echo "0")
+tests/cache-manager.bats:747:    "$CACHE_MANAGER" cache-set "batch-k11" "batch-v11" >/dev/null 2>&1 || true
+tests/cache-manager.bats:751:    count_after=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || \
+tests/cache-manager.bats:752:                  sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM cache;" 2>/dev/null || echo "0")
+tests/cache-manager.bats:765:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:771:    local log_file="$TEST_CACHE_DIR/cache-eviction.log"
+tests/cache-manager.bats:779:        "$CACHE_MANAGER" cache-set "evict-k${i}" "evict-v${i}" >/dev/null 2>&1 || {
+tests/cache-manager.bats:781:                skip "cache-set not implemented"
+tests/cache-manager.bats:789:        run "$CACHE_MANAGER" cache-set "evict-k6" "evict-v6" --debug
+tests/cache-manager.bats:803:@test "CT-CL-006: performance - 10000 evictions under 100ms" {
+tests/cache-manager.bats:805:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/cache-manager.bats:813:        "$CACHE_MANAGER" cache-set "perf-init-${i}" "perf-value-${i}" >/dev/null 2>&1 || {
+tests/cache-manager.bats:815:                skip "cache-set not implemented"
+tests/cache-manager.bats:825:        "$CACHE_MANAGER" cache-set "perf-k${i}" "perf-v${i}" >/dev/null 2>&1 || true
+tests/cache-manager.bats:848:        count=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || \
+tests/cache-manager.bats:849:                sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM cache;" 2>/dev/null || echo "0")
+tests/upgrade-capabilities.bats:531:@test "T-FUSION-002: Fusion query respects token budget" {
+tests/upgrade-capabilities.bats:544:    local token_count
+tests/upgrade-capabilities.bats:545:    token_count=$(echo "$json" | jq -r '.metadata.token_count' 2>/dev/null || echo "0")
+tests/upgrade-capabilities.bats:547:    [ "$token_count" -le "$budget" ] || fail "Expected token count <= $budget, got $token_count"
+tests/upgrade-capabilities.bats:551:@test "T-FUSION-003: Fusion query latency increase < 200ms" {
+tests/upgrade-capabilities.bats:564:    local vector_start vector_end vector_latency
+tests/upgrade-capabilities.bats:568:    vector_latency=$(( (vector_end - vector_start) / 1000000 ))
+tests/upgrade-capabilities.bats:572:    local fusion_start fusion_end fusion_latency
+tests/upgrade-capabilities.bats:576:    fusion_latency=$(( (fusion_end - fusion_start) / 1000000 ))
+tests/upgrade-capabilities.bats:580:    local latency_increase
+tests/upgrade-capabilities.bats:581:    latency_increase=$((fusion_latency - vector_latency))
+tests/upgrade-capabilities.bats:583:    [ "$latency_increase" -lt 300 ] || fail "Expected latency increase < 300ms, got ${latency_increase}ms"
+tests/upgrade-capabilities.bats:625:@test "T-WARMUP-001: Daemon auto-triggers warmup after start" {
+tests/upgrade-capabilities.bats:643:    local warmup_status
+tests/upgrade-capabilities.bats:644:    warmup_status=$(echo "$json" | jq -r '.warmup_status' 2>/dev/null || echo "null")
+tests/upgrade-capabilities.bats:647:    [[ "$warmup_status" == "running" || "$warmup_status" == "completed" ]] || fail "Expected warmup_status to be running or completed, got $warmup_status"
+tests/upgrade-capabilities.bats:704:    [ "$daemon_running" = "true" ] || fail "Expected daemon to be running after warmup timeout"
+tests/upgrade-capabilities.bats:1055:@test "CT-DM-001: start auto-triggers warmup" {
+tests/upgrade-capabilities.bats:1074:    local warmup_status
+tests/upgrade-capabilities.bats:1075:    warmup_status=$(echo "$json" | jq -r '.warmup_status' 2>/dev/null || echo "null")
+tests/upgrade-capabilities.bats:1076:    [[ "$warmup_status" == "running" || "$warmup_status" == "completed" ]] || fail "Expected warmup_status to be running or completed"
+tests/upgrade-capabilities.bats:1083:@test "CT-DM-002: status returns warmup_status" {
+tests/upgrade-capabilities.bats:1091:    # Assert: 验证 warmup_status 字段存在
+tests/upgrade-capabilities.bats:1096:    local warmup_status
+tests/upgrade-capabilities.bats:1097:    warmup_status=$(echo "$json" | jq -r '.warmup_status' 2>/dev/null || echo "null")
+tests/upgrade-capabilities.bats:1098:    [ "$warmup_status" != "null" ] || fail "Expected warmup_status field in status output"
+tests/upgrade-capabilities.bats:1105:@test "CT-DM-003: warmup completed status" {
+tests/upgrade-capabilities.bats:1119:    local warmup_status
+tests/upgrade-capabilities.bats:1120:    warmup_status=$(echo "$json" | jq -r '.warmup_status' 2>/dev/null || echo "null")
+tests/upgrade-capabilities.bats:1121:    [ "$warmup_status" = "completed" ] || [ "$warmup_status" = "running" ] || fail "Expected warmup_status to be completed or running"
+tests/upgrade-capabilities.bats:1128:@test "CT-DM-004: warmup timeout handling" {
+tests/upgrade-capabilities.bats:1150:@test "CT-DM-005: warmup disabled" {
+tests/upgrade-capabilities.bats:1167:    local warmup_status
+tests/upgrade-capabilities.bats:1168:    warmup_status=$(echo "$json" | jq -r '.warmup_status' 2>/dev/null || echo "null")
+tests/upgrade-capabilities.bats:1169:    [ "$warmup_status" = "disabled" ] || [ "$warmup_status" = "null" ] || fail "Expected warmup_status to be disabled or null"
+tests/upgrade-capabilities.bats:1176:@test "CT-DM-006: Startup time unaffected by warmup" {
+tests/upgrade-capabilities.bats:1213:    local running warmup_status
+tests/upgrade-capabilities.bats:1215:    warmup_status=$(echo "$json" | jq -r '.warmup_status' 2>/dev/null || echo "null")
+tests/upgrade-capabilities.bats:1218:    [ "$warmup_status" != "null" ] || fail "Expected warmup_status field"
+tests/indexer-scheduler.bats:56:    export AST_CACHE_DIR="$TEST_TEMP_DIR/.ast-cache"
+tests/indexer-scheduler.bats:172:INSERT OR REPLACE INTO metadata (key, value) VALUES ('ast_cache_version', '$version');
+tests/indexer-scheduler.bats:185:    # Given: tree-sitter available, AST cache version matches, single file change
+tests/indexer-scheduler.bats:288:# @test T-IS-002b: Fallback when cache version mismatch
+tests/indexer-scheduler.bats:289:@test "T-IS-002b: fallback to full rebuild when cache version mismatch" {
+tests/indexer-scheduler.bats:292:    # Given: AST cache version differs from graph.db version
+tests/indexer-scheduler.bats:305:    skip_if_not_ready "$status" "$output" "indexer.sh cache mismatch"
+tests/indexer-scheduler.bats:310:    assert_contains_any "$output" "cache_version_mismatch" "version" "mismatch"
+tests/indexer-scheduler.bats:795:@test "T-IS-008b: AST cache cleared when version mismatch triggers rebuild" {
+tests/indexer-scheduler.bats:805:    # Create stale cache files
+tests/indexer-scheduler.bats:806:    touch "$AST_CACHE_DIR/stale_cache_file.ast"
+tests/indexer-scheduler.bats:813:    skip_if_not_ready "$status" "$output" "indexer.sh cache clear"
+tests/indexer-scheduler.bats:815:    # Then: Old cache files should be cleared
+tests/indexer-scheduler.bats:817:    [ ! -f "$AST_CACHE_DIR/stale_cache_file.ast" ]
+tests/indexer-scheduler.bats:840:    assert_not_contains "$output" "cache_version_mismatch"
+tests/impact-analyzer.bats:829:    skip_if_not_ready "$status" "$output" "impact-analyzer.sh cycle performance"
+tests/impact-analyzer.bats:934:@test "CT-IA-005b: impact-analyzer performance with multiple runs (P95 < 200ms)" {
+tests/impact-analyzer.bats:956:        [ "$p95" -lt 200 ] || fail "P95 latency ${p95}ms >= 200ms threshold"
+tests/incremental-indexing.bats:192:@test "II-PERF-001: multi-file incremental update performance" {
+tests/benchmark.bats:8:# Run: bats tests/benchmark.bats
+tests/benchmark.bats:30:BENCHMARK_SCRIPT="${PROJECT_ROOT}/scripts/benchmark.sh"
+tests/benchmark.bats:31:FIXTURE_DIR="${PROJECT_ROOT}/tests/fixtures/benchmark"
+tests/benchmark.bats:93:    local stub_dir="$BATS_TEST_DIRNAME/fixtures/benchmark"
+tests/benchmark.bats:114:validate_benchmark_report() {
+tests/benchmark.bats:125:    jq -e '.p95_latency_ms' "$report_file" >/dev/null || fail "Missing p95_latency_ms"
+tests/benchmark.bats:138:    export BENCHMARK_OUTPUT="${BATS_TEST_TMPDIR}/benchmark-output"
+tests/benchmark.bats:154:@test "BM-BASE-001: benchmark.sh exists and is executable" {
+tests/benchmark.bats:159:@test "BM-BASE-002: --help includes benchmark dataset options" {
+tests/benchmark.bats:200:@test "T-BM-002: Self-bootstrap benchmark generates report" {
+tests/benchmark.bats:206:    validate_benchmark_report "$report_file"
+tests/benchmark.bats:215:@test "T-BM-003: Public dataset benchmark generates report" {
+tests/benchmark.bats:223:    validate_benchmark_report "$report_file"
+tests/benchmark.bats:239:    validate_benchmark_report "$report_file"
+tests/benchmark.bats:247:@test "T-BM-005: P95 latency is measured and positive" {
+tests/benchmark.bats:248:    local report_file="$BENCHMARK_OUTPUT/latency-report.json"
+tests/benchmark.bats:253:    validate_benchmark_report "$report_file"
+tests/benchmark.bats:256:    p95=$(jq -r '.p95_latency_ms' "$report_file")
+tests/benchmark.bats:257:    [ "$p95" -gt 0 ] || fail "Invalid P95 latency: $p95"
+tests/benchmark.bats:267:    local baseline_file="$FIXTURE_DIR/regression-baseline.json"
+tests/benchmark.bats:268:    local current_file="$FIXTURE_DIR/regression-current.json"
+tests/benchmark.bats:269:    local regressed_file="$FIXTURE_DIR/regression-regressed.json"
+tests/benchmark.bats:276:    validate_benchmark_report "$baseline_file"
+tests/benchmark.bats:277:    validate_benchmark_report "$current_file"
+tests/benchmark.bats:278:    validate_benchmark_report "$regressed_file"
+tests/benchmark.bats:288:    assert_contains "$output" "regression"
+tests/benchmark.bats:319:@test "BM-INTEGRATION-001: Full benchmark pipeline (self-bootstrap)" {
+tests/benchmark.bats:325:    validate_benchmark_report "$report_file"
+tests/intent-classification.bats:5:# Depends: bats-core, jq (optional for performance tests)
+tests/intent-classification.bats:22:# - CT-IC-010: Performance benchmark (adjusted for bash implementation)
+tests/intent-classification.bats:146:    result=$(get_intent_type "improve performance")
+tests/intent-classification.bats:582:    local keywords=("refactor" "optimize" "improve" "clean" "simplify" "quality" "performance" "restructure")
+tests/boundary-detector.bats:288:@test "CT-BD-006: performance - 1000 paths detection < 100ms" {
+tests/boundary-detector.bats:313:            skip "Nanosecond timing not available for precise performance test"
+scripts/context-compressor.sh:56:CACHE_DIR="${DEVBOOKS_DIR}/context-compressor-cache"
+scripts/context-compressor.sh:69:  --budget <n>                token 预算（按非空行计）
+scripts/context-compressor.sh:71:  --cache [dir]               启用缓存（可选目录）
+scripts/context-compressor.sh:96:      --cache)
+scripts/context-compressor.sh:134:count_compressed_tokens() {
+scripts/context-compressor.sh:586:load_from_cache() {
+scripts/context-compressor.sh:588:  local cache_file="${CACHE_DIR}/${key}.json"
+scripts/context-compressor.sh:589:  if [ -f "$cache_file" ]; then
+scripts/context-compressor.sh:590:    cat "$cache_file"
+scripts/context-compressor.sh:596:save_to_cache() {
+scripts/context-compressor.sh:658:# 输出: JSON 对象 {compressed_file, original_count, file_tokens, file_sigs}
+scripts/context-compressor.sh:692:  local cache_key=""
+scripts/context-compressor.sh:694:  local cache_hit=false
+scripts/context-compressor.sh:698:    cache_key=$(hash_string_md5 "${input}:${mtime}:${MODE}:${COMPRESS_LEVEL}")
+scripts/context-compressor.sh:699:    if compressed_file=$(load_from_cache "$cache_key"); then
+scripts/context-compressor.sh:700:      cache_hit=true
+scripts/context-compressor.sh:703:      save_to_cache "$cache_key" "$compressed_file"
+scripts/context-compressor.sh:709:  local file_tokens
+scripts/context-compressor.sh:710:  file_tokens=$(printf '%s\n' "$compressed_file" | count_non_empty_lines)
+scripts/context-compressor.sh:718:  _PSF_FILE_TOKENS="$file_tokens"
+scripts/context-compressor.sh:721:  _PSF_CACHE_HIT="$cache_hit"
+scripts/context-compressor.sh:765:    --argjson original_tokens "$_OUTPUT_ORIGINAL_TOKENS" \
+scripts/context-compressor.sh:766:    --argjson compressed_tokens "$_OUTPUT_COMPRESSED_TOKENS" \
+scripts/context-compressor.sh:767:    --argjson cache_hits "$_OUTPUT_CACHE_HITS" \
+scripts/context-compressor.sh:780:        original_tokens: $original_tokens,
+scripts/context-compressor.sh:781:        compressed_tokens: $compressed_tokens,
+scripts/context-compressor.sh:784:        cache_hits: $cache_hits,
+scripts/context-compressor.sh:799:  local original_tokens=0
+scripts/context-compressor.sh:800:  local compressed_tokens=0
+scripts/context-compressor.sh:801:  local cache_hits=0
+scripts/context-compressor.sh:816:    local file_tokens="$_PSF_FILE_TOKENS"
+scripts/context-compressor.sh:820:    original_tokens=$((original_tokens + original_count))
+scripts/context-compressor.sh:823:      cache_hits=$((cache_hits + 1))
+scripts/context-compressor.sh:834:    compressed_tokens=$((compressed_tokens + file_tokens))
+scripts/context-compressor.sh:839:        file_ratio=$(float_calc "${file_tokens} / ${original_count}" 2)
+scripts/context-compressor.sh:841:        file_ratio=$(awk -v c="$file_tokens" -v o="$original_count" 'BEGIN {printf "%.2f", (o>0?c/o:0)}')
+scripts/context-compressor.sh:851:      --argjson original_tokens "$original_count" \
+scripts/context-compressor.sh:852:      --argjson compressed_tokens "$file_tokens" \
+scripts/context-compressor.sh:854:      '. + [{path: $path, original_tokens: $original_tokens, compressed_tokens: $compressed_tokens, compression_ratio: $compression_ratio}]')
+scripts/context-compressor.sh:856:    if [ -n "${BUDGET:-}" ] && [[ "$BUDGET" =~ ^[0-9]+$ ]] && [ "$compressed_tokens" -gt "$BUDGET" ]; then
+scripts/context-compressor.sh:862:  if [ -n "${BUDGET:-}" ] && [[ "$BUDGET" =~ ^[0-9]+$ ]] && [ "$compressed_tokens" -gt "$BUDGET" ]; then
+scripts/context-compressor.sh:865:    compressed_tokens=$(printf '%s\n' "$compressed_context" | count_compressed_tokens)
+scripts/context-compressor.sh:872:  _OUTPUT_ORIGINAL_TOKENS="$original_tokens"
+scripts/context-compressor.sh:873:  _OUTPUT_COMPRESSED_TOKENS="$compressed_tokens"
+scripts/context-compressor.sh:874:  _OUTPUT_CACHE_HITS="$cache_hits"
+scripts/test-embedding.sh:118:    // 生成 JWT token
+scripts/test-embedding.sh:119:    const token = this.generateToken(user);
+scripts/test-embedding.sh:120:    return { user, token };
+tests/feature-toggle.bats:63:        "benchmark"
+tests/feature-toggle.bats:64:        "performance_regression"
+tests/feature-toggle.bats:146:  benchmark:
+tests/feature-toggle.bats:148:  performance_regression:
+tests/feature-toggle.bats:161:        "benchmark"
+tests/feature-toggle.bats:162:        "performance_regression"
+tests/feature-toggle.bats:188:        "benchmark"
+tests/feature-toggle.bats:189:        "performance_regression"
+tests/dependency-guard.bats:361:# AC-N04: Pre-commit performance with deps
+scripts/drift-detector.sh:663:  jq -r ".metrics.${key} // 0" "$file" 2>/dev/null
+scripts/drift-detector.sh:1017:      metrics: {
+scripts/drift-detector.sh:1022:      module_metrics: [],
+scripts/llm-providers/anthropic.sh:177:      -d '{"model":"claude-3-haiku-20240307","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}' \
+scripts/llm-providers/anthropic.sh:218:    --argjson max_tokens "$_ANTHROPIC_MAX_TOKENS" \
+scripts/llm-providers/anthropic.sh:221:      max_tokens: $max_tokens,
+tests/context-layer.bats:397:# AC-009: >= 90% accuracy
+tests/context-layer.bats:400:@test "CT-CTX-008: classification accuracy >= 90% on test set" {
+tests/context-layer.bats:500:    # Calculate accuracy (15 total samples)
+tests/context-layer.bats:502:        local accuracy=$((correct * 100 / total))
+tests/context-layer.bats:503:        [ "$accuracy" -ge 90 ] || skip "Accuracy ${accuracy}% < 90% (${correct}/${total})"
+tests/helpers/common.bash:346:        echo "Any skip should be investigated as potential regression"
+scripts/dependency-guard-report.sh:17:    git diff --cached --name-only --diff-filter=ACMR 2>/dev/null | grep -E '\.(ts|tsx|js|jsx|sh)$' || true
+scripts/llm-providers/openai.sh:210:    --argjson max_tokens "$_OPENAI_MAX_TOKENS" \
+scripts/llm-providers/openai.sh:213:      max_tokens: $max_tokens,
+tests/semantic-anomaly.bats:52:    [ -f "$FIXTURE_SOURCE_DIR/benchmark.ts" ] || fail "Missing fixture: benchmark.ts"
+tests/semantic-anomaly.bats:250:    local benchmark="$WORK_DIR/benchmark.ts"
+tests/semantic-anomaly.bats:253:    cp "$FIXTURE_SOURCE_DIR/benchmark.ts" "$benchmark"
+tests/semantic-anomaly.bats:255:    result=$("$SEMANTIC_ANOMALY_SCRIPT" "$benchmark")
+tests/semantic-anomaly.bats:296:    local benchmark="$WORK_DIR/benchmark.ts"
+tests/semantic-anomaly.bats:299:    cp "$FIXTURE_SOURCE_DIR/benchmark.ts" "$benchmark"
+tests/semantic-anomaly.bats:301:    run "$SEMANTIC_ANOMALY_SCRIPT" --output "$output_file" "$benchmark"
+tests/semantic-anomaly.bats:315:    local target_file="$WORK_DIR/benchmark.ts"
+tests/semantic-anomaly.bats:319:    cp "$FIXTURE_SOURCE_DIR/benchmark.ts" "$target_file"
+tests/performance.bats:2:# performance.bats - Performance Benchmark Tests
+tests/performance.bats:4:# Purpose: Verify performance requirements for Phase 2 enhancements
+tests/performance.bats:6:# Run: bats tests/performance.bats
+tests/performance.bats:17:CACHE_MANAGER="${PROJECT_ROOT}/scripts/cache-manager.sh"
+tests/performance.bats:30:    export CACHE_DIR="$TEST_TEMP_DIR/cache"
+tests/performance.bats:68:# P95 < 100ms for cached queries
+tests/performance.bats:71:@test "CT-PERF-001: cache hit latency P95 < 100ms" {
+tests/performance.bats:72:    [ -x "$CACHE_MANAGER" ] || skip "[NOT_IMPL] cache-manager.sh not yet implemented"
+tests/performance.bats:77:    # Warm up cache
+tests/performance.bats:79:    [ "$status" -eq 0 ] || skip "[NOT_IMPL] cache-manager.sh get not yet implemented"
+tests/performance.bats:108:# P95 < 500ms for complete query (with cache support)
+tests/performance.bats:111:@test "CT-PERF-002: full query latency P95 < 500ms" {
+tests/performance.bats:361:@test "CT-PERF-MEM-001: no memory leak in repeated cache operations" {
+tests/performance.bats:362:    [ -x "$CACHE_MANAGER" ] || skip "cache-manager.sh not yet implemented"
+tests/performance.bats:367:    # Run 100 cache operations
+tests/performance.bats:372:    # Check cache directory size is reasonable
+tests/performance.bats:373:    local cache_size=$(du -sk "$CACHE_DIR" 2>/dev/null | cut -f1 || echo "0")
+tests/performance.bats:376:    [ "$cache_size" -lt 10240 ] || skip "Cache size ${cache_size}KB seems excessive"
+scripts/ast-diff.sh:64:CACHE_DIR="$CWD/.ci-cache"
+scripts/ast-diff.sh:144:        CACHE_DIR="$CWD/.ci-cache"
+tests/fixtures/drift-detector/snapshot-template.json:4:    "metrics": {
+tests/fixtures/drift-detector/snapshot-template.json:10:    "module_metrics": [
+tests/fixtures/context-compressor/order-service.base.ts:19:    token: string;
+tests/fixtures/benchmark/regression-regressed.json:4:  "p95_latency_ms": 1800
+tests/fixtures/semantic-anomaly/ground-truth.json:2:  {"type": "UNUSED_IMPORT", "file": "benchmark.ts", "line": 1},
+tests/fixtures/semantic-anomaly/ground-truth.json:3:  {"type": "UNUSED_IMPORT", "file": "benchmark.ts", "line": 2},
+tests/fixtures/semantic-anomaly/ground-truth.json:4:  {"type": "MISSING_ERROR_HANDLER", "file": "benchmark.ts", "line": 5},
+tests/fixtures/semantic-anomaly/ground-truth.json:5:  {"type": "MISSING_ERROR_HANDLER", "file": "benchmark.ts", "line": 6},
+tests/fixtures/semantic-anomaly/ground-truth.json:6:  {"type": "NAMING_VIOLATION", "file": "benchmark.ts", "line": 8},
+tests/fixtures/semantic-anomaly/ground-truth.json:7:  {"type": "NAMING_VIOLATION", "file": "benchmark.ts", "line": 9},
+tests/fixtures/semantic-anomaly/ground-truth.json:8:  {"type": "MISSING_LOG", "file": "benchmark.ts", "line": 10},
+tests/fixtures/semantic-anomaly/ground-truth.json:9:  {"type": "MISSING_LOG", "file": "benchmark.ts", "line": 11},
+tests/fixtures/semantic-anomaly/ground-truth.json:10:  {"type": "INCONSISTENT_API_CALL", "file": "benchmark.ts", "line": 15},
+tests/fixtures/semantic-anomaly/ground-truth.json:11:  {"type": "INCONSISTENT_API_CALL", "file": "benchmark.ts", "line": 16}
+tests/federation-lite.bats:1712:@test "CT-VE-005: performance - 100 symbol matching under 200ms" {
+tests/federation-lite.bats:1769:        # Verify performance: should complete in < 200ms
+tests/federation-lite.bats:1782:    [ "$edge_count" -ge 1 ] || skip "No virtual edges created during performance test"
+scripts/common.sh:148:export INTENT_REFACTOR_PATTERN='refactor|optimize|improve|clean|simplify|quality|performance|restructure'
+scripts/common.sh:246:    "graph_rag.token_budget") echo "8000" ;;
+scripts/common.sh:667:  local max_tokens="${LLM_MAX_TOKENS:-1024}"
+scripts/common.sh:674:    --argjson max_tokens "$max_tokens" \
+scripts/common.sh:677:      max_tokens: $max_tokens,
+scripts/common.sh:710:  local max_tokens="${LLM_MAX_TOKENS:-1024}"
+scripts/common.sh:717:    --argjson max_tokens "$max_tokens" \
+scripts/common.sh:720:      max_tokens: $max_tokens,
+tests/llm-provider.bats:182:@test "T-PERF-LPA-001: Provider switch latency < 100ms" {
+tests/llm-provider.bats:195:    latency=$((end - start))
+tests/llm-provider.bats:197:    echo "Switch latency: ${latency}ms"
+tests/llm-provider.bats:198:    [ "$latency" -lt 100 ]
+scripts/hotspot-analyzer.sh:299:init_file_age_cache() {
+scripts/hotspot-analyzer.sh:329:cleanup_file_age_cache() {
+scripts/hotspot-analyzer.sh:421:  trap "rm -f '$tmp_freq' '$tmp_result' '$tmp_raw'; cleanup_file_age_cache" EXIT
+scripts/hotspot-analyzer.sh:454:    init_file_age_cache "$TARGET_PATH" "$since_date"
+scripts/hotspot-analyzer.sh:513:        age_cache[$1] = $2
+scripts/hotspot-analyzer.sh:520:        complexity_cache[$1] = $2
+scripts/hotspot-analyzer.sh:537:      complexity = (file in complexity_cache) ? complexity_cache[file] : 1
+scripts/hotspot-analyzer.sh:538:      age_days = (file in age_cache) ? age_cache[file] : default_days
+scripts/graph-rag-core.sh:32:CACHE_MANAGER="${SCRIPT_DIR}/cache-manager.sh"
+scripts/graph-rag-core.sh:38:CACHE_DIR="${TMPDIR:-/tmp}/.devbooks-cache/graph-rag"
+scripts/graph-rag-core.sh:212:get_cache_key() {
+scripts/graph-rag-core.sh:228:resolve_graph_rag_cache_anchor() {
+scripts/graph-rag-core.sh:248:get_cached() {
+scripts/graph-rag-core.sh:249:  local cache_key="$1"
+scripts/graph-rag-core.sh:251:  query_hash=$(get_cache_key "$cache_key")
+scripts/graph-rag-core.sh:254:    local cache_anchor
+scripts/graph-rag-core.sh:255:    cache_anchor=$(resolve_graph_rag_cache_anchor "$CWD") || cache_anchor=""
+scripts/graph-rag-core.sh:257:    local cache_result
+scripts/graph-rag-core.sh:258:    if [[ -n "$cache_anchor" ]]; then
+scripts/graph-rag-core.sh:259:      cache_result=$("$CACHE_MANAGER" --get "$cache_anchor" --query "$query_hash" 2>/dev/null)
+scripts/graph-rag-core.sh:261:      cache_result=""
+scripts/graph-rag-core.sh:264:    if [[ -n "$cache_result" ]] && echo "$cache_result" | jq -e '.schema_version' &>/dev/null; then
+scripts/graph-rag-core.sh:265:      log_info "缓存命中 (cache-manager, key: ${query_hash:0:8}...)"
+scripts/graph-rag-core.sh:266:      echo "$cache_result"
+scripts/graph-rag-core.sh:271:  local cache_file="$CACHE_DIR/$query_hash"
+scripts/graph-rag-core.sh:273:  if [ -f "$cache_file" ]; then
+scripts/graph-rag-core.sh:276:    mtime=$(stat -f %m "$cache_file" 2>/dev/null || stat -c %Y "$cache_file" 2>/dev/null || echo 0)
+scripts/graph-rag-core.sh:279:      cat "$cache_file"
+scripts/graph-rag-core.sh:286:set_cache() {
+scripts/graph-rag-core.sh:287:  local cache_key="$1"
+scripts/graph-rag-core.sh:290:  query_hash=$(get_cache_key "$cache_key")
+scripts/graph-rag-core.sh:293:    local cache_anchor
+scripts/graph-rag-core.sh:294:    cache_anchor=$(resolve_graph_rag_cache_anchor "$CWD") || cache_anchor=""
+scripts/graph-rag-core.sh:295:    if [[ -n "$cache_anchor" ]]; then
+scripts/graph-rag-core.sh:296:      "$CACHE_MANAGER" --set "$cache_anchor" --query "$query_hash" --value "$value" 2>/dev/null || true
+scripts/graph-rag-fusion.sh:218:        for token in $normalized_query; do
+scripts/graph-rag-fusion.sh:219:          if [[ "$base_lower" == *"$token"* ]] || [[ "$token" == *"$base_lower"* ]]; then
+scripts/graph-rag-fusion.sh:439:  printf '{"schema_version":"1.0","source":"graph-rag","token_count":0,"subgraph":%s,"candidates":%s,"metadata":{"ckb_available":true,"ckb_fallback_reason":null,"fusion_depth":%s,"fusion_weights":"%s","graph_depth":%s,"token_count":0,"boundary_filtered":0,"legacy_mode":%s,"reranked":false,"provider":null,"fallback_reason":null,"retry_count":null,"graph_candidates":%s}}\n' \
+scripts/dependency-guard-extract.sh:25:    # Use a temp file to collect imports for better performance
+scripts/entropy-viz.sh:168:get_entropy_metrics() {
+scripts/entropy-viz.sh:181:  "metrics": {
+scripts/entropy-viz.sh:246:  local metrics_json="$1"
+scripts/entropy-viz.sh:248:  trend=$(echo "$metrics_json" | jq -r '.trend | @csv' 2>/dev/null | tr ',' ' ')
+scripts/entropy-viz.sh:264:  local metrics_json="$1"
+scripts/entropy-viz.sh:274:  echo "$metrics_json" | jq -r '.hotspots[] | "\(.file)|\(.complexity)|\(.churn)"' 2>/dev/null | while IFS='|' read -r file complexity churn; do
+scripts/entropy-viz.sh:287:  local metrics_json="$1"
+scripts/entropy-viz.sh:290:  health=$(echo "$metrics_json" | jq -r '.overall_health' 2>/dev/null || echo "72")
+scripts/entropy-viz.sh:297:  struct_entropy=$(echo "$metrics_json" | jq -r '.metrics.structure_entropy' 2>/dev/null || echo "0.45")
+scripts/entropy-viz.sh:299:  change_entropy=$(echo "$metrics_json" | jq -r '.metrics.change_entropy' 2>/dev/null || echo "0.38")
+scripts/entropy-viz.sh:301:  test_entropy=$(echo "$metrics_json" | jq -r '.metrics.test_entropy' 2>/dev/null || echo "0.52")
+scripts/entropy-viz.sh:303:  dep_entropy=$(echo "$metrics_json" | jq -r '.metrics.dependency_entropy' 2>/dev/null || echo "0.31")
+scripts/entropy-viz.sh:323:  local metrics_json
+scripts/entropy-viz.sh:324:  metrics_json=$(get_entropy_metrics)
+scripts/entropy-viz.sh:327:  history_days=$(echo "$metrics_json" | jq -r '.history_days' 2>/dev/null || echo "30")
+scripts/entropy-viz.sh:346:    generate_ascii_dashboard "$metrics_json"
+scripts/entropy-viz.sh:353:    generate_mermaid_trend_chart "$metrics_json"
+scripts/entropy-viz.sh:357:    generate_mermaid_hotspot_chart "$metrics_json"
+tests/fixtures/benchmark/file-reader.ts:1:// file-reader.ts - Mock stub for benchmark testing (m-002)
+tests/context-compressor.bats:91:    echo "$result" | jq -e '.metadata.original_tokens > 0 and .metadata.compressed_tokens > 0' >/dev/null || \
+tests/context-compressor.bats:92:      fail "Missing token metadata"
+tests/context-compressor.bats:142:    compressed_tokens=$(echo "$result" | jq '.metadata.compressed_tokens')
+tests/context-compressor.bats:143:    echo "Compressed tokens: $compressed_tokens"
+tests/context-compressor.bats:145:    [ "$compressed_tokens" -le 5000 ]
+tests/context-compressor.bats:223:    # 提取 tokens 和压缩率
+tests/context-compressor.bats:224:    tokens_low=$(echo "$result_low" | jq '.metadata.compressed_tokens')
+tests/context-compressor.bats:225:    tokens_medium=$(echo "$result_medium" | jq '.metadata.compressed_tokens')
+tests/context-compressor.bats:226:    tokens_high=$(echo "$result_high" | jq '.metadata.compressed_tokens')
+tests/context-compressor.bats:232:    echo "Tokens: Low=$tokens_low, Medium=$tokens_medium, High=$tokens_high"
+tests/context-compressor.bats:235:    # 验证：low >= medium >= high (保留的 token 数量)
+tests/context-compressor.bats:331:    async validateUser(token: string): Promise<User | null> {
+tests/context-compressor.bats:333:            const payload = jwt.verify(token, this.secret);
+tests/context-compressor.bats:365:    original=$(echo "$result" | jq '.metadata.original_tokens')
+tests/context-compressor.bats:366:    compressed=$(echo "$result" | jq '.metadata.compressed_tokens')
+tests/context-compressor.bats:383:    original=$(echo "$base" | jq '.metadata.original_tokens')
+tests/context-compressor.bats:400:    original=$(echo "$base" | jq '.metadata.original_tokens')
+tests/context-compressor.bats:417:@test "T-CC-005: Incremental compression reuses cache" {
+tests/context-compressor.bats:418:    create_ts_fixture "cached" 500
+tests/context-compressor.bats:419:    create_ts_fixture "warmup" 50
+tests/context-compressor.bats:424:    local test_cache_dir="$BATS_TEST_TMPDIR/cache-cc-005"
+tests/context-compressor.bats:425:    mkdir -p "$test_cache_dir"
+tests/context-compressor.bats:426:    export DEVBOOKS_DIR="$test_cache_dir"
+tests/context-compressor.bats:429:    local warmup_runs="${CONTEXT_COMPRESSOR_CACHE_WARMUP:-10}"
+tests/context-compressor.bats:430:    for ((i=0; i<warmup_runs; i++)); do
+tests/context-compressor.bats:431:        "$CONTEXT_COMPRESSOR_SCRIPT" --enable-all-features --cache "$FIXTURES_DIR/warmup.ts" >/dev/null 2>&1 || \
+tests/context-compressor.bats:440:        rm -rf "$test_cache_dir"/*
+tests/context-compressor.bats:441:        measure_time "$CONTEXT_COMPRESSOR_SCRIPT" --enable-all-features --cache "$FIXTURES_DIR/cached.ts" > /dev/null
+tests/context-compressor.bats:448:    for ((i=0; i<warmup_runs; i++)); do
+tests/context-compressor.bats:449:        "$CONTEXT_COMPRESSOR_SCRIPT" --enable-all-features --cache "$FIXTURES_DIR/cached.ts" >/dev/null 2>&1 || true
+tests/context-compressor.bats:453:    local cached_runs="${CONTEXT_COMPRESSOR_CACHE_RUNS:-10}"
+tests/context-compressor.bats:454:    local cached_latencies=()
+tests/context-compressor.bats:456:    for ((i=0; i<cached_runs; i++)); do
+tests/context-compressor.bats:457:        measure_time "$CONTEXT_COMPRESSOR_SCRIPT" --enable-all-features --cache "$FIXTURES_DIR/cached.ts" > /dev/null
+tests/context-compressor.bats:458:        cached_latencies+=("$MEASURED_TIME_MS")
+tests/context-compressor.bats:461:    result2=$("$CONTEXT_COMPRESSOR_SCRIPT" --enable-all-features --cache "$FIXTURES_DIR/cached.ts")
+tests/context-compressor.bats:463:    time2_p95=$(calculate_p95 "${cached_latencies[@]}")
+tests/context-compressor.bats:467:    echo "$result2" | jq -e '.metadata.cache_hits > 0' >/dev/null || \
+tests/context-compressor.bats:468:      fail "Expected cache_hits > 0 on second run"
+tests/context-compressor.bats:474:      fail "Expected cached P95 <= ${ratio_pct}% of cold P95 (cold=${time1}ms cached=${time2_p95}ms)"
+tests/context-compressor.bats:477:    rm -rf "$test_cache_dir"
+tests/context-compressor.bats:508:    jq -e '.metadata.compressed_tokens > 0' "$out_dir/a.json" >/dev/null || fail "Missing compressed_tokens for A"
+tests/context-compressor.bats:509:    jq -e '.metadata.compressed_tokens > 0' "$out_dir/b.json" >/dev/null || fail "Missing compressed_tokens for B"
+tests/context-compressor.bats:515:    local cache_a_count cache_b_count
+tests/context-compressor.bats:516:    cache_a_count=$(find "$devbooks_dir_a" -type f 2>/dev/null | wc -l | tr -d ' ')
+tests/context-compressor.bats:517:    cache_b_count=$(find "$devbooks_dir_b" -type f 2>/dev/null | wc -l | tr -d ' ')
+tests/context-compressor.bats:518:    echo "隔离验证: cache_a=$cache_a_count files, cache_b=$cache_b_count files"
+tests/context-compressor.bats:525:    if [ "$cache_a_count" -gt 0 ] || [ "$cache_b_count" -gt 0 ]; then
+tests/context-compressor.bats:671:        echo "$output" | jq -e '.metadata.compressed_tokens > 0' >/dev/null || fail "Missing compressed_tokens"
+tests/context-compressor.bats:691:        echo "$output" | jq -e '.metadata.compressed_tokens > 0' >/dev/null || fail "Missing compressed_tokens"
+tests/context-compressor.bats:738:    echo "Compression latency p95: ${p95}ms (threshold: ${threshold}ms)"
+scripts/adr-parser.sh:48:    "cache" "data" "system" "simple" "record" "mode" "need" "make"
+tests/fixtures/benchmark/db-connector.ts:1:// db-connector.ts - Mock stub for benchmark testing (m-002)
+tests/hybrid-retrieval.bats:349:@test "T-HR-004: Hybrid benchmark reports quality metrics" {
+tests/hybrid-retrieval.bats:350:    run "$EMBEDDING_SCRIPT" --benchmark "${PROJECT_ROOT}/tests/fixtures/benchmark/queries.jsonl" 2>&1
+tests/hybrid-retrieval.bats:355:      fail "Benchmark output missing metrics"
+tests/hybrid-retrieval.bats:400:@test "HR-PERF-001: Hybrid retrieval P95 latency < 500ms" {
+tests/hybrid-retrieval.bats:406:        MOCK_CKB_AVAILABLE=1 "$GRAPH_RAG_SCRIPT" --query "warmup" --fusion-depth 1 --format json --mock-embedding --mock-ckb --cwd "$WORKDIR" >/dev/null 2>&1 || \
+tests/hybrid-retrieval.bats:424:    [ "$p95" -lt 500 ] || fail "P95 latency ${p95}ms exceeds 500ms"
+tests/hybrid-retrieval.bats:488:    CKB_UNAVAILABLE=1 run "$GRAPH_RAG_SCRIPT" --query "no_match_token_12345" --fusion-depth 0 --format json --cwd "$empty_dir" 2>&1
+scripts/llm-provider.sh:291:    local latency_ms=$((end_time - start_time))
+scripts/llm-provider.sh:297:      --argjson latency "$latency_ms" \
+scripts/llm-provider.sh:302:        latency_ms: $latency
+scripts/llm-provider.sh:348:    local latency_ms=$((end_time - start_time))
+scripts/llm-provider.sh:354:      --argjson latency "$latency_ms" \
+scripts/llm-provider.sh:359:        latency_ms: $latency
+tests/daemon.bats:27:CACHE_MANAGER="$SCRIPT_DIR/cache-manager.sh"
+tests/daemon.bats:456:@test "SC-DM-012: daemon P95 latency is below ${PERF_P95_THRESHOLD_MS}ms for ${PERF_TEST_ITERATIONS} requests" {
+tests/daemon.bats:468:        local start_ns end_ns latency_ms
+tests/daemon.bats:474:        latency_ms=$(( (end_ns - start_ns) / 1000000 ))
+tests/daemon.bats:475:        latencies+=("$latency_ms")
+tests/daemon.bats:489:@test "AC-N02: daemon cold start latency is recorded" {
+tests/daemon.bats:492:    local start_ns end_ns latency_ms
+tests/daemon.bats:499:    latency_ms=$(( (end_ns - start_ns) / 1000000 ))
+tests/daemon.bats:501:    echo "Cold start latency: ${latency_ms}ms"
+tests/daemon.bats:504:    [ "$latency_ms" -gt 0 ]
+tests/daemon.bats:511:@test "test_warmup_success: daemon warmup completes" {
+tests/daemon.bats:514:    run "$DAEMON" warmup
+tests/daemon.bats:516:        skip_if_not_ready "$status" "$output" "daemon.sh warmup"
+tests/daemon.bats:520:        # Verify warmup_status field exists and indicates success
+tests/daemon.bats:522:        status_field=$(echo "$output" | jq -r '.warmup_status // empty')
+tests/daemon.bats:524:            skip_not_implemented "warmup_status field"
+tests/daemon.bats:529:            skip_not_implemented "warmup success status value"
+tests/daemon.bats:532:        # Verify warmup duration is reported
+tests/daemon.bats:534:        duration=$(echo "$output" | jq -r '.duration_ms // .warmup_time_ms // empty')
+tests/daemon.bats:536:            skip_not_implemented "warmup duration field"
+tests/daemon.bats:541:            skip_not_implemented "warmup duration value"
+tests/daemon.bats:544:        # Non-JSON output should at least mention warmup
+tests/daemon.bats:545:        [[ "$output" == *"warmup"* ]] || skip_not_implemented "warmup output"
+tests/daemon.bats:548:            skip_not_implemented "warmup completion indicator"
+tests/daemon.bats:552:@test "test_warmup_cache_populated: warmup populates cache entries" {
+tests/daemon.bats:557:    run "$DAEMON" warmup
+tests/daemon.bats:558:    skip_if_not_ready "$status" "$output" "daemon.sh warmup"
+tests/daemon.bats:561:    skip_if_not_ready "$status" "$output" "cache-manager.sh stats"
+tests/daemon.bats:566:        skip_not_implemented "cache stats total_entries"
+tests/daemon.bats:570:@test "test_warmup_hotspot: warmup reports hotspot cache population" {
+tests/daemon.bats:574:    run "$DAEMON" warmup --format json
+tests/daemon.bats:575:    skip_if_not_ready "$status" "$output" "daemon.sh warmup --format json"
+tests/daemon.bats:577:    local hotspot_cached
+tests/daemon.bats:578:    hotspot_cached=$(echo "$output" | jq -r '.hotspot_cached // empty')
+tests/daemon.bats:579:    if [ -z "$hotspot_cached" ]; then
+tests/daemon.bats:580:        skip_not_implemented "warmup hotspot cache reporting"
+tests/daemon.bats:584:@test "test_warmup_symbols: warmup reports symbol cache population" {
+tests/daemon.bats:588:    run "$DAEMON" warmup --format json
+tests/daemon.bats:589:    skip_if_not_ready "$status" "$output" "daemon.sh warmup --format json"
+tests/daemon.bats:591:    local symbols_cached
+tests/daemon.bats:592:    symbols_cached=$(echo "$output" | jq -r '.symbols_cached // empty')
+tests/daemon.bats:593:    if [ -z "$symbols_cached" ]; then
+tests/daemon.bats:594:        skip_not_implemented "warmup symbol cache reporting"
+tests/fixtures/benchmark/regression-baseline.json:4:  "p95_latency_ms": 1200
+tests/fixtures/performance/data-flow/large.ts:1:// Large fixture for data-flow performance
+tests/graph-rag.bats:46:# Then: Output token count <= 4000
+tests/graph-rag.bats:48:    run "$GRAPH_RAG" --query "test query" --token-budget 4000 --format json --mock-embedding 2>&1
+tests/graph-rag.bats:51:    # Extract JSON and verify token count
+tests/graph-rag.bats:55:    local token_count
+tests/graph-rag.bats:56:    token_count=$(echo "$json" | jq -r '.token_count // 0')
+tests/graph-rag.bats:59:    [ "$token_count" -le 4000 ]
+tests/graph-rag.bats:122:# Given: Budget 1000, candidate fragment token counts [400, 300, 350, 200]
+tests/graph-rag.bats:127:    run "$GRAPH_RAG" --query "boundary test" --token-budget 1000 --format json --mock-embedding 2>&1
+tests/graph-rag.bats:133:    local token_count
+tests/graph-rag.bats:134:    token_count=$(echo "$json" | jq -r '.token_count // 0')
+tests/graph-rag.bats:137:    [ "$token_count" -le 1000 ]
+tests/graph-rag.bats:151:    local token_count
+tests/graph-rag.bats:152:    token_count=$(echo "$json" | jq -r '.token_count // 0')
+tests/graph-rag.bats:155:    [ "$token_count" -le 8000 ]
+tests/graph-rag.bats:163:    run "$GRAPH_RAG" --query "zero budget test" --token-budget 0 --format json --mock-embedding 2>&1
+tests/graph-rag.bats:186:    run "$GRAPH_RAG" --query "oversized test" --token-budget 100 --format json --mock-embedding 2>&1
+tests/graph-rag.bats:237:# When: Estimate tokens
+tests/graph-rag.bats:239:@test "T-SP-008: test_token_estimation - token estimation accuracy" {
+tests/graph-rag.bats:247:    # The script uses estimate_tokens which divides character count by 4
+tests/graph-rag.bats:248:    # Known content has ~42 characters, so estimated tokens should be ~10-11
+tests/graph-rag.bats:250:    local expected_tokens=$((char_count / 4))
+tests/graph-rag.bats:263:    local token_count
+tests/graph-rag.bats:264:    token_count=$(echo "$json" | jq -r '.token_count // 0')
+tests/graph-rag.bats:266:    # Verify token estimation is working (non-negative)
+tests/graph-rag.bats:267:    [ "$token_count" -ge 0 ] || fail "Token count should be non-negative, got $token_count"
+tests/graph-rag.bats:271:    if [ "$token_count" -gt 0 ] && [ "$expected_tokens" -gt 0 ]; then
+tests/graph-rag.bats:274:        error_rate=$(awk -v est="$token_count" -v exp="$expected_tokens" \
+tests/graph-rag.bats:283:            skip "Token estimation error ${error_rate}% exceeds 20% tolerance (estimated: $token_count, expected: $expected_tokens)"
+tests/graph-rag.bats:293:    run "$GRAPH_RAG" --query "test" --token-budget -100 --format json --mock-embedding 2>&1
+tests/graph-rag.bats:300:        local token_count
+tests/graph-rag.bats:301:        token_count=$(echo "$json" | jq -r '.token_count // 0')
+tests/graph-rag.bats:304:        [ "$token_count" -ge 0 ]
+tests/graph-rag.bats:313:    run "$GRAPH_RAG" --query "test" --token-budget 1000000 --format json --mock-embedding 2>&1
+tests/graph-rag.bats:327:    run "$GRAPH_RAG" --query "test" --token-budget "not_a_number" --format json 2>&1
+tests/graph-rag.bats:344:@test "T-SP-OUTPUT-001: JSON output includes token_count field" {
+tests/graph-rag.bats:351:    # token_count field should exist
+tests/graph-rag.bats:352:    echo "$json" | jq -e '.token_count' > /dev/null
+tests/graph-rag.bats:577:# 覆盖场景 SC-GS-001: 按优先级降序贪婪选择，不超过 token 预算
+tests/graph-rag.bats:578:# 输入: 候选列表 A(priority=0.9, tokens=100), B(priority=0.7, tokens=200), C(priority=0.5, tokens=150)
+tests/graph-rag.bats:580:# 预期: 选择 [A, C]（总 250 tokens），跳过 B（加上 B 会超预算）
+tests/graph-rag.bats:582:    run "$GRAPH_RAG" --query "greedy selection test" --token-budget 500 --format json --mock-embedding 2>&1
+tests/graph-rag.bats:589:    local token_count
+tests/graph-rag.bats:590:    token_count=$(echo "$json" | jq -r '.token_count // 0')
+tests/graph-rag.bats:592:    [ "$token_count" -le 500 ] || fail "Token count $token_count exceeds budget 500"
+tests/graph-rag.bats:617:# 输入: A(priority=0.9, tokens=1000), B(priority=0.7, tokens=100)
+tests/graph-rag.bats:622:    run "$GRAPH_RAG" --query "large fragment test" --token-budget 200 --format json --mock-embedding 2>&1
+tests/graph-rag.bats:628:    local token_count
+tests/graph-rag.bats:629:    token_count=$(echo "$json" | jq -r '.token_count // 0')
+tests/graph-rag.bats:631:    # 验证选中的总 token 不超过预算
+tests/graph-rag.bats:632:    [ "$token_count" -le 200 ] || fail "Token count $token_count exceeds budget 200"
+tests/graph-rag.bats:638:    all_fit=$(echo "$candidates" | jq 'all(.[]; (.tokens // 0) <= 200)')
+tests/graph-rag.bats:648:# 输入: 所有候选 tokens > budget
+tests/graph-rag.bats:652:    run "$GRAPH_RAG" --query "all oversized test" --token-budget 10 --format json --mock-embedding 2>&1
+tests/graph-rag.bats:681:    run "$GRAPH_RAG" --query "zero budget greedy test" --token-budget 0 --format json --mock-embedding 2>&1
+tests/graph-rag.bats:697:    local token_count
+tests/graph-rag.bats:698:    token_count=$(echo "$json" | jq -r '.token_count // 0')
+tests/graph-rag.bats:700:    # token_count 也应该为 0
+tests/graph-rag.bats:701:    [ "$token_count" -eq 0 ] || fail "Zero budget should result in zero token_count (got $token_count)"
+tests/graph-rag.bats:705:# 覆盖场景 SC-GS-005: 验证 Token 估算公式 tokens = ceil(char_count / 4 × 1.1)
+tests/graph-rag.bats:708:@test "CT-GS-005: token estimation formula accuracy" {
+tests/graph-rag.bats:712:    local test_file="$TEST_TEMP_DIR/token_test.ts"
+tests/graph-rag.bats:725:    run "$GRAPH_RAG" --query "token estimation" --cwd "$TEST_TEMP_DIR" --format json --mock-embedding 2>&1
+tests/graph-rag.bats:729:    skip_if_not_ready "$status" "$output" "Token estimation accuracy"
+tests/graph-rag.bats:734:    # 验证返回的 token 估算值
+tests/graph-rag.bats:735:    local token_count
+tests/graph-rag.bats:736:    token_count=$(echo "$json" | jq -r '.token_count // 0')
+tests/graph-rag.bats:738:    if [ "$token_count" -eq 0 ]; then
+tests/graph-rag.bats:739:        skip "No content processed for token estimation test"
+tests/graph-rag.bats:743:    local expected_tokens
+tests/graph-rag.bats:744:    expected_tokens=$(awk -v chars="$char_count" 'BEGIN {
+tests/graph-rag.bats:753:    error_rate=$(awk -v est="$token_count" -v exp="$expected_tokens" \
+scripts/cache-utils.sh:8:: "${CACHE_DIR:=${TMPDIR:-/tmp}/.devbooks-cache}"
+scripts/cache-utils.sh:12:ensure_cache_dir() {
+scripts/cache-utils.sh:21:get_cache_key() {
+scripts/cache-utils.sh:37:get_cached() {
+scripts/cache-utils.sh:40:  key="$(get_cache_key "$raw_key")"
+scripts/cache-utils.sh:41:  local cache_file="$CACHE_DIR/$key"
+scripts/cache-utils.sh:43:  if [ -f "$cache_file" ]; then
+scripts/cache-utils.sh:46:    if stat -f %m "$cache_file" &>/dev/null; then
+scripts/cache-utils.sh:48:      file_mtime=$(stat -f %m "$cache_file")
+scripts/cache-utils.sh:49:    elif stat -c %Y "$cache_file" &>/dev/null; then
+scripts/cache-utils.sh:51:      file_mtime=$(stat -c %Y "$cache_file")
+scripts/cache-utils.sh:62:      cat "$cache_file"
+scripts/cache-utils.sh:71:set_cache() {
+scripts/cache-utils.sh:75:  key="$(get_cache_key "$raw_key")"
+scripts/cache-utils.sh:76:  local cache_file="$CACHE_DIR/$key"
+scripts/cache-utils.sh:78:  ensure_cache_dir
+scripts/cache-utils.sh:79:  echo "$content" > "$cache_file" 2>/dev/null
+scripts/cache-utils.sh:84:cleanup_expired_cache() {
+scripts/cache-utils.sh:92:clear_all_cache() {
+scripts/cache-utils.sh:99:ensure_cache_dir
+tests/fixtures/benchmark/regression-current.json:4:  "p95_latency_ms": 1200
+scripts/embedding.sh:757:  local exclude_dirs="node_modules|dist|build|\.git|__pycache__|venv|\.venv|target|\.next"
+scripts/embedding.sh:770:    ! -path "*/__pycache__/*" \
+scripts/embedding.sh:1022:  local latency_ms=$((end_time - start_time))
+scripts/embedding.sh:1026:    _output_json_results "$query" "$ACTUAL_PROVIDER" "$model_used" "$latency_ms" "$top_k"
+scripts/embedding.sh:1132:  local latency_ms="$4"
+scripts/embedding.sh:1178:    --argjson latency_ms "$latency_ms" \
+scripts/embedding.sh:1189:        latency_ms: $latency_ms
+scripts/embedding.sh:1246:  benchmark <文件>    运行检索质量基准（输出 JSON 指标）
+scripts/embedding.sh:1383:run_benchmark() {
+scripts/embedding.sh:1413:    --benchmark|benchmark)
+scripts/embedding.sh:1414:      run_benchmark "${1:-}"
+tests/fixtures/benchmark/json-parser.ts:1:// json-parser.ts - Mock stub for benchmark testing (m-002)
+scripts/cache-manager.sh:2:# cache-manager.sh - Multi-level Cache Manager (L1 Memory + L2 File)
+scripts/cache-manager.sh:9:#   cache-manager.sh --get <file_path> --query <query_hash>
+scripts/cache-manager.sh:10:#   cache-manager.sh --set <file_path> --query <query_hash> --value <value>
+scripts/cache-manager.sh:11:#   cache-manager.sh --clear-l1
+scripts/cache-manager.sh:12:#   cache-manager.sh --stats
+scripts/cache-manager.sh:13:#   cache-manager.sh --help
+scripts/cache-manager.sh:16:#   CACHE_DIR           - Cache directory (default: ${TMPDIR:-/tmp}/.ci-cache)
+scripts/cache-manager.sh:17:#   CACHE_MAX_SIZE_MB   - Maximum cache size in MB (default: 50)
+scripts/cache-manager.sh:31:: "${CACHE_DIR:=${TMPDIR:-/tmp}/.ci-cache}"
+scripts/cache-manager.sh:38:: "${SUBGRAPH_CACHE_DB:=${DEVBOOKS_DIR}/subgraph-cache.db}"
+scripts/cache-manager.sh:39:: "${CACHE_MAX_SIZE:=100}"  # Maximum number of cache entries
+scripts/cache-manager.sh:48:# L1 cache (memory) - using associative arrays
+scripts/cache-manager.sh:56:    # Bash 3 fallback - arrays won't work, disable L1 cache
+scripts/cache-manager.sh:96:        local counter_file="${CACHE_DIR:-/tmp}/.cache_ts_counter"
+scripts/cache-manager.sh:111:# Initialize SQLite database for subgraph cache (REQ-SLC-001, REQ-SLC-002)
+scripts/cache-manager.sh:113:init_subgraph_cache_db() {
+scripts/cache-manager.sh:119:        log_error "sqlite3 is required for subgraph cache"
+scripts/cache-manager.sh:129:-- Create cache table (REQ-SLC-002)
+scripts/cache-manager.sh:131:CREATE TABLE IF NOT EXISTS subgraph_cache (
+scripts/cache-manager.sh:140:CREATE INDEX IF NOT EXISTS idx_access_time ON subgraph_cache(access_time);
+scripts/cache-manager.sh:143:CREATE INDEX IF NOT EXISTS idx_ttl_expires ON subgraph_cache(ttl_expires);
+scripts/cache-manager.sh:146:CREATE TABLE IF NOT EXISTS cache_stats (
+scripts/cache-manager.sh:152:INSERT OR IGNORE INTO cache_stats (stat_key, stat_value) VALUES ('hits', 0);
+scripts/cache-manager.sh:153:INSERT OR IGNORE INTO cache_stats (stat_key, stat_value) VALUES ('misses', 0);
+scripts/cache-manager.sh:160:ensure_subgraph_cache_db() {
+scripts/cache-manager.sh:162:        init_subgraph_cache_db
+scripts/cache-manager.sh:166:# Get value from subgraph cache (REQ-SLC-005)
+scripts/cache-manager.sh:170:subgraph_cache_get() {
+scripts/cache-manager.sh:171:    local cache_key="$1"
+scripts/cache-manager.sh:173:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:181:    sqlite3 "$SUBGRAPH_CACHE_DB" "DELETE FROM subgraph_cache WHERE ttl_expires IS NOT NULL AND ttl_expires < $now_seconds;" 2>/dev/null || true
+scripts/cache-manager.sh:189:UPDATE subgraph_cache SET access_time = $now WHERE key = '$cache_key';
+scripts/cache-manager.sh:191:SELECT value FROM subgraph_cache WHERE key = '$cache_key';
+scripts/cache-manager.sh:193:UPDATE cache_stats SET stat_value = stat_value + 1
+scripts/cache-manager.sh:194:WHERE stat_key = CASE WHEN (SELECT COUNT(*) FROM subgraph_cache WHERE key = '$cache_key') > 0 THEN 'hits' ELSE 'misses' END;
+scripts/cache-manager.sh:206:        sqlite3 "$SUBGRAPH_CACHE_DB" "UPDATE cache_stats SET stat_value = stat_value + 1 WHERE stat_key = 'misses';" 2>/dev/null || true
+scripts/cache-manager.sh:211:# Set value in subgraph cache with LRU eviction (REQ-SLC-006)
+scripts/cache-manager.sh:216:subgraph_cache_set() {
+scripts/cache-manager.sh:217:    local cache_key="$1"
+scripts/cache-manager.sh:218:    local cache_value="$2"
+scripts/cache-manager.sh:220:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:233:    escaped_value="${cache_value//\'/\'\'}"
+scripts/cache-manager.sh:241:    current_count=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:249:                "SELECT key FROM subgraph_cache ORDER BY access_time ASC LIMIT $evict_count;" 2>/dev/null || echo "")
+scripts/cache-manager.sh:266:DELETE FROM subgraph_cache WHERE ttl_expires IS NOT NULL AND ttl_expires < $now_seconds;
+scripts/cache-manager.sh:270:DELETE FROM subgraph_cache
+scripts/cache-manager.sh:272:    SELECT key FROM subgraph_cache
+scripts/cache-manager.sh:275:        WHEN (SELECT COUNT(*) FROM subgraph_cache) >= $max_size THEN $evict_count
+scripts/cache-manager.sh:280:INSERT OR REPLACE INTO subgraph_cache (key, value, access_time, created_time, ttl_expires)
+scripts/cache-manager.sh:281:VALUES ('$cache_key', '$escaped_value', $now, COALESCE(
+scripts/cache-manager.sh:282:    (SELECT created_time FROM subgraph_cache WHERE key = '$cache_key'), $now
+scripts/cache-manager.sh:290:# Delete entry from subgraph cache
+scripts/cache-manager.sh:291:subgraph_cache_delete() {
+scripts/cache-manager.sh:292:    local cache_key="$1"
+scripts/cache-manager.sh:294:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:296:    sqlite3 "$SUBGRAPH_CACHE_DB" "DELETE FROM subgraph_cache WHERE key = '$cache_key';"
+scripts/cache-manager.sh:300:# Clear all entries from subgraph cache
+scripts/cache-manager.sh:301:subgraph_cache_clear() {
+scripts/cache-manager.sh:302:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:305:DELETE FROM subgraph_cache;
+scripts/cache-manager.sh:306:UPDATE cache_stats SET stat_value = 0 WHERE stat_key IN ('hits', 'misses');
+scripts/cache-manager.sh:312:# Get subgraph cache statistics (REQ-SLC-007, REQ-SLC-009)
+scripts/cache-manager.sh:313:subgraph_cache_stats() {
+scripts/cache-manager.sh:316:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:319:    local total_entries oldest_access newest_access hits misses cache_size_bytes
+scripts/cache-manager.sh:321:    total_entries=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:322:    oldest_access=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT MIN(access_time) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:323:    newest_access=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT MAX(access_time) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:324:    hits=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT stat_value FROM cache_stats WHERE stat_key = 'hits';" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:325:    misses=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT stat_value FROM cache_stats WHERE stat_key = 'misses';" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:342:        cache_size_bytes=$(stat -c %s "$SUBGRAPH_CACHE_DB" 2>/dev/null || stat -f %z "$SUBGRAPH_CACHE_DB" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:344:        cache_size_bytes=0
+scripts/cache-manager.sh:355:            --argjson cache_size_bytes "$cache_size_bytes" \
+scripts/cache-manager.sh:363:                cache_size_bytes: $cache_size_bytes
+scripts/cache-manager.sh:372:        echo "Cache size (bytes): $cache_size_bytes"
+scripts/cache-manager.sh:379:cache-manager.sh - Multi-level Cache Manager (L1 Memory + L2 File + SQLite LRU)
+scripts/cache-manager.sh:382:  cache-manager.sh --get <file_path> --query <query_hash> [--debug]
+scripts/cache-manager.sh:383:  cache-manager.sh --set <file_path> --query <query_hash> --value <value>
+scripts/cache-manager.sh:384:  cache-manager.sh --clear-l1
+scripts/cache-manager.sh:385:  cache-manager.sh --stats
+scripts/cache-manager.sh:386:  cache-manager.sh --help
+scripts/cache-manager.sh:389:  cache-manager.sh cache-get <key>
+scripts/cache-manager.sh:390:  cache-manager.sh cache-set <key> <value>
+scripts/cache-manager.sh:391:  cache-manager.sh cache-delete <key>
+scripts/cache-manager.sh:392:  cache-manager.sh cache-clear
+scripts/cache-manager.sh:393:  cache-manager.sh stats [--format json|text]
+scripts/cache-manager.sh:396:  --get         Get cached value for file and query
+scripts/cache-manager.sh:397:  --set         Set cache value for file and query
+scripts/cache-manager.sh:398:  --clear-l1    Clear L1 (memory) cache
+scripts/cache-manager.sh:399:  --stats       Show cache statistics (L1/L2)
+scripts/cache-manager.sh:405:  cache-get     Get value from SQLite LRU cache
+scripts/cache-manager.sh:406:  cache-set     Set value in SQLite LRU cache
+scripts/cache-manager.sh:407:  cache-delete  Delete entry from cache
+scripts/cache-manager.sh:408:  cache-clear   Clear all cache entries
+scripts/cache-manager.sh:409:  stats         Show subgraph cache statistics
+scripts/cache-manager.sh:412:  CACHE_DIR           Cache directory (default: ${TMPDIR:-/tmp}/.ci-cache)
+scripts/cache-manager.sh:413:  CACHE_MAX_SIZE_MB   Maximum L2 cache size in MB (default: 50)
+scripts/cache-manager.sh:414:  CACHE_MAX_SIZE      Maximum subgraph cache entries (default: 100)
+scripts/cache-manager.sh:415:  SUBGRAPH_CACHE_DB   SQLite database path (default: .devbooks/subgraph-cache.db)
+scripts/cache-manager.sh:419:  # Get cached value
+scripts/cache-manager.sh:420:  cache-manager.sh --get src/server.ts --query abc123
+scripts/cache-manager.sh:422:  # Set cache value
+scripts/cache-manager.sh:423:  cache-manager.sh --set src/server.ts --query abc123 --value "result data"
+scripts/cache-manager.sh:425:  # Clear memory cache
+scripts/cache-manager.sh:426:  cache-manager.sh --clear-l1
+scripts/cache-manager.sh:429:  cache-manager.sh --stats
+scripts/cache-manager.sh:431:  # Subgraph cache operations
+scripts/cache-manager.sh:432:  cache-manager.sh cache-set "key1" "value1"
+scripts/cache-manager.sh:433:  cache-manager.sh cache-get "key1"
+scripts/cache-manager.sh:434:  cache-manager.sh stats --format json
+scripts/cache-manager.sh:495:# Compute cache key from file path, mtime, blob hash, and query hash
+scripts/cache-manager.sh:497:compute_cache_key() {
+scripts/cache-manager.sh:531:    local mtime_cache_dir="${CACHE_DIR}/mtime"
+scripts/cache-manager.sh:532:    mkdir -p "$mtime_cache_dir" 2>/dev/null
+scripts/cache-manager.sh:537:    local mtime_file="${mtime_cache_dir}/${safe_name}.mtime"
+scripts/cache-manager.sh:544:    # Update mtime cache file
+scripts/cache-manager.sh:547:    # Also update in-memory cache if available (bash 4+)
+scripts/cache-manager.sh:557:            log_debug "File may be in write progress, skipping cache: $file_path (delta=${delta}s)"
+scripts/cache-manager.sh:565:# Validate cache entry against current file state
+scripts/cache-manager.sh:567:validate_cache_entry() {
+scripts/cache-manager.sh:568:    local cache_file="$1"
+scripts/cache-manager.sh:572:    if [[ ! -f "$cache_file" ]]; then
+scripts/cache-manager.sh:578:    schema_version=$(jq -r '.schema_version // ""' "$cache_file" 2>/dev/null)
+scripts/cache-manager.sh:585:    local cached_mtime
+scripts/cache-manager.sh:586:    cached_mtime=$(jq -r '.mtime // 0' "$cache_file" 2>/dev/null)
+scripts/cache-manager.sh:587:    if [[ "$cached_mtime" != "$current_mtime" ]]; then
+scripts/cache-manager.sh:588:        log_debug "mtime mismatch: $cached_mtime != $current_mtime"
+scripts/cache-manager.sh:593:    local cached_blob_hash
+scripts/cache-manager.sh:594:    cached_blob_hash=$(jq -r '.blob_hash // ""' "$cache_file" 2>/dev/null)
+scripts/cache-manager.sh:595:    if [[ "$cached_blob_hash" != "$current_blob_hash" ]]; then
+scripts/cache-manager.sh:596:        log_debug "blob hash mismatch: $cached_blob_hash != $current_blob_hash"
+scripts/cache-manager.sh:607:# Check cache size and evict if needed
+scripts/cache-manager.sh:611:    local cache_l2_dir="${CACHE_DIR}/l2"
+scripts/cache-manager.sh:613:    if [[ ! -d "$cache_l2_dir" ]]; then
+scripts/cache-manager.sh:617:    # Get current cache size in KB for precise comparison
+scripts/cache-manager.sh:619:    current_size_kb=$(du -sk "$cache_l2_dir" 2>/dev/null | cut -f1 || echo "0")
+scripts/cache-manager.sh:624:    # Loop until cache is below target size
+scripts/cache-manager.sh:628:        # Count total cache files
+scripts/cache-manager.sh:630:        total_files=$(find "$cache_l2_dir" -type f -name "*.json" 2>/dev/null | wc -l | tr -d ' ')
+scripts/cache-manager.sh:644:        find "$cache_l2_dir" -type f -name "*.json" -exec sh -c '
+scripts/cache-manager.sh:662:        log_info "Evicted $deleted cache entries"
+scripts/cache-manager.sh:665:        current_size_kb=$(du -sk "$cache_l2_dir" 2>/dev/null | cut -f1 || echo "0")
+scripts/cache-manager.sh:678:# Get cached value with validation
+scripts/cache-manager.sh:681:get_cached_with_validation() {
+scripts/cache-manager.sh:690:    # 1. Check L1 cache (memory) - only if bash 4+
+scripts/cache-manager.sh:695:        local cached_mtime="${L1_META_MTIME[$l1_key]:-}"
+scripts/cache-manager.sh:696:        local cached_blob_hash="${L1_META_BLOB_HASH[$l1_key]:-}"
+scripts/cache-manager.sh:697:        if [[ -n "$cached_mtime" && -n "$cached_blob_hash" ]]; then
+scripts/cache-manager.sh:701:                if [[ "$current_mtime" == "$cached_mtime" && "$current_blob_hash" == "$cached_blob_hash" ]]; then
+scripts/cache-manager.sh:702:                    log_debug "L1 cache hit for $file_path"
+scripts/cache-manager.sh:722:        log_debug "File may be in write progress, skipping cache"
+scripts/cache-manager.sh:723:        return 0  # Return success but no output (cache skip)
+scripts/cache-manager.sh:731:    # 5. Compute cache key
+scripts/cache-manager.sh:732:    local cache_key
+scripts/cache-manager.sh:733:    cache_key=$(compute_cache_key "$file_path" "$current_mtime" "$current_blob_hash" "$query_hash")
+scripts/cache-manager.sh:734:    local cache_file="${CACHE_DIR}/l2/${cache_key}.json"
+scripts/cache-manager.sh:736:    # 6. Check L2 cache (file)
+scripts/cache-manager.sh:737:    if [[ -f "$cache_file" ]]; then
+scripts/cache-manager.sh:739:        if validate_cache_entry "$cache_file" "$current_mtime" "$current_blob_hash"; then
+scripts/cache-manager.sh:741:            value=$(jq -r '.value // ""' "$cache_file" 2>/dev/null)
+scripts/cache-manager.sh:744:            local tmp_file="${cache_file}.tmp.$$"
+scripts/cache-manager.sh:747:            if jq --arg accessed_at "$current_time" '.accessed_at = ($accessed_at | tonumber)' "$cache_file" > "$tmp_file" 2>/dev/null; then
+scripts/cache-manager.sh:748:                mv "$tmp_file" "$cache_file" 2>/dev/null || rm -f "$tmp_file"
+scripts/cache-manager.sh:760:            log_debug "L2 cache hit for $file_path (mtime=$current_mtime, blob_hash=$current_blob_hash)"
+scripts/cache-manager.sh:764:            log_debug "L2 cache validation failed for $file_path"
+scripts/cache-manager.sh:769:    # Return success (0) even on cache miss - caller checks output
+scripts/cache-manager.sh:770:    # This allows tests to distinguish between "not implemented" and "cache miss"
+scripts/cache-manager.sh:774:# Set cache value with lock protection
+scripts/cache-manager.sh:776:set_cache_with_lock() {
+scripts/cache-manager.sh:786:    # Ensure cache directory exists
+scripts/cache-manager.sh:794:    # Compute cache key
+scripts/cache-manager.sh:795:    local cache_key
+scripts/cache-manager.sh:796:    cache_key=$(compute_cache_key "$file_path" "$mtime" "$blob_hash" "$query_hash")
+scripts/cache-manager.sh:797:    local cache_file="${CACHE_DIR}/l2/${cache_key}.json"
+scripts/cache-manager.sh:798:    local tmp_file="${cache_file}.tmp.$$"
+scripts/cache-manager.sh:799:    local lock_file="${cache_file}.lock"
+scripts/cache-manager.sh:816:            --arg key "$cache_key" \
+scripts/cache-manager.sh:837:        mv "$tmp_file" "$cache_file" 2>/dev/null || rm -f "$tmp_file"
+scripts/cache-manager.sh:844:    # Write to L1 cache (if available)
+scripts/cache-manager.sh:855:# Clear L1 (memory) cache
+scripts/cache-manager.sh:856:clear_l1_cache() {
+scripts/cache-manager.sh:863:    log_debug "L1 cache cleared"
+scripts/cache-manager.sh:866:# Show cache statistics
+scripts/cache-manager.sh:868:    local cache_l2_dir="${CACHE_DIR}/l2"
+scripts/cache-manager.sh:878:    if [[ -d "$cache_l2_dir" ]]; then
+scripts/cache-manager.sh:879:        l2_entries=$(find "$cache_l2_dir" -type f -name "*.json" 2>/dev/null | wc -l | tr -d ' ')
+scripts/cache-manager.sh:880:        size_kb=$(du -sk "$cache_l2_dir" 2>/dev/null | cut -f1 || echo "0")
+scripts/cache-manager.sh:890:        --arg cache_dir "$CACHE_DIR" \
+scripts/cache-manager.sh:898:            cache_dir: $cache_dir,
+scripts/cache-manager.sh:914:    # Check for subgraph cache commands first (positional arguments)
+scripts/cache-manager.sh:917:            cache-get)
+scripts/cache-manager.sh:920:                    log_error "Usage: cache-manager.sh cache-get <key>"
+scripts/cache-manager.sh:923:                subgraph_cache_get "$1"
+scripts/cache-manager.sh:926:            cache-set)
+scripts/cache-manager.sh:929:                    log_error "Usage: cache-manager.sh cache-set <key> <value>"
+scripts/cache-manager.sh:932:                subgraph_cache_set "$1" "$2"
+scripts/cache-manager.sh:935:            cache-delete)
+scripts/cache-manager.sh:938:                    log_error "Usage: cache-manager.sh cache-delete <key>"
+scripts/cache-manager.sh:941:                subgraph_cache_delete "$1"
+scripts/cache-manager.sh:944:            cache-clear)
+scripts/cache-manager.sh:945:                subgraph_cache_clear
+scripts/cache-manager.sh:946:                echo "Subgraph cache cleared"
+scripts/cache-manager.sh:963:                subgraph_cache_stats "$format"
+scripts/cache-manager.sh:1031:                log_error "Usage: cache-manager.sh --get <file_path> --query <query_hash>"
+scripts/cache-manager.sh:1034:            get_cached_with_validation "$file_path" "$query_hash"
+scripts/cache-manager.sh:1038:                log_error "Usage: cache-manager.sh --set <file_path> --query <query_hash> --value <value>"
+scripts/cache-manager.sh:1041:            set_cache_with_lock "$file_path" "$query_hash" "$value"
+scripts/cache-manager.sh:1044:            clear_l1_cache
+scripts/cache-manager.sh:1045:            echo "L1 cache cleared"
+scripts/scip-to-graph.sh:139:    local cached_path="$SCIP_PROTO_CACHE_DIR/scip.proto"
+scripts/scip-to-graph.sh:140:    if [[ -f "$cached_path" ]]; then
+scripts/scip-to-graph.sh:141:        RESOLVED_PROTO_PATH="$cached_path"
+scripts/scip-to-graph.sh:144:        log_info "Using cached proto: $RESOLVED_PROTO_PATH"
+scripts/scip-to-graph.sh:152:            if curl -s --connect-timeout 10 "$SCIP_PROTO_URL" -o "$cached_path" 2>/dev/null; then
+scripts/scip-to-graph.sh:153:                RESOLVED_PROTO_PATH="$cached_path"
+scripts/scip-to-graph.sh:156:                log_ok "Downloaded proto to: $cached_path"
+scripts/scip-to-graph.sh:160:            if wget -q --timeout=10 "$SCIP_PROTO_URL" -O "$cached_path" 2>/dev/null; then
+scripts/scip-to-graph.sh:161:                RESOLVED_PROTO_PATH="$cached_path"
+scripts/scip-to-graph.sh:164:                log_ok "Downloaded proto to: $cached_path"
+scripts/graph-rag.sh:83:  --token-budget <n>    Token 预算（默认: 8000）
+scripts/graph-rag.sh:84:  --budget <n>          同 --token-budget
+scripts/graph-rag.sh:111:    "token_count": 1234,
+scripts/graph-rag.sh:203:      --token-budget|--budget)
+scripts/graph-rag-query.sh:7:estimate_tokens() {
+scripts/graph-rag-query.sh:22:estimate_file_tokens() {
+scripts/graph-rag-query.sh:25:  local content_tokens=0
+scripts/graph-rag-query.sh:30:    content_tokens=$(estimate_tokens "$content")
+scripts/graph-rag-query.sh:33:  echo "$content_tokens"
+scripts/graph-rag-query.sh:84:    local tokens
+scripts/graph-rag-query.sh:85:    tokens=$(estimate_file_tokens "$file_path")
+scripts/graph-rag-query.sh:89:      --argjson tokens "$tokens" \
+scripts/graph-rag-query.sh:90:      '. + {priority: $priority, tokens: $tokens}')
+scripts/graph-rag-query.sh:128:  local total_tokens=0
+scripts/graph-rag-query.sh:142:    local content_tokens
+scripts/graph-rag-query.sh:143:    content_tokens=$(echo "$candidate" | jq -r '.tokens // 0')
+scripts/graph-rag-query.sh:145:    if [ "$content_tokens" -eq 0 ]; then
+scripts/graph-rag-query.sh:146:      content_tokens=$(estimate_file_tokens "$file_path")
+scripts/graph-rag-query.sh:149:    if [ "$content_tokens" -gt "$budget" ]; then
+scripts/graph-rag-query.sh:151:      log_warn "片段 $file_path ($content_tokens tokens) 超过预算 ($budget)，跳过" >&2
+scripts/graph-rag-query.sh:155:    if [ $((total_tokens + content_tokens)) -gt "$budget" ]; then
+scripts/graph-rag-query.sh:159:    total_tokens=$((total_tokens + content_tokens))
+scripts/graph-rag-query.sh:164:    log_warn "所有 $skipped_oversized 个候选片段都超过预算 ($budget tokens)" >&2
+scripts/graph-rag-query.sh:246:  local cache_key="graph-rag:${query}"
+scripts/graph-rag-query.sh:249:  local cached
+scripts/graph-rag-query.sh:250:  cached=$(get_cached "$cache_key")
+scripts/graph-rag-query.sh:251:  if [ -n "$cached" ]; then
+scripts/graph-rag-query.sh:252:    echo "$cached"
+scripts/graph-rag-query.sh:317:  local total_tokens=0
+scripts/graph-rag-query.sh:322:    local precomputed_tokens
+scripts/graph-rag-query.sh:323:    precomputed_tokens=$(echo "$trimmed" | jq -r ".[$i].tokens // 0")
+scripts/graph-rag-query.sh:325:    if [ "$precomputed_tokens" -gt 0 ]; then
+scripts/graph-rag-query.sh:326:      total_tokens=$((total_tokens + precomputed_tokens))
+scripts/graph-rag-query.sh:335:        total_tokens=$((total_tokens + $(estimate_tokens "$content")))
+scripts/graph-rag-query.sh:350:    --argjson tokens "$total_tokens" \
+scripts/graph-rag-query.sh:369:      token_count: $tokens,
+scripts/graph-rag-query.sh:377:        token_count: $tokens,
+scripts/graph-rag-query.sh:390:  set_cache "$cache_key" "$result"
+scripts/graph-rag-query.sh:405:    local token_count
+scripts/graph-rag-query.sh:406:    token_count=$(echo "$result" | jq '.token_count')
+scripts/graph-rag-query.sh:412:    echo "找到 $candidate_count 个相关结果（约 $token_count tokens）"
+scripts/daemon.sh:67:_get_warmup_status() { cat "$DEVBOOKS_DIR/warmup.status" 2>/dev/null || echo "disabled"; }
+scripts/daemon.sh:68:_set_warmup_status() { echo "$1" > "$DEVBOOKS_DIR/warmup.status"; }
+scripts/daemon.sh:69:_get_warmup_started_at() { cat "$DEVBOOKS_DIR/warmup.started_at" 2>/dev/null || echo ""; }
+scripts/daemon.sh:70:_set_warmup_started_at() { echo "$1" > "$DEVBOOKS_DIR/warmup.started_at"; }
+scripts/daemon.sh:71:_get_warmup_completed_at() { cat "$DEVBOOKS_DIR/warmup.completed_at" 2>/dev/null || echo ""; }
+scripts/daemon.sh:72:_set_warmup_completed_at() { echo "$1" > "$DEVBOOKS_DIR/warmup.completed_at"; }
+scripts/daemon.sh:73:_get_items_cached() { cat "$DEVBOOKS_DIR/warmup.items_cached" 2>/dev/null || echo "0"; }
+scripts/daemon.sh:74:_set_items_cached() { echo "$1" > "$DEVBOOKS_DIR/warmup.items_cached"; }
+scripts/daemon.sh:204:                echo '{"status":"cancelled","data":{},"latency_ms":0}'
+scripts/daemon.sh:218:        echo '{"status":"cancelled","data":{},"latency_ms":0}'
+scripts/daemon.sh:243:        echo '{"status":"cancelled","data":{},"latency_ms":0}'
+scripts/daemon.sh:248:    local latency=$((end_ms - start_ms))
+scripts/daemon.sh:249:    echo "{\"status\":\"ok\",\"data\":$result,\"latency_ms\":$latency}"
+scripts/daemon.sh:300:                    echo '{"status":"busy","data":{"message":"queue full"},"latency_ms":0}' > "$response_file"
+scripts/daemon.sh:399:        log_info "Auto-triggering warmup..."
+scripts/daemon.sh:401:        if ! ci_daemon_warmup --async --format json >/dev/null 2>&1; then
+scripts/daemon.sh:432:    if [ -f "$DEVBOOKS_DIR/warmup.pid" ]; then
+scripts/daemon.sh:433:        local wpid=$(cat "$DEVBOOKS_DIR/warmup.pid" 2>/dev/null)
+scripts/daemon.sh:435:        rm -f "$DEVBOOKS_DIR/warmup.pid"
+scripts/daemon.sh:447:    rm -f "$DEVBOOKS_DIR/warmup.status" "$DEVBOOKS_DIR/warmup.started_at"
+scripts/daemon.sh:448:    rm -f "$DEVBOOKS_DIR/warmup.completed_at" "$DEVBOOKS_DIR/warmup.items_cached"
+scripts/daemon.sh:474:    local warmup_status=$(_get_warmup_status)
+scripts/daemon.sh:475:    local warmup_started_at=$(_get_warmup_started_at)
+scripts/daemon.sh:476:    local warmup_completed_at=$(_get_warmup_completed_at)
+scripts/daemon.sh:477:    local items_cached=$(_get_items_cached)
+scripts/daemon.sh:481:    json="$json,\"warmup_status\":\"$warmup_status\""
+scripts/daemon.sh:482:    if [[ -n "$warmup_started_at" ]]; then
+scripts/daemon.sh:483:        json="$json,\"warmup_started_at\":\"$warmup_started_at\""
+scripts/daemon.sh:485:    if [[ -n "$warmup_completed_at" ]]; then
+scripts/daemon.sh:486:        json="$json,\"warmup_completed_at\":\"$warmup_completed_at\""
+scripts/daemon.sh:488:    json="$json,\"items_cached\":$items_cached}"
+scripts/daemon.sh:499:        echo '{"status":"error","data":{"message":"not running"},"latency_ms":0}'
+scripts/daemon.sh:505:        echo '{"status":"error","data":{"message":"not running"},"latency_ms":0}'
+scripts/daemon.sh:530:        echo '{"status":"ok","data":{},"latency_ms":0}'
+scripts/daemon.sh:539:_warmup_background() {
+scripts/daemon.sh:545:    local items_cached=0
+scripts/daemon.sh:546:    local hotspot_cached=0
+scripts/daemon.sh:547:    local symbols_cached=0
+scripts/daemon.sh:550:    _set_warmup_status "in_progress"
+scripts/daemon.sh:551:    _set_warmup_started_at "$(_get_iso_time)"
+scripts/daemon.sh:575:                if [ -x "$SCRIPT_DIR/cache-manager.sh" ]; then
+scripts/daemon.sh:576:                    local cache_key="hotspot:$file"
+scripts/daemon.sh:578:                    "$SCRIPT_DIR/cache-manager.sh" cache-set "$cache_key" "warmed" 2>/dev/null && {
+scripts/daemon.sh:579:                        hotspot_cached=$((hotspot_cached + 1))
+scripts/daemon.sh:580:                        items_cached=$((items_cached + 1))
+scripts/daemon.sh:597:            if [ -x "$SCRIPT_DIR/cache-manager.sh" ]; then
+scripts/daemon.sh:598:                local cache_key="query:$query"
+scripts/daemon.sh:599:                "$SCRIPT_DIR/cache-manager.sh" cache-set "$cache_key" "warmed" 2>/dev/null && {
+scripts/daemon.sh:600:                    items_cached=$((items_cached + 1))
+scripts/daemon.sh:607:    if [ -x "$SCRIPT_DIR/cache-manager.sh" ]; then
+scripts/daemon.sh:610:        stats=$("$SCRIPT_DIR/cache-manager.sh" stats --format json 2>/dev/null) || true
+scripts/daemon.sh:612:            symbols_cached=$(echo "$stats" | jq -r '.total_entries // 0' 2>/dev/null) || symbols_cached=0
+scripts/daemon.sh:617:    _set_warmup_status "completed"
+scripts/daemon.sh:618:    _set_warmup_completed_at "$(_get_iso_time)"
+scripts/daemon.sh:619:    _set_items_cached "$items_cached"
+scripts/daemon.sh:623:        echo "{\"warmup_status\":\"completed\",\"items_cached\":$items_cached,\"hotspot_cached\":$hotspot_cached,\"symbols_cached\":$symbols_cached}"
+scripts/daemon.sh:625:        echo "Warmup completed: $items_cached items cached ($hotspot_cached hotspots, $symbols_cached symbols)"
+scripts/daemon.sh:630:_warmup_failed() {
+scripts/daemon.sh:632:    _set_warmup_status "completed"  # 部分完成也算 completed（REQ-DME-001: 失败不阻塞）
+scripts/daemon.sh:633:    _set_warmup_completed_at "$(_get_iso_time)"
+scripts/daemon.sh:638:ci_daemon_warmup() {
+scripts/daemon.sh:678:        _set_warmup_status "disabled"
+scripts/daemon.sh:680:            echo '{"warmup_status":"disabled","items_cached":0}'
+scripts/daemon.sh:688:    local current_status=$(_get_warmup_status)
+scripts/daemon.sh:691:            echo '{"warmup_status":"in_progress","message":"warmup already in progress"}'
+scripts/daemon.sh:700:        _warmup_background "$timeout" "$hotspot_limit" "$queries" "$format" &
+scripts/daemon.sh:701:        local warmup_pid=$!
+scripts/daemon.sh:702:        echo "$warmup_pid" > "$DEVBOOKS_DIR/warmup.pid"
+scripts/daemon.sh:705:            echo "{\"warmup_status\":\"in_progress\",\"pid\":$warmup_pid}"
+scripts/daemon.sh:707:            echo "Warmup started in background (pid=$warmup_pid)"
+scripts/daemon.sh:719:            $timeout_cmd bash -c "_warmup_background '$timeout' '$hotspot_limit' '$queries' '$format'" 2>/dev/null || _warmup_failed "timeout"
+scripts/daemon.sh:721:            _warmup_background "$timeout" "$hotspot_limit" "$queries" "$format"
+scripts/daemon.sh:738:        warmup) ci_daemon_warmup "$@" ;;
+scripts/daemon.sh:741:Usage: daemon.sh {start|stop|status|ping|query|warmup} [OPTIONS]
+scripts/daemon.sh:746:  status          Show daemon status (including warmup status)
+scripts/daemon.sh:749:  warmup          Warm up cache (REQ-DME-001/002/003)
+scripts/daemon.sh:754:  --hotspot-limit N Number of hotspot files to cache (default: 10)
+scripts/daemon.sh:756:  --async           Run warmup in background
+scripts/daemon.sh:759:  DAEMON_WARMUP_ENABLED      Enable warmup (default: true)
+scripts/daemon.sh:765:  daemon.sh warmup --timeout 60 --format json
+scripts/daemon.sh:766:  daemon.sh warmup --async
+scripts/daemon.sh:770:        *) echo "Usage: $0 {start|stop|status|ping|query|warmup}" >&2; return 1 ;;
+tests/hotspot-analyzer.bats:80:@test "HS-006: performance baseline - execution time less than 5s" {
+tests/hotspot-analyzer.bats:410:@test "CT-HW-006: performance - 500 files scoring under 200ms" {
+tests/hotspot-analyzer.bats:411:    # Test 500 files scoring performance
+tests/hotspot-analyzer.bats:445:        skip "Weighted hotspot analysis not yet implemented for performance test"
+tests/hotspot-analyzer.bats:448:    # Verify performance requirement: < 200ms
+scripts/performance-regression.sh:2:# performance-regression.sh - 性能回退检测
+scripts/performance-regression.sh:5:#   performance-regression.sh --baseline <baseline.json> --current <current.json>
+scripts/performance-regression.sh:57:performance-regression.sh - 性能回退检测
+scripts/performance-regression.sh:60:  performance-regression.sh --baseline <baseline.json> --current <current.json>
+scripts/performance-regression.sh:111:  if ! feature_enabled "performance_regression"; then
+scripts/performance-regression.sh:112:    log_warn "performance_regression disabled"
+scripts/performance-regression.sh:126:  base_p95=$(jq -r '.p95_latency_ms // 0' "$baseline")
+scripts/performance-regression.sh:128:  curr_p95=$(jq -r '.p95_latency_ms // 0' "$current")
+scripts/performance-regression.sh:134:  local regression=false
+scripts/performance-regression.sh:136:    regression=true
+scripts/performance-regression.sh:139:    regression=true
+scripts/performance-regression.sh:142:  if [[ "$regression" == "true" ]]; then
+scripts/performance-regression.sh:143:    log_fail "performance regression detected"
+scripts/performance-regression.sh:147:  log_info "no regression detected"
+scripts/benchmark.sh:2:# benchmark.sh - Performance Benchmark for Cache and Core Tools
+scripts/benchmark.sh:5:# Purpose: Validate P95 latency targets for cache operations and queries
+scripts/benchmark.sh:6:# Depends: jq, cache-manager.sh
+scripts/benchmark.sh:9:#   benchmark.sh --cache
+scripts/benchmark.sh:10:#   benchmark.sh --full
+scripts/benchmark.sh:11:#   benchmark.sh --all
+scripts/benchmark.sh:26:: "${CACHE_SCRIPT:=$SCRIPT_DIR/cache-manager.sh}"
+scripts/benchmark.sh:86:benchmark.sh - Retrieval Benchmark Runner
+scripts/benchmark.sh:89:  benchmark.sh --dataset <self|public> --queries <file> --output <report.json>
+scripts/benchmark.sh:90:  benchmark.sh --compare <baseline.json> <current.json>
+scripts/benchmark.sh:91:  benchmark.sh --baseline <baseline.json>
+scripts/benchmark.sh:102:  --cache | --full | --precommit | --all
+scripts/benchmark.sh:164:run_dataset_benchmark() {
+scripts/benchmark.sh:194:    log_info "Running benchmark on dataset: $dataset"
+scripts/benchmark.sh:220:        local start_ms end_ms latency
+scripts/benchmark.sh:231:        latency=$((end_ms - start_ms))
+scripts/benchmark.sh:232:        latencies+=("$latency")
+scripts/benchmark.sh:287:    local mrr recall precision p95_latency
+scripts/benchmark.sh:291:    p95_latency=$(calculate_p95 "${latencies[@]}")
+scripts/benchmark.sh:298:        --argjson p95 "$p95_latency" \
+scripts/benchmark.sh:304:          p95_latency_ms: $p95,
+scripts/benchmark.sh:309:    log_info "MRR@10: $mrr, Recall@10: $recall, P95: ${p95_latency}ms"
+scripts/benchmark.sh:333:    base_p95=$(jq -r '.p95_latency_ms // 0' "$baseline_file")
+scripts/benchmark.sh:336:    curr_p95=$(jq -r '.p95_latency_ms // 0' "$current_file")
+scripts/benchmark.sh:355:    local regression=false
+scripts/benchmark.sh:357:        regression=true
+scripts/benchmark.sh:360:        regression=true
+scripts/benchmark.sh:363:        regression=true
+scripts/benchmark.sh:366:    if [[ "$regression" == "true" ]]; then
+scripts/benchmark.sh:367:        echo "regression detected"
+scripts/benchmark.sh:371:    echo "no regression detected"
+scripts/benchmark.sh:379:benchmark_cache() {
+scripts/benchmark.sh:380:    log_info "Running cache benchmark ($BENCHMARK_ITERATIONS iterations)..."
+scripts/benchmark.sh:389:    local query_hash="benchmark-test-$(date +%s)"
+scripts/benchmark.sh:390:    local test_value="benchmark result data for testing"
+scripts/benchmark.sh:392:    # Clear any existing cache for this test
+scripts/benchmark.sh:393:    export CACHE_DIR="${TMPDIR:-/tmp}/.ci-cache-benchmark"
+scripts/benchmark.sh:397:    # First, set a cache entry
+scripts/benchmark.sh:400:    # Benchmark cache hits
+scripts/benchmark.sh:404:        local start_ms end_ms latency
+scripts/benchmark.sh:410:        latency=$((end_ms - start_ms))
+scripts/benchmark.sh:411:        latencies+=("$latency")
+scripts/benchmark.sh:431:    # Return metrics
+scripts/benchmark.sh:432:    echo "cache_hit_p95_ms=$p95"
+scripts/benchmark.sh:439:benchmark_full_query() {
+scripts/benchmark.sh:440:    log_info "Running full query benchmark (simulated)..."
+scripts/benchmark.sh:443:    # we simulate by timing cache-manager operations
+scripts/benchmark.sh:448:    export CACHE_DIR="${TMPDIR:-/tmp}/.ci-cache-benchmark"
+scripts/benchmark.sh:453:        local start_ms end_ms latency
+scripts/benchmark.sh:462:        latency=$((end_ms - start_ms))
+scripts/benchmark.sh:463:        latencies+=("$latency")
+scripts/benchmark.sh:490:benchmark_precommit() {
+scripts/benchmark.sh:491:    log_info "Running pre-commit benchmark..."
+scripts/benchmark.sh:502:        local start_ms end_ms latency
+scripts/benchmark.sh:508:        latency=$((end_ms - start_ms))
+scripts/benchmark.sh:509:        latencies_staged+=("$latency")
+scripts/benchmark.sh:518:        local start_ms end_ms latency
+scripts/benchmark.sh:524:        latency=$((end_ms - start_ms))
+scripts/benchmark.sh:525:        latencies_deps+=("$latency")
+scripts/benchmark.sh:601:            --cache)
+scripts/benchmark.sh:602:                mode="cache"
+scripts/benchmark.sh:639:            if ! feature_enabled "performance_regression"; then
+scripts/benchmark.sh:640:                log_info "performance_regression disabled"
+scripts/benchmark.sh:647:        if ! feature_enabled "benchmark"; then
+scripts/benchmark.sh:648:            log_info "benchmark disabled"
+scripts/benchmark.sh:652:        run_dataset_benchmark "$dataset" "$queries" "$output"
+scripts/benchmark.sh:656:    # Legacy benchmark mode
+scripts/benchmark.sh:659:    local log_file="$EVIDENCE_DIR/cache-benchmark.log"
+scripts/benchmark.sh:670:            cache)
+scripts/benchmark.sh:671:                benchmark_cache
+scripts/benchmark.sh:674:                benchmark_full_query
+scripts/benchmark.sh:677:                benchmark_precommit
+scripts/benchmark.sh:681:                benchmark_cache
+scripts/benchmark.sh:684:                benchmark_full_query
+scripts/benchmark.sh:687:                benchmark_precommit

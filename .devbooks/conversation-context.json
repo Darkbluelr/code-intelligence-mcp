@@ -1,0 +1,19 @@
+{
+  "session_id": "session-5a09d914-4406-4450-a372-4da42607e48d",
+  "started_at": "2026-01-16T11:11:55Z",
+  "context_window": [
+    {
+      "turn": 1,
+      "timestamp": "2026-01-16T11:11:55Z",
+      "query": "test",
+      "query_type": "search",
+      "focus_symbols": [
+        "sym1"
+      ],
+      "results_count": 0
+    }
+  ],
+  "accumulated_focus": [
+    "sym1"
+  ]
+}

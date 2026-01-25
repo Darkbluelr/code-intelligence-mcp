@@ -1,0 +1,4 @@
+run_id=cfgtest-1
+scanned_at=2026-01-23T11:54:40Z
+ok:/tmp/ci-drift-snapshot.json not found
+ok:/tmp/ci-demo-cfgtest-1-* not found

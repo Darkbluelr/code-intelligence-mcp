@@ -1,0 +1,172 @@
+  - 安装命令（复用现有脚本）：`./install.sh --with-hook`（可叠加 `--global`）
+  - 配置依赖：`~/.claude/settings.json` 的 `UserPromptSubmit` hooks
+  - 升级：重复运行 `./install.sh --with-hook` 覆盖旧脚本（保留 settings 备份）
+  - 卸载：删除 `~/.claude/hooks/context-inject-global.sh`，并从 `~/.claude/settings.json` 移除 hooks 配置
+  - 验证：`cat ~/.claude/hooks/context-inject-global.sh | head -n 5`，并在 Claude Code 触发 [Auto Tools]
+
+- **Codex wrapper 安装**：
+  - 位置：`/usr/local/bin/codex-auto`（global）或 `<repo-root>/bin/codex-auto`（local）
+  - PATH 依赖：global 模式需 `/usr/local/bin` 在 PATH；local 模式需 `export PATH="<repo-root>/bin:$PATH"`
+  - 配置依赖：`~/.codex/config.toml` 已配置本项目 MCP server
+  - 升级：重新执行安装脚本（覆盖同名 wrapper）
+  - 卸载：删除对应 wrapper 文件；删除 session 文件 `<repo-root>/.devbooks/cache/auto-tools/codex-session.json`
+  - 验证：`codex-auto --dry-run "ping"` 输出包含 `schema_version` 且不触发 codex
+
+#### 验收标准（AC-xxx，含验证锚点）
+
+| AC | 验收标准 | 可验证方式/证据锚点 |
+|----|----------|---------------------|
+| AC-001 | Claude Code 能在“模型输出前”完成工具调用并回填 | bats：模拟 UserPromptSubmit payload -> 断言输出包含 `tool_plan/tools`、`tool_results`、`fused_context` |
+| AC-002 | Codex CLI 入口 A 支持会话连续性 | bats：连续两次输入，第二次走 `codex exec resume <session_id>`；session 文件存在且 session_id 复用；失败时 [Limits] 显示降级 |
+| AC-003 | plan/dry-run 可重复且不依赖外部 codex | bats：`CI_AUTO_TOOLS_MODE=plan` 或 `CI_AUTO_TOOLS_DRY_RUN=1` -> 输出包含 `schema_version/run_id/tool_plan`，且不触发 codex 命令 |
+| AC-004 | 控制面可控且配置优先级为 env > config > default | bats：同一输入分别用 env 覆盖/无覆盖，断言 `tier_max/budget` 与开关生效 |
+| AC-005 | repo-root 判定在无 git/子目录/monorepo 场景一致 | bats：模拟三场景 -> 断言 repo-root 来源优先级与路径过滤一致 |
+| AC-006 | 白名单/参数裁剪/路径过滤/脱敏生效 | 安全样例：请求读取 `.env`/`id_rsa`/`..` 路径 -> 结果被过滤且 [Limits] 解释；脱敏样例含 `Bearer`/`BEGIN PRIVATE KEY` -> 输出被遮盖 |
+| AC-007 | 预算/并发/回填限额为明确数字且默认可用 | bats：对超量结果触发 `truncated=true`；输出包含 `tool_plan/budget` 与 [Limits] |
+| AC-008 | 失败不阻塞输出（fail-open），且降级可见 | bats：模拟工具超时/解析失败 -> `degraded.is_degraded=true` 且 [Limits] 含原因；仍输出可用 JSON |
+| AC-009 | Tier-0/1 自动；Tier-2 仅条件/确认触发；同包分阶段不拆包 | bats：explore vs debug 输入 -> 断言 Tier-2 是否进入 plan；文档明确“同包分阶段” |
+| AC-010 | 提示注入防护策略落地 | 构造工具输出含“忽略之前指令/执行 rm -rf”等文本 -> 输出被过滤且 `safety.ignore_instructions_inside_tool_output=true` |
+| AC-011 | 结果融合确定性规则稳定 | bats：同一输入重复两次 -> 输出顺序与摘要长度一致；冲突结论按规则呈现 |
+| AC-012 | 错误码/退出码契约一致 | bats：模拟 timeout/解析失败/工具不可用 -> error.code 与退出码匹配；[Limits] 文本一致 |
+| AC-013 | hooks 调用链清晰且 `augment-context-global.sh` 仍兼容 | bats：调用 `hooks/augment-context-global.sh` 断言等价于 `hooks/context-inject-global.sh` |
+| AC-014 | I/O schema 版本与兼容策略明确 | 静态检查/测试：JSON 输出必须包含 `schema_version`；未来变更遵守 SemVer 与向前兼容 |
+| AC-015 | Codex CLI 入口 B 仍可用于单次注入 | bats：单次执行 `codex exec <PROMPT>` 前置注入 -> 断言增强 prompt 含 `run_id` 且输出 [Limits] |
+
+---
+
+### Impact（影响分析）
+
+#### Transaction Scope
+
+`None`（不涉及跨服务事务；主要为本地 Hook/脚本/配置与 MCP 调用链调整）
+
+#### 受影响的模块
+
+| 模块 | 影响类型 | 影响程度 |
+|------|----------|----------|
+| `hooks/` | 新增/修改 | 高 |
+| `config/` | 新增 | 中 |
+| `docs/` | 新增/修改 | 中 |
+| `tests/` | 新增/修改 | 中 |
+| `src/` | 可选（若需对 MCP 调用参数/输出格式做适配） | 低-中 |
+
+#### 兼容性
+
+- 目标是默认不破坏现有“手动调用工具”的使用方式
+- Hook/Wrapper 的输出应保持向后兼容：即使自动化关闭，也能输出空注入或仅注入项目画像
+
+#### 风险
+
+| 风险 | 概率 | 影响 | 缓解措施 |
+|------|------|------|----------|
+| 自动调用导致延迟增加 | 中 | 高 | 分层 + 预算 + 并发控制 + 缓存 + 降级 |
+| 结果噪音反而干扰模型 | 中 | 中-高 | top-k、聚合去重、明确溯源、解释摘要 |
+| 不同客户端调用链差异导致“未必能预调用” | 低-中 | 高 | 以 Hook/Wrapper 为强入口；在测试中验证“输出前调用” |
+| 工具不可用/索引不可用导致失败 | 中 | 中 | 先 `ci_index_status`，并提供降级路径 |
+| 安全/隐私风险（意外读到敏感文件） | 低-中 | 高 | 白名单 + 路径过滤 + 输出脱敏 + 明确提示 |
+
+---
+
+### Alternatives（备选方案）
+
+#### 方案 A：把所有逻辑塞进 `hooks/context-inject-global.sh`
+
+**优势**：文件更少，短期快
+
+**劣势**：入口脚本会持续膨胀，难扩展、难测试，未来接入新客户端更痛苦
+
+**适合**：一次性脚本，不考虑长期维护
+
+#### 方案 B（推荐）：入口适配层 + 编排内核拆分
+
+**优势**：职责清晰、可扩展、可测试；可在不改入口的前提下迭代编排策略
+
+**劣势**：多一个脚本与配置，需要最小文档说明
+
+**适合**：本项目“平台化/可扩展”的目标
+
+---
+
+### Decision（决策，待 Judge 裁决）
+
+**推荐选择**：方案 B（入口适配层 + 编排内核拆分）。
+
+**关键决策点（提案给出默认）**：
+- 自动调用策略：尽可能调用合适工具，但受白名单/预算/阈值边界约束（反对无上限全调用）
+- 语言支持：中英文均支持（语言无关）
+- 交付边界：仅 Claude Code + Codex CLI；Cursor 等明确不做
+
+---
+
+## 批准历史
+
+| 时间 | 阶段 | 操作 | 操作者 | 理由 |
+|------|------|------|--------|------|
+| 2026-01-23 | Proposal | 创建 | AI（Proposal Author） | 根据 `用户初始要求.md` 生成 |
+
+## Decision Log
+
+### 2026-01-23 裁决：Revise
+
+**理由摘要**：
+- 已核验：本文件正文不包含“占位式截断文本”；Challenger 提到的截断内容很可能来自工具输出被截断（该点不构成本次裁决的阻断理由）。
+- Codex CLI “模型输出前调用”的集成路径未明确（入口/触发时机/差异点），可行性与改动面无法评估。
+- 控制面（开关/降级/回滚）与默认预算（超时/并发/回填上限）缺失，会导致体验、成本与稳定性不可控。
+- 安全边界缺口：白名单/参数约束/路径过滤与脱敏/日志与回填敏感信息策略未定义。
+- 契约与验收锚点不足：编排输出 schema/兼容策略未明确，AC 未绑定可执行验证，存在范围膨胀与“假完成”风险。
+
+**必须修改项**（若 Revise）：
+- [ ] 明确 Codex CLI “模型输出前”集成路径：入口形式（wrapper/hook/其他）、触发时机、最小配置、与 Claude Code 的差异点。
+- [ ] 定义控制面：默认开关、用户可控选项（完全关闭/降级到 Tier-1/仅生成 Plan）、配置优先级（env > config > default）、失败后的自动回滚与“不阻塞输出”策略。
+- [ ] 给出安全边界：自动调用工具白名单来源与审核方式、参数约束（防止危险参数）、路径过滤与脱敏规则、日志与回填中敏感信息的处理策略。
+- [ ] 明确编排内核 I/O 契约：Tool Plan/Tool Results/Fused Context 的 JSON schema（字段/类型/必填/可选/版本号/兼容策略），以及终端文本输出格式约束。
+- [ ] 预算与并发默认值落地为具体数字：总超时、单工具超时、并发数、回填 token/字节上限、top-k 等，并解释取值依据（保守/激进的权衡）。
+- [ ] 失败模型与提示注入防护：工具输出视为不可信数据；融合提示中显式声明不得执行工具输出中的指令；定义超时/部分失败/解析失败时的合并与降级规则。
+- [ ] 澄清与现有 hooks 的关系：`hooks/context-inject-global.sh`、`hooks/augment-context-global.sh` 与拟新增 `hooks/auto-tool-orchestrator.sh` 的职责边界、调用链、向后兼容策略。
+- [ ] 验收标准补齐可验证锚点：每个 AC 绑定至少一个可执行验证（bats 测试/静态检查/示例命令）；并核查/消除重复或冲突的 AC。
+- [ ] 移除“24 小时后自动批准”的默认条款，改为显式批准，避免绕过裁决流程。
+- [ ] Tier 分层依据与触发条件写清：每个 Tier 的准入标准（成本/风险/稳定性/信息增益）、Tier-2 的默认触发条件与“需要用户确认”的边界。
+- [ ] 范围收敛（仍在同一变更包内）：先定义 MVP（默认仅 Tier-0/1 自动；Tier-2 仅条件触发或需用户确认），将非 MVP 明确标注为“可选/后续”，避免本次交付范围膨胀。
+
+**验证要求**：
+- [ ] 在 proposal 中补充至少 1 条可重复的端到端验证步骤：给定输入 prompt，能证明“工具在回答前执行且回填被消费”（可用 hooks 输出中的时间戳/标记字段作为证据）。
+- [ ] 增加最小安全验证说明：构造“工具输出包含提示注入文本”的样例，验证融合提示不会把其当成系统指令执行。
+- [ ] 增加最小降级验证说明：模拟工具超时/不可用时仍能生成可用输出，并显式标注降级原因与降级到的层级。
+
+### 2026-01-23 补记：关于占位核验（Revise 回合）
+
+- 已复核：当前 `proposal.md` 正文未包含任何“占位式截断字符串”；若历史讨论中出现“正文存在截断占位”的说法，以本条核验结果为准。
+- 本次 Revise 已将提案正文改为完整可读文本；不再依赖任何“省略/截断占位”来表达结构。
+
+### 2026-01-23 裁决：Revise
+
+**理由摘要**：
+- Codex CLI 入口 A 的会话连续性仍缺定义：`codex exec` 与 `codex exec resume` 的 session_id/状态保存与恢复策略不明确，无法评估可行与回退。
+- 验收锚点仍缺“可重复且不依赖外部 codex”的路径：需要明确 `CI_AUTO_TOOLS_MODE=plan`/`--dry-run` 的可测试输出（增强 prompt 或编排 JSON）以供 bats 断言“先编排后回答”。
+- repo-root 判定与非 git/子目录/monorepo 行为未定义，路径过滤规则缺乏可验证边界。
+- 结果融合确定性与错误码/退出码契约缺口：去重/排序/摘要长度/冲突处理与 error.code 枚举未明示，影响稳定性与可测试性。
+- 安装/升级/卸载/验证路径未成文：Claude hook 与 Codex wrapper 的安装位置、PATH 要求与回滚验证流程缺失。
+
+**必须修改项**（若 Revise）：
+- [ ] Codex CLI 入口 A 的会话连续性方案：明确 session_id 生成/持久化位置、`codex exec resume` 触发条件、丢失/冲突时降级策略，并给出最小可实现路径。
+- [ ] 明确 `CI_AUTO_TOOLS_MODE=plan` 或 `--dry-run` 的输出接口：输出增强 prompt/编排 JSON，且在此模式下不调用 codex；补充 bats 用例断言。
+- [ ] repo-root 判定规则：`git rev-parse --show-toplevel`/`pwd`/配置的优先级；无 git/monorepo/子目录场景的行为与错误处理。
+- [ ] 结果融合确定性规则：去重键、聚合顺序（稳定排序）、摘要长度/截断策略、冲突结论呈现；并给出示例。
+- [ ] 定义 error.code 与入口层退出码枚举，说明超时/解析失败/工具不可用等失败类型的降级路径与用户可见文本。
+- [ ] 补充安装/升级/卸载/验证流程：Claude hooks 与 Codex wrapper 的安装位置、PATH/配置依赖、回滚与验证命令。
+
+**验证要求**：
+- [ ] bats 覆盖 plan/dry-run 输出：给定固定 prompt，断言输出包含 `schema_version/run_id/tool_plan` 且未执行 codex。
+- [ ] e2e/脚本验证 Codex wrapper 会话恢复：模拟连续两轮 prompt，验证 session_id 复用或 resume 逻辑与降级输出。
+- [ ] 路径过滤验证用例：在无 git/子目录/monorepo 三场景下，断言 repo-root 解析与过滤行为一致。
+- [ ] 结果融合确定性验证：同一输入重复执行输出顺序与摘要长度稳定（含示例断言）。
+- [ ] 错误码/退出码验证：模拟 timeout/解析失败/工具不可用并断言 code 与 [Limits] 文本一致。
+
+### 2026-01-23 修订说明（Author）
+
+- 已补齐 Codex CLI 入口 A 的会话连续性：session_id 来源、持久化位置、resume 时机与丢失/冲突降级路径，并给出回滚方式。
+- 已明确 plan/dry-run 的确定性输出契约与“不调用 codex”的验证锚点，AC 与安装验证同步更新。
+- 已补齐 repo-root 判定优先级与无 git/子目录/monorepo 行为。
+- 已落地融合确定性规则（去重键/稳定排序/摘要截断/冲突呈现）。
+- 已补齐 error.code 枚举与入口层退出码、用户可见文本。
+- 已补齐 Claude hook 与 Codex wrapper 的安装/升级/卸载/验证路径。

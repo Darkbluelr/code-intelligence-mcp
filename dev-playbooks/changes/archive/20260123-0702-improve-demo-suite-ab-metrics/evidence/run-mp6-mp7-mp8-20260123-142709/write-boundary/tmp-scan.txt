@@ -1,0 +1,4 @@
+run_id=run-20260123-142709-18c50aff
+scanned_at=2026-01-23T14:27:10Z
+ok:/tmp/ci-drift-snapshot.json not found
+ok:/tmp/ci-demo-run-20260123-142709-18c50aff-* not found

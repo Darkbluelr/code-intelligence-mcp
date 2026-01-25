@@ -1,0 +1,48 @@
+1..47
+ok 1 T-EDGE-001 (@smoke): SCIP parser extracts IMPLEMENTS edge type
+ok 2 T-EDGE-002 (@smoke): SCIP parser extracts EXTENDS edge type
+ok 3 T-EDGE-003 (@smoke): SCIP parser extracts RETURNS_TYPE edge type
+ok 4 T-EDGE-004: Regex fallback parsing supports three edge types
+ok 5 T-MIG-001 (@smoke): Schema v2 to v3 migration succeeds
+ok 6 T-MIG-002 (@smoke): Schema migration failure auto-rollback
+ok 7 T-MIG-003 (@smoke): Auto-create backup before migration
+ok 8 T-MIG-004: Concurrent migration is rejected
+ok 9 T-CKB-001 (@smoke): CKB available returns real graph data
+ok 10 T-CKB-002 (@smoke): CKB fallback returns local results
+ok 11 T-CKB-003 (@smoke): CKB timeout triggers fallback
+ok 12 T-CKB-004: Fallback cooldown period skips CKB for 60s
+ok 13 T-CKB-005: Fallback output contains ckb_fallback_reason
+ok 14 T-FUSION-001 (@smoke): Fusion query candidates >= 1.5x vector-only
+ok 15 T-FUSION-002: Fusion query respects token budget
+ok 16 T-FUSION-003 (@smoke): Fusion query latency increase < 200ms
+ok 17 T-FUSION-004: Fallback uses local 1-hop edge traversal
+ok 18 T-WARMUP-001 (@smoke): Daemon auto-triggers warmup after start
+ok 19 T-WARMUP-002 (@smoke): Warmup does not block startup (async)
+ok 20 T-WARMUP-003: Warmup timeout 30s does not affect daemon
+ok 21 CT-MCP-001 (@critical): ckb_available field exists
+ok 22 CT-MCP-002 (@critical): ckb_fallback_reason conditionally required
+ok 23 CT-MCP-003 (@critical): fusion_depth field exists and in range
+ok 24 CT-MCP-004 (@critical): CKB timeout triggers fallback
+ok 25 CT-GS-001 (@critical): migrate --status returns schema_version
+ok 26 CT-GS-002 (@critical): migrate --apply creates backup
+ok 27 CT-GS-003 (@critical): Migration failure rollback
+ok 28 CT-GS-004 (@critical): stats returns edges_by_type
+ok 29 CT-GS-005 (@critical): Concurrent migration protection
+ok 30 CT-GR-001 (@critical): --fusion-depth parameter parsing
+ok 31 CT-GR-002 (@critical): --fusion-depth default value
+ok 32 CT-GR-003 (@critical): --fusion-depth fallback
+ok 33 CT-GR-004 (@critical): --include-virtual parameter
+ok 34 CT-GR-005 (@critical): Output contains source field
+ok 35 CT-GR-006 (@critical): Fusion candidate threshold
+ok 36 CT-GR-007 (@critical): fusion-depth=0 vector-only search
+ok 37 CT-DM-001 (@critical): start auto-triggers warmup
+ok 38 CT-DM-002 (@critical): status returns warmup_status
+ok 39 CT-DM-003 (@critical): warmup completed status
+ok 40 CT-DM-004 (@critical): warmup timeout handling
+ok 41 CT-DM-005 (@critical): warmup disabled
+ok 42 CT-DM-006 (@critical): Startup time unaffected by warmup
+ok 43 CT-DM-007 (@critical): status output completeness
+ok 44 BOUNDARY-001: Empty query string
+ok 45 BOUNDARY-002: Excessively long query string
+ok 46 BOUNDARY-003: Invalid fusion-depth parameter
+ok 47 BOUNDARY-004: Empty database query

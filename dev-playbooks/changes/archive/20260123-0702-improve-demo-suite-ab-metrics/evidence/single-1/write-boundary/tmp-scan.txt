@@ -1,0 +1,4 @@
+run_id=single-1
+scanned_at=2026-01-23T14:18:58Z
+ok:/tmp/ci-drift-snapshot.json not found
+ok:/tmp/ci-demo-single-1-* not found

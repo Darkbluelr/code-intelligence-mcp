@@ -1,0 +1,29 @@
+$ /opt/homebrew/bin/bats tests/benchmarks-contract.bats
+1..6
+ok 1 CT-BM-401: schema v1.1 dual write consistency
+not ok 2 CT-BM-402: compare stdout two lines + exit 0
+# (from function `fail' in file /Users/ozbombor/Projects/code-intelligence-mcp/tests/helpers/common.bash, line 34,
+#  in test file /Users/ozbombor/Projects/code-intelligence-mcp/tests/benchmarks-contract.bats, line 153)
+#   `[ "$line_count" -eq 2 ] || fail "compare stdout 应为两行，实际为 ${line_count} 行"' failed
+# FAIL: compare stdout 应为两行，实际为 1 行
+not ok 3 CT-BM-403: metric threshold priority + exit 1
+# (from function `fail' in file /Users/ozbombor/Projects/code-intelligence-mcp/tests/helpers/common.bash, line 34,
+#  in test file /Users/ozbombor/Projects/code-intelligence-mcp/tests/benchmarks-contract.bats, line 194)
+#   `[ "$status" -eq 1 ] || fail "阈值优先级回归应退出码 1，实际为 $status"' failed
+# FAIL: 阈值优先级回归应退出码 1，实际为 0
+not ok 4 CT-BM-404: version mismatch blocks compare (exit 2)
+# (from function `fail' in file /Users/ozbombor/Projects/code-intelligence-mcp/tests/helpers/common.bash, line 34,
+#  in test file /Users/ozbombor/Projects/code-intelligence-mcp/tests/benchmarks-contract.bats, line 231)
+#   `[ "$status" -eq 2 ] || fail "version_mismatch 期望退出码 2，实际为 $status"' failed
+# FAIL: version_mismatch 期望退出码 2，实际为 0
+not ok 5 CT-BM-405: compare prefers metrics.* with fallback
+# (from function `fail' in file /Users/ozbombor/Projects/code-intelligence-mcp/tests/helpers/common.bash, line 34,
+#  from function `assert_numeric_between' in file /Users/ozbombor/Projects/code-intelligence-mcp/tests/benchmarks-contract.bats, line 57,
+#  in test file /Users/ozbombor/Projects/code-intelligence-mcp/tests/benchmarks-contract.bats, line 275)
+#   `assert_numeric_between "$baseline_mrr" 0.79 0.81' failed
+# FAIL: 数值  不在区间 [0.79, 0.81]
+not ok 6 CT-BM-406: median-of-3 artifact paths
+# (from function `fail' in file /Users/ozbombor/Projects/code-intelligence-mcp/tests/helpers/common.bash, line 34,
+#  in test file /Users/ozbombor/Projects/code-intelligence-mcp/tests/benchmarks-contract.bats, line 308)
+#   `fail "缺少基准产物路径: ${missing[*]}"' failed
+# FAIL: 缺少基准产物路径: benchmarks/baselines/run-1/benchmark_result.json benchmarks/baselines/run-2/benchmark_result.json benchmarks/baselines/run-3/benchmark_result.json benchmarks/baselines/run-1/benchmark_summary.md benchmarks/baselines/run-2/benchmark_summary.md benchmarks/baselines/run-3/benchmark_summary.md benchmarks/baselines/benchmark_result.median.json benchmarks/baselines/benchmark_summary.median.md benchmarks/results/run-1/benchmark_result.json benchmarks/results/run-2/benchmark_result.json benchmarks/results/run-3/benchmark_result.json benchmarks/results/run-1/benchmark_summary.md benchmarks/results/run-2/benchmark_summary.md benchmarks/results/run-3/benchmark_summary.md benchmarks/results/benchmark_result.median.json benchmarks/results/benchmark_summary.median.md

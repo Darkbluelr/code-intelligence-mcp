@@ -1,0 +1,70 @@
+version: 1.0
+
+global:
+  # 索引存储位置（相对于配置文件）
+  index_dir: .ci-index
+
+  # 是否遵守 .gitignore
+  respect_gitignore: true
+
+  # 全局排除规则（总是生效）
+  global_exclude:
+    - "**/node_modules/**"
+    - "**/.git/**"
+    - "**/dist/**"
+    - "**/build/**"
+
+default_workspace:
+  name: main
+  root: .
+  include:
+    - "src/**"
+    - "packages/**"
+    - "scripts/**"
+    - "tests/**"
+  exclude:
+    - "**/*.min.js"
+    - "**/*.d.ts"
+  index:
+    embedding:
+      enabled: true
+      model: text-embedding-3-small
+      dimension: 768
+    graph:
+      enabled: true
+    scip:
+      enabled: true
+
+workspaces:
+  - name: demo-zod
+    root: demo/zod
+    respect_gitignore: false
+    include:
+      - "packages/zod/src/**"
+      - "packages/zod/tests/**"
+    exclude:
+      - "**/node_modules/**"
+    index:
+      embedding:
+        enabled: true
+      graph:
+        enabled: true
+
+  - name: demo-typescript
+    root: demo/TypeScript
+    respect_gitignore: false
+    include:
+      - "src/**"
+      - "tests/cases/**"
+    exclude:
+      - "**/node_modules/**"
+    index:
+      embedding:
+        enabled: true
+      graph:
+        enabled: true
+
+imports:
+  boundaries: config/boundaries.yaml
+  features: config/features.yaml
+  llm_providers: config/llm-providers.yaml

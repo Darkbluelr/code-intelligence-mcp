@@ -1,0 +1,141 @@
+#!/bin/bash
+# ci - Code Intelligence CLI
+
+set -euo pipefail
+
+resolve_script_dir() {
+  local source="${BASH_SOURCE[0]}"
+  while [ -h "$source" ]; do
+    local dir
+    dir="$(cd -P "$(dirname "$source")" && pwd)"
+    source="$(readlink "$source")"
+    [[ "$source" != /* ]] && source="$dir/$source"
+  done
+  cd -P "$(dirname "$source")" && pwd
+}
+
+SCRIPT_DIR="$(resolve_script_dir)"
+ROOT_DIR="${SCRIPT_DIR}/.."
+SCRIPTS_DIR="${ROOT_DIR}/scripts"
+TEMPLATE_PATH="${ROOT_DIR}/config/ci-config.yaml.template"
+
+show_help() {
+  cat << 'EOF'
+ci - Code Intelligence CLI
+
+用法:
+  ci init [--force] [--template <path>] [--output <path>]
+  ci index <build|status|clean|rebuild> [--workspace <name>|--all] [--ci-config <file>] [--config <file>]
+
+示例:
+  ci init
+  ci index build
+  ci index status --workspace demo-zod
+  ci index rebuild --all
+EOF
+}
+
+command="${1:-}"
+shift || true
+
+case "$command" in
+  init)
+    output="ci-config.yaml"
+    template="$TEMPLATE_PATH"
+    force="false"
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --output)
+          output="$2"
+          shift 2
+          ;;
+        --template)
+          template="$2"
+          shift 2
+          ;;
+        --force)
+          force="true"
+          shift
+          ;;
+        -h|--help)
+          show_help
+          exit 0
+          ;;
+        *)
+          echo "未知选项: $1" >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    if [[ -f "$output" && "$force" != "true" ]]; then
+      echo "配置已存在: $output (使用 --force 覆盖)" >&2
+      exit 1
+    fi
+    if [[ ! -f "$template" ]]; then
+      echo "模板不存在: $template" >&2
+      exit 1
+    fi
+    cp "$template" "$output"
+    echo "已生成: $output"
+    ;;
+
+  index)
+    action="${1:-}"
+    shift || true
+    if [[ -z "$action" ]]; then
+      echo "缺少 action: build|status|clean|rebuild" >&2
+      exit 1
+    fi
+
+    workspace=""
+    ci_config=""
+    embedding_config=""
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --workspace)
+          workspace="$2"
+          shift 2
+          ;;
+        --all)
+          workspace="all"
+          shift
+          ;;
+        --ci-config)
+          ci_config="$2"
+          shift 2
+          ;;
+        --config)
+          embedding_config="$2"
+          shift 2
+          ;;
+        -h|--help)
+          show_help
+          exit 0
+          ;;
+        *)
+          echo "未知选项: $1" >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    args=("$action")
+    [[ -n "$workspace" ]] && args+=(--workspace "$workspace")
+    [[ -n "$ci_config" ]] && args+=(--ci-config "$ci_config")
+    [[ -n "$embedding_config" ]] && args+=(--config "$embedding_config")
+
+    exec bash "${SCRIPTS_DIR}/embedding.sh" "${args[@]}"
+    ;;
+
+  -h|--help|"")
+    show_help
+    ;;
+
+  *)
+    echo "未知命令: $command" >&2
+    show_help
+    exit 1
+    ;;
+esac

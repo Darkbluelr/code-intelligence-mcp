@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "status": "success",
+  "overall_verdict": "no_change",
+  "reasons": [],
+  "thresholds": {
+    "source": "builtin",
+    "path": null,
+    "sha256": "f769b827475baf683c81d63110ef3c0be9e062149208bbe796daf180c42bb098",
+    "used": {"unknown_inconclusive_gt":0,"metrics":{"metrics.demo_suite.total_duration_ms":{"direction":"lower","tolerance":5000}}}
+  },
+  "inputs": {
+    "a": { "path": "ab-version/run-a/metrics.json", "status": "degraded", "git": { "ref_input": "HEAD", "ref_resolved": "3547af120636a4f2fa8635a238dd3cc5994b5321" } },
+    "b": { "path": "ab-version/run-b/metrics.json", "status": "degraded", "git": { "ref_input": "HEAD~1", "ref_resolved": "2ff36e5c6febf6be832a8659992a87f767180e87" } }
+  },
+  "metrics": [
+  {
+    "path": "metrics.demo_suite.total_duration_ms",
+    "direction": "lower",
+    "a": 126,
+    "b": 63,
+    "delta_abs": -63.0,
+    "tolerance": 5000,
+    "verdict": "no_change"
+  }
+]
+}

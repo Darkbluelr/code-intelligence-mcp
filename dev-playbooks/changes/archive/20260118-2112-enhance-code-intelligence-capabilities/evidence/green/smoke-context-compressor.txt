@@ -1,0 +1,5 @@
+1..4
+ok 1 T-CC-001: Skeleton extraction preserves signatures
+ok 2 T-CC-004: Complex generic signatures are fully preserved
+ok 3 SC-CC-007: Compression levels (low/medium/high) work correctly
+ok 4 T-CC-007: TypeScript files are fully supported

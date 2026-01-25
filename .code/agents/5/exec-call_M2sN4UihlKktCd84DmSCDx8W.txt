@@ -1,0 +1,1349 @@
+src/server.ts:9:import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+src/server.ts:10:import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+src/server.ts:14:} from "@modelcontextprotocol/sdk/types.js";
+src/server.ts:103:    description: "Get Graph-RAG context for a query. Combines semantic search with code graph traversal to provide rich context. Use this when you need comprehensive context about a topic including related code, dependencies, and call relationships. Best for: understanding complex features, gathering context for code changes, exploring interconnected code.",
+src/server.ts:107:        query: { type: "string", description: "Query for context retrieval" },
+src/server.ts:274:          description: "Visualization level: 1=system context, 2=module, 3=file (default: 2)",
+src/server.ts:419:  - Graph-RAG context with smart pruning
+docs/Augment.md:375:| 上下文引擎 | 结构化上下文输出（5 层） | ✅ | `hooks/augment-context-global.sh` |
+docs/Augment.md:396:通过 `augment-context-global.sh` 实现 5 层结构化输出：
+docs/Augment.md:400:3. `task_context`：任务上下文（意图分析、代码片段）
+docs/Augment.md:440:| `.devbooks/subgraph-cache.db` | 子图 LRU 缓存 |
+docs/Augment.md:441:| `.devbooks/conversation-context.json` | 对话上下文（FIFO 10 轮） |
+src/tool-handlers.ts:124:  const { stdout, stderr } = await runScript("graph-rag.sh", [
+src/tool-handlers.ts:352:  // Available commands: record, get-preferences, cleanup, context, session
+scripts/test-embedding.sh:152:HOOK_SCRIPT="$PROJECT_ROOT/.claude/hooks/augment-context-with-embedding.sh"
+hooks/augment-context.sh:2:# Augment-style context injection hook v3.0 (Performance Optimized)
+scripts/intent-learner.sh:11:#   context save --query <q> --symbols <s1,s2>              - 保存对话上下文
+scripts/intent-learner.sh:12:#   context load                                             - 加载对话上下文
+scripts/intent-learner.sh:13:#   context apply-weight --results <json>                   - 应用对话连续性加权
+scripts/intent-learner.sh:36:#   CONVERSATION_CONTEXT_PATH - 对话上下文路径 (默认: .devbooks/conversation-context.json)
+scripts/intent-learner.sh:64:: "${CONVERSATION_CONTEXT_PATH:=${DEVBOOKS_DIR:-.devbooks}/conversation-context.json}"
+scripts/intent-learner.sh:239:ensure_context_dir() {
+scripts/intent-learner.sh:248:init_empty_context() {
+scripts/intent-learner.sh:249:    ensure_context_dir
+scripts/intent-learner.sh:261:            context_window: [],
+scripts/intent-learner.sh:269:read_context() {
+scripts/intent-learner.sh:270:    ensure_context_dir
+scripts/intent-learner.sh:277:            context_window: [],
+scripts/intent-learner.sh:288:            context_window: [],
+scripts/intent-learner.sh:300:            context_window: [],
+scripts/intent-learner.sh:307:write_context() {
+scripts/intent-learner.sh:311:    ensure_context_dir
+scripts/intent-learner.sh:322:save_context_turn() {
+scripts/intent-learner.sh:359:    local context
+scripts/intent-learner.sh:360:    context=$(read_context)
+scripts/intent-learner.sh:364:    session_id=$(echo "$context" | jq -r '.session_id // empty')
+scripts/intent-learner.sh:369:        context=$(echo "$context" | jq \
+scripts/intent-learner.sh:377:    next_turn=$(echo "$context" | jq '(.context_window | length) + 1')
+scripts/intent-learner.sh:409:    # 添加到 context_window
+scripts/intent-learner.sh:410:    context=$(echo "$context" | jq --argjson new_turn "$new_turn" '
+scripts/intent-learner.sh:411:        .context_window += [$new_turn]
+scripts/intent-learner.sh:415:    context=$(echo "$context" | jq --argjson symbols "$symbols_array" '
+scripts/intent-learner.sh:422:    context=$(echo "$context" | jq --argjson max "$max_turns" '
+scripts/intent-learner.sh:423:        if (.context_window | length) > $max then
+scripts/intent-learner.sh:425:            .context_window = (.context_window | .[-$max:])
+scripts/intent-learner.sh:433:    context=$(echo "$context" | jq --argjson max "$max_focus" '
+scripts/intent-learner.sh:437:            ($ctx.context_window | [.[].focus_symbols[]] | group_by(.) | map({symbol: .[0], count: length}) | sort_by(-.count) | .[0:$max] | map(.symbol)) as $top_symbols |
+scripts/intent-learner.sh:445:    write_context "$context"
+scripts/intent-learner.sh:452:apply_context_weight() {
+scripts/intent-learner.sh:474:    local context
+scripts/intent-learner.sh:475:    context=$(read_context)
+scripts/intent-learner.sh:477:    # 如果既没有 context_window 也没有 accumulated_focus，直接返回原结果
+scripts/intent-learner.sh:478:    local context_len acc_len
+scripts/intent-learner.sh:479:    context_len=$(echo "$context" | jq '.context_window | length // 0')
+scripts/intent-learner.sh:480:    acc_len=$(echo "$context" | jq '.accumulated_focus | length // 0')
+scripts/intent-learner.sh:481:    if [[ "$context_len" -eq 0 ]] && [[ "$acc_len" -eq 0 ]]; then
+scripts/intent-learner.sh:495:        --argjson context "$context" \
+scripts/intent-learner.sh:502:        ($context.accumulated_focus // []) as $accumulated |
+scripts/intent-learner.sh:505:        ([$context.context_window[-3:]? // [] | .[].focus_symbols[]?] | unique) as $recent |
+scripts/intent-learner.sh:508:        ([$context.context_window[-1]?.focus_symbols[]?] | map(split("::")[0]) | unique) as $recent_files |
+scripts/intent-learner.sh:529:                context_boost: $total_boost
+scripts/intent-learner.sh:543:    session_id=$(init_empty_context)
+scripts/intent-learner.sh:564:    local context
+scripts/intent-learner.sh:565:    context=$(read_context)
+scripts/intent-learner.sh:568:    current_id=$(echo "$context" | jq -r '.session_id // empty')
+scripts/intent-learner.sh:572:        echo "$context"
+scripts/intent-learner.sh:596:    local context
+scripts/intent-learner.sh:597:    context=$(read_context)
+scripts/intent-learner.sh:600:    session_id=$(echo "$context" | jq -r '.session_id // empty')
+scripts/intent-learner.sh:610:    echo "$context" | jq '{
+scripts/intent-learner.sh:614:            turns: (.context_window | length),
+scripts/intent-learner.sh:665:# context 命令路由
+scripts/intent-learner.sh:666:cmd_context() {
+scripts/intent-learner.sh:668:        log_error "用法: intent-learner context <save|load|apply-weight>"
+scripts/intent-learner.sh:677:            save_context_turn "$@"
+scripts/intent-learner.sh:680:            read_context
+scripts/intent-learner.sh:683:            apply_context_weight "$@"
+scripts/intent-learner.sh:958:  context save --query <q> --symbols <s1,s2> [--query-type <type>]
+scripts/intent-learner.sh:967:  context load
+scripts/intent-learner.sh:970:  context apply-weight --results <json>
+scripts/intent-learner.sh:992:  CONVERSATION_CONTEXT_PATH     对话上下文路径 (默认: .devbooks/conversation-context.json)
+scripts/intent-learner.sh:1028:  intent-learner context save --query "find auth module" --symbols "src/auth.ts,src/auth.ts::login"
+scripts/intent-learner.sh:1031:  intent-learner context load
+scripts/intent-learner.sh:1034:  intent-learner context apply-weight --results '[{"symbol":"src/auth.ts::login","score":0.8}]'
+scripts/intent-learner.sh:1063:        if ! is_feature_enabled "context_signals"; then
+scripts/intent-learner.sh:1088:        context)
+scripts/intent-learner.sh:1089:            cmd_context "$@"
+scripts/hotspot-analyzer.sh:238:# 使用 context-layer.sh 的分类逻辑
+scripts/hotspot-analyzer.sh:256:      # 使用与 context-layer.sh 相同的 fix 分类规则
+scripts/entropy-viz.sh:270:    subgraph 热点文件分析
+hooks/augment-context-with-embedding.sh:2:# Augment-style context injection hook with Embedding support
+scripts/graph-rag-fusion.sh:3:# 包含：RRF 融合、LLM 重排序、启发式重排序
+scripts/graph-rag-fusion.sh:14:# ==================== RRF 融合 ====================
+scripts/graph-rag-fusion.sh:16:rrf_fusion() {
+scripts/graph-rag-fusion.sh:23:  local rrf_k="$7"
+scripts/graph-rag-fusion.sh:32:    --argjson rrf_k "$rrf_k" \
+scripts/graph-rag-fusion.sh:38:    def score(rank; weight): weight / ($rrf_k + rank);
+scripts/graph-rag-fusion.sh:414:fast_mock_context() {
+scripts/graph-rag-fusion.sh:429:    candidates_json=$(rrf_fusion "$keyword_candidates" "$vector_candidates" "$graph_candidates" \
+scripts/graph-rag-fusion.sh:430:      "$HYBRID_WEIGHT_KEYWORD" "$HYBRID_WEIGHT_VECTOR" "$HYBRID_WEIGHT_GRAPH" "$HYBRID_RRF_K")
+scripts/graph-rag-fusion.sh:437:  local subgraph='{"nodes":[],"edges":[]}'
+scripts/graph-rag-fusion.sh:439:  printf '{"schema_version":"1.0","source":"graph-rag","token_count":0,"subgraph":%s,"candidates":%s,"metadata":{"ckb_available":true,"ckb_fallback_reason":null,"fusion_depth":%s,"fusion_weights":"%s","graph_depth":%s,"token_count":0,"boundary_filtered":0,"legacy_mode":%s,"reranked":false,"provider":null,"fallback_reason":null,"retry_count":null,"graph_candidates":%s}}\n' \
+scripts/graph-rag-fusion.sh:440:    "$subgraph" "$candidates_json" "$FUSION_DEPTH" "$fusion_weights" "$MAX_DEPTH" "$LEGACY_MODE" "$graph_count"
+scripts/context-layer.sh:2:# context-layer.sh - Context Layer Enhancement (Commit Classification + Bug History)
+scripts/context-layer.sh:9:#   context-layer.sh --classify <sha>
+scripts/context-layer.sh:10:#   context-layer.sh --classify-batch --since "90 days ago"
+scripts/context-layer.sh:11:#   context-layer.sh --bug-history --file <path>
+scripts/context-layer.sh:12:#   context-layer.sh --index [--days 90]
+scripts/context-layer.sh:13:#   context-layer.sh --help
+scripts/context-layer.sh:17:#   CONTEXT_INDEX_PATH    - Index file path (default: .devbooks/context-index.json)
+scripts/context-layer.sh:32:: "${CONTEXT_INDEX_PATH:=.devbooks/context-index.json}"
+scripts/context-layer.sh:78:context-layer.sh - Context Layer Enhancement (Commit Classification + Bug History)
+scripts/context-layer.sh:81:  context-layer.sh --classify <sha>
+scripts/context-layer.sh:82:  context-layer.sh --classify-batch --since "90 days ago"
+scripts/context-layer.sh:83:  context-layer.sh --bug-history --file <path>
+scripts/context-layer.sh:84:  context-layer.sh --index [--days 90]
+scripts/context-layer.sh:85:  context-layer.sh --help
+scripts/context-layer.sh:93:  --index               Generate context index
+scripts/context-layer.sh:101:  CONTEXT_INDEX_PATH    Index file path (default: .devbooks/context-index.json)
+scripts/context-layer.sh:106:  context-layer.sh --classify abc123
+scripts/context-layer.sh:109:  context-layer.sh --classify-batch --since "30 days ago"
+scripts/context-layer.sh:112:  context-layer.sh --bug-history --file src/server.ts
+scripts/context-layer.sh:114:  # Generate context index
+scripts/context-layer.sh:115:  context-layer.sh --index --days 90
+scripts/context-layer.sh:342:# Generate context index for all files
+scripts/context-layer.sh:345:generate_context_index() {
+scripts/context-layer.sh:348:    log_info "Generating context index (last $days days)..."
+scripts/context-layer.sh:578:                log_error "Usage: context-layer.sh --classify <sha>"
+scripts/context-layer.sh:588:                log_error "Usage: context-layer.sh --bug-history --file <path>"
+scripts/context-layer.sh:594:            generate_context_index "$days"
+hooks/augment-context-global.sh:55:Usage: augment-context-global.sh [OPTIONS]
+hooks/augment-context-global.sh:76:  echo '{"prompt":"fix auth bug"}' | augment-context-global.sh
+hooks/augment-context-global.sh:77:  augment-context-global.sh --analyze-intent --prompt "fix authentication bug"
+hooks/augment-context-global.sh:78:  augment-context-global.sh --analyze-intent --file src/auth.ts --line 42
+hooks/augment-context-global.sh:881:  local graph_rag_tool="${SCRIPT_DIR}/../../tools/graph-rag-context.sh"
+hooks/augment-context-global.sh:914:  local reranker_tool="${SCRIPT_DIR}/../../tools/context-reranker.sh"
+hooks/augment-context-global.sh:944:build_base_context() {
+hooks/augment-context-global.sh:945:  local context
+hooks/augment-context-global.sh:946:  context="[DevBooks 自动上下文]
+hooks/augment-context-global.sh:956:      context="${context}
+hooks/augment-context-global.sh:962:  echo "$context"
+hooks/augment-context-global.sh:1142:  if declare -f load_devbooks_context &>/dev/null; then
+hooks/augment-context-global.sh:1143:    devbooks_ctx=$(load_devbooks_context "$CWD" 2>/dev/null) || devbooks_ctx='{}'
+hooks/augment-context-global.sh:1207:  # 4. 构建 task_context
+hooks/augment-context-global.sh:1239:  local task_context
+hooks/augment-context-global.sh:1240:  task_context=$(jq -n \
+hooks/augment-context-global.sh:1273:    --argjson task_context "$task_context" \
+hooks/augment-context-global.sh:1279:      task_context: $task_context,
+hooks/augment-context-global.sh:1320:  output+="主要意图: $(echo "$json_output" | jq -r '.task_context.intent_analysis.primary_intent')\n"
+hooks/augment-context-global.sh:1321:  output+="置信度: $(echo "$json_output" | jq -r '.task_context.intent_analysis.confidence')\n"
+hooks/augment-context-global.sh:1352:add_graph_context() {
+hooks/augment-context-global.sh:1353:  local context="$1"
+hooks/augment-context-global.sh:1355:  local graph_context=""
+hooks/augment-context-global.sh:1360:    graph_context=$(call_graph_rag "$PROMPT")
+hooks/augment-context-global.sh:1361:    if [ -n "$graph_context" ]; then
+hooks/augment-context-global.sh:1362:      context="${context}
+hooks/augment-context-global.sh:1365:$graph_context"
+hooks/augment-context-global.sh:1370:  if [ -z "$graph_context" ] && [ -n "$symbols" ]; then
+hooks/augment-context-global.sh:1372:    if [ -z "$graph_context" ] && [ "$GRAPH_RAG_ENABLED" = "true" ]; then
+hooks/augment-context-global.sh:1380:    context="${context}
+hooks/augment-context-global.sh:1389:    context="${context}
+hooks/augment-context-global.sh:1395:  echo "$context"
+hooks/augment-context-global.sh:1400:  local context="$1"
+hooks/augment-context-global.sh:1402:  context="${context}
+hooks/augment-context-global.sh:1408:    context="${context}
+hooks/augment-context-global.sh:1413:  echo "$context"
+hooks/augment-context-global.sh:1418:  local context="$1"
+hooks/augment-context-global.sh:1419:  jq -n --arg ctx "$context" \
+hooks/augment-context-global.sh:1528:  CONTEXT=$(build_base_context "$AT_REFS")
+hooks/augment-context-global.sh:1535:  CONTEXT=$(add_graph_context "$CONTEXT" "$SYMBOLS")
+scripts/common.sh:1066:load_devbooks_context() {
+scripts/adr-parser.sh:49:    "context" "decision" "status" "title" "file" "path" "type" "name"
+scripts/adr-parser.sh:180:    local context
+scripts/adr-parser.sh:181:    context=$(extract_section "$file" "Context")
+scripts/adr-parser.sh:194:        --arg context "$context" \
+scripts/adr-parser.sh:203:            context: $context,
+scripts/adr-parser.sh:237:    local context
+scripts/adr-parser.sh:238:    context=$(extract_section "$file" "Context")
+scripts/adr-parser.sh:252:        --arg context "$context" \
+scripts/adr-parser.sh:262:            context: $context,
+scripts/adr-parser.sh:301:    # 从 decision、context、title 中提取关键词
+scripts/adr-parser.sh:302:    local decision context title
+scripts/adr-parser.sh:304:    context=$(echo "$adr_json" | jq -r '.context // ""')
+scripts/adr-parser.sh:307:    local all_text="$title $decision $context"
+scripts/graph-rag.sh:12:#   graph-rag-context.sh --query "查询内容" [选项]
+scripts/graph-rag.sh:57:# shellcheck source=graph-rag-core.sh
+scripts/graph-rag.sh:58:source "${SCRIPT_DIR}/graph-rag-core.sh"
+scripts/graph-rag.sh:61:# shellcheck source=graph-rag-retrieval.sh
+scripts/graph-rag.sh:62:source "${SCRIPT_DIR}/graph-rag-retrieval.sh"
+scripts/graph-rag.sh:64:# 加载融合模块（RRF 融合、LLM 重排序）
+scripts/graph-rag.sh:65:# shellcheck source=graph-rag-fusion.sh
+scripts/graph-rag.sh:66:source "${SCRIPT_DIR}/graph-rag-fusion.sh"
+scripts/graph-rag.sh:69:# shellcheck source=graph-rag-query.sh
+scripts/graph-rag.sh:70:source "${SCRIPT_DIR}/graph-rag-query.sh"
+scripts/graph-rag.sh:80:  graph-rag-context.sh --query "查询内容" [选项]
+scripts/graph-rag.sh:105:  graph-rag-context.sh --query "用户认证相关的函数"
+scripts/graph-rag.sh:108:  graph-rag-context.sh --query "处理支付的代码" --top-k 20 --max-depth 3
+scripts/graph-rag.sh:111:  graph-rag-context.sh --query "错误处理" --format json
+scripts/graph-rag.sh:116:    "source": "graph-rag",
+scripts/graph-rag.sh:118:    "subgraph": {
+scripts/graph-rag.sh:153:  echo "graph-rag-context.sh version 1.0.0"
+scripts/graph-rag.sh:337:  result=$(build_context "$QUERY")
+scripts/cod-visualizer.sh:188:    echo "    subgraph System[\"Code Intelligence System\"]"
+scripts/cod-visualizer.sh:511:            local subgraph_name
+scripts/cod-visualizer.sh:512:            subgraph_name=$(_escape_mermaid_label "$module_path")
+scripts/cod-visualizer.sh:513:            echo "    subgraph $subgraph_name"
+scripts/cod-visualizer.sh:536:        local subgraph_name
+scripts/cod-visualizer.sh:537:        subgraph_name=$(_escape_mermaid_label "$module_path")
+scripts/cod-visualizer.sh:538:        echo "    subgraph $subgraph_name"
+scripts/graph-rag-core.sh:17:# MP5: 混合检索权重 (RRF)
+scripts/graph-rag-core.sh:21:HYBRID_RRF_K=60
+scripts/graph-rag-core.sh:39:CACHE_DIR="${TMPDIR:-/tmp}/.devbooks-cache/graph-rag"
+scripts/graph-rag-core.sh:305:      if [[ "$line" =~ ^[[:space:]]+rrf_k:[[:space:]]*([0-9]+) ]]; then
+scripts/graph-rag-core.sh:306:        HYBRID_RRF_K="${BASH_REMATCH[1]}"
+scripts/graph-rag-core.sh:341:    "$SCRIPT_DIR/graph-rag.sh"
+scripts/embedding.sh:78:context_signals_enabled() {
+scripts/embedding.sh:92:    in_features && /context_signals:/ { in_target = 1; next }
+scripts/embedding.sh:93:    in_features && /^[[:space:]][[:space:]][a-zA-Z]/ && !/context_signals/ { in_target = 0 }
+scripts/embedding.sh:113:apply_context_signals() {
+scripts/embedding.sh:121:  if ! context_signals_enabled; then
+scripts/embedding.sh:122:    log_warn "上下文信号功能已禁用 (features.context_signals: false)"
+scripts/embedding.sh:157:apply_context_signals_to_tsv() {
+scripts/embedding.sh:175:  json=$(apply_context_signals "$json")
+scripts/embedding.sh:1162:    candidates_json=$(apply_context_signals "$candidates_json")
+scripts/embedding.sh:1200:    apply_context_signals_to_tsv "$TEMP_DIR/final_results.tsv"
+scripts/embedding.sh:1264:  --enable-context-signals  启用上下文信号加权（需 intent-learner）
+scripts/embedding.sh:1462:          --enable-context-signals)
+scripts/context-compressor.sh:2:# context-compressor.sh - Context skeleton compressor for TS/JS
+scripts/context-compressor.sh:5:#   JSON，包含 compressed_context 和 metadata
+scripts/context-compressor.sh:56:CACHE_DIR="${DEVBOOKS_DIR}/context-compressor-cache"
+scripts/context-compressor.sh:64:  context-compressor.sh [选项] <file|dir>...
+scripts/context-compressor.sh:607:    if ! is_feature_enabled "context_compressor"; then
+scripts/context-compressor.sh:608:      log_warn "上下文压缩功能已禁用 (features.context_compressor: false)"
+scripts/context-compressor.sh:609:      echo '{"compressed_context":"","metadata":{"status":"disabled"}}'
+scripts/context-compressor.sh:754:  local temp_context_file
+scripts/context-compressor.sh:755:  temp_context_file=$(mktemp)
+scripts/context-compressor.sh:756:  _TEMP_FILES+=("$temp_context_file")
+scripts/context-compressor.sh:757:  echo "$_OUTPUT_COMPRESSED_CONTEXT" > "$temp_context_file"
+scripts/context-compressor.sh:760:    --rawfile compressed_context "$temp_context_file" \
+scripts/context-compressor.sh:774:      compressed_context: $compressed_context,
+scripts/context-compressor.sh:798:  local compressed_context=""
+scripts/context-compressor.sh:828:    if [ -z "$compressed_context" ]; then
+scripts/context-compressor.sh:829:      compressed_context="$file_block"
+scripts/context-compressor.sh:831:      compressed_context="${compressed_context}"$'\n'"${file_block}"
+scripts/context-compressor.sh:864:    compressed_context=$(printf '%s\n' "$compressed_context" | awk -v limit="$BUDGET" 'NF {count++} count<=limit {print} END {if (count>limit) exit 0}')
+scripts/context-compressor.sh:865:    compressed_tokens=$(printf '%s\n' "$compressed_context" | count_compressed_tokens)
+scripts/context-compressor.sh:869:  _OUTPUT_COMPRESSED_CONTEXT="$compressed_context"
+scripts/cache-utils.sh:4:# 用途: 为 augment-context-global.sh 和 augment-context.sh 提供统一的缓存机制
+dev-playbooks/project.md:11:- **协议**：MCP (Model Context Protocol) via @modelcontextprotocol/sdk
+dev-playbooks/project.md:71:| `ci_graph_rag` | 图基上下文检索 | graph-rag.sh |
+dev-playbooks/project.md:98:| @modelcontextprotocol/sdk | npm | 是 | MCP 协议实现 |
+scripts/cache-manager.sh:38:: "${SUBGRAPH_CACHE_DB:=${DEVBOOKS_DIR}/subgraph-cache.db}"
+scripts/cache-manager.sh:111:# Initialize SQLite database for subgraph cache (REQ-SLC-001, REQ-SLC-002)
+scripts/cache-manager.sh:113:init_subgraph_cache_db() {
+scripts/cache-manager.sh:119:        log_error "sqlite3 is required for subgraph cache"
+scripts/cache-manager.sh:131:CREATE TABLE IF NOT EXISTS subgraph_cache (
+scripts/cache-manager.sh:140:CREATE INDEX IF NOT EXISTS idx_access_time ON subgraph_cache(access_time);
+scripts/cache-manager.sh:143:CREATE INDEX IF NOT EXISTS idx_ttl_expires ON subgraph_cache(ttl_expires);
+scripts/cache-manager.sh:160:ensure_subgraph_cache_db() {
+scripts/cache-manager.sh:162:        init_subgraph_cache_db
+scripts/cache-manager.sh:166:# Get value from subgraph cache (REQ-SLC-005)
+scripts/cache-manager.sh:170:subgraph_cache_get() {
+scripts/cache-manager.sh:173:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:181:    sqlite3 "$SUBGRAPH_CACHE_DB" "DELETE FROM subgraph_cache WHERE ttl_expires IS NOT NULL AND ttl_expires < $now_seconds;" 2>/dev/null || true
+scripts/cache-manager.sh:189:UPDATE subgraph_cache SET access_time = $now WHERE key = '$cache_key';
+scripts/cache-manager.sh:191:SELECT value FROM subgraph_cache WHERE key = '$cache_key';
+scripts/cache-manager.sh:194:WHERE stat_key = CASE WHEN (SELECT COUNT(*) FROM subgraph_cache WHERE key = '$cache_key') > 0 THEN 'hits' ELSE 'misses' END;
+scripts/cache-manager.sh:211:# Set value in subgraph cache with LRU eviction (REQ-SLC-006)
+scripts/cache-manager.sh:216:subgraph_cache_set() {
+scripts/cache-manager.sh:220:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:241:    current_count=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:249:                "SELECT key FROM subgraph_cache ORDER BY access_time ASC LIMIT $evict_count;" 2>/dev/null || echo "")
+scripts/cache-manager.sh:266:DELETE FROM subgraph_cache WHERE ttl_expires IS NOT NULL AND ttl_expires < $now_seconds;
+scripts/cache-manager.sh:270:DELETE FROM subgraph_cache
+scripts/cache-manager.sh:272:    SELECT key FROM subgraph_cache
+scripts/cache-manager.sh:275:        WHEN (SELECT COUNT(*) FROM subgraph_cache) >= $max_size THEN $evict_count
+scripts/cache-manager.sh:280:INSERT OR REPLACE INTO subgraph_cache (key, value, access_time, created_time, ttl_expires)
+scripts/cache-manager.sh:282:    (SELECT created_time FROM subgraph_cache WHERE key = '$cache_key'), $now
+scripts/cache-manager.sh:290:# Delete entry from subgraph cache
+scripts/cache-manager.sh:291:subgraph_cache_delete() {
+scripts/cache-manager.sh:294:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:296:    sqlite3 "$SUBGRAPH_CACHE_DB" "DELETE FROM subgraph_cache WHERE key = '$cache_key';"
+scripts/cache-manager.sh:300:# Clear all entries from subgraph cache
+scripts/cache-manager.sh:301:subgraph_cache_clear() {
+scripts/cache-manager.sh:302:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:305:DELETE FROM subgraph_cache;
+scripts/cache-manager.sh:312:# Get subgraph cache statistics (REQ-SLC-007, REQ-SLC-009)
+scripts/cache-manager.sh:313:subgraph_cache_stats() {
+scripts/cache-manager.sh:316:    ensure_subgraph_cache_db || return 2
+scripts/cache-manager.sh:321:    total_entries=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT COUNT(*) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:322:    oldest_access=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT MIN(access_time) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:323:    newest_access=$(sqlite3 "$SUBGRAPH_CACHE_DB" "SELECT MAX(access_time) FROM subgraph_cache;" 2>/dev/null || echo "0")
+scripts/cache-manager.sh:409:  stats         Show subgraph cache statistics
+scripts/cache-manager.sh:414:  CACHE_MAX_SIZE      Maximum subgraph cache entries (default: 100)
+scripts/cache-manager.sh:415:  SUBGRAPH_CACHE_DB   SQLite database path (default: .devbooks/subgraph-cache.db)
+scripts/cache-manager.sh:914:    # Check for subgraph cache commands first (positional arguments)
+scripts/cache-manager.sh:923:                subgraph_cache_get "$1"
+scripts/cache-manager.sh:932:                subgraph_cache_set "$1" "$2"
+scripts/cache-manager.sh:941:                subgraph_cache_delete "$1"
+scripts/cache-manager.sh:945:                subgraph_cache_clear
+scripts/cache-manager.sh:963:                subgraph_cache_stats "$format"
+scripts/graph-rag-query.sh:172:build_subgraph() {
+scripts/graph-rag-query.sh:238:build_context() {
+scripts/graph-rag-query.sh:244:    fast_mock_context "$query"
+scripts/graph-rag-query.sh:250:  local cache_key="graph-rag:$CWD:$query:$TOP_K:$MAX_DEPTH:$FUSION_DEPTH:$TOKEN_BUDGET:$CKB_AVAILABLE:$LEGACY_MODE:$RERANK_ENABLED:$HYBRID_WEIGHT_KEYWORD:$HYBRID_WEIGHT_VECTOR:$HYBRID_WEIGHT_GRAPH:$HYBRID_RRF_K"
+scripts/graph-rag-query.sh:284:    candidates=$(rrf_fusion "$keyword_candidates" "$vector_candidates" "$graph_candidates" \
+scripts/graph-rag-query.sh:285:      "$HYBRID_WEIGHT_KEYWORD" "$HYBRID_WEIGHT_VECTOR" "$HYBRID_WEIGHT_GRAPH" "$HYBRID_RRF_K")
+scripts/graph-rag-query.sh:351:  local subgraph='{"nodes":[],"edges":[]}'
+scripts/graph-rag-query.sh:353:    subgraph=$(build_subgraph "$trimmed")
+scripts/graph-rag-query.sh:364:    --arg source "graph-rag" \
+scripts/graph-rag-query.sh:366:    --argjson subgraph "$subgraph" \
+scripts/graph-rag-query.sh:386:      subgraph: $subgraph,
+scripts/graph-rag-query.sh:425:    edge_count=$(echo "$result" | jq '.subgraph.edges | length')
+scripts/graph-rag-query.sh:438:        edge=$(echo "$result" | jq ".subgraph.edges[$j]")
+dev-playbooks/_meta/entropy/entropy-report-2026-01-15.md:39:| `hooks/augment-context-global.sh` | 1,099 | 🔴 高 |
+dev-playbooks/_meta/entropy/entropy-report-2026-01-15.md:40:| `scripts/graph-rag.sh` | 989 | 🔴 高 |
+dev-playbooks/_meta/entropy/entropy-report-2026-01-15.md:46:| `scripts/context-layer.sh` | 611 | 🟡 中 |
+dev-playbooks/_meta/entropy/entropy-report-2026-01-15.md:67:| `hooks/augment-context-global.sh` | 7.14 | 低 |
+dev-playbooks/_meta/entropy/entropy-report-2026-01-15.md:68:| `scripts/graph-rag.sh` | 7.09 | 低 |
+dev-playbooks/_meta/entropy/entropy-report-2026-01-15.md:126:   - `hooks/augment-context-global.sh` (1,099 行) → 模块化重构
+dev-playbooks/docs/推荐MCP.md:16:5. [Context7](#context7)
+dev-playbooks/docs/推荐MCP.md:32:| **context7** | 代码文档 | User Scope | 实时获取最新的库文档和代码示例 |
+dev-playbooks/docs/推荐MCP.md:391:- **npm 包**：`@upstash/context7-mcp`
+dev-playbooks/docs/推荐MCP.md:395:- **官方网站**：[context7.com](https://context7.com)
+dev-playbooks/docs/推荐MCP.md:396:- **GitHub**：[upstash/context7](https://github.com/upstash/context7)
+dev-playbooks/docs/推荐MCP.md:412:    "context7": {
+dev-playbooks/docs/推荐MCP.md:414:      "args": ["-y", "@upstash/context7-mcp"]
+dev-playbooks/docs/推荐MCP.md:425:    "context7": {
+dev-playbooks/docs/推荐MCP.md:427:      "args": ["-y", "@upstash/context7-mcp"],
+dev-playbooks/docs/推荐MCP.md:442:**获取 API Key**：访问 [context7.com/dashboard](https://context7.com/dashboard) 创建账户并获取密钥。
+dev-playbooks/docs/推荐MCP.md:463:Always use context7 when I need code generation, setup or configuration steps, or
+dev-playbooks/docs/推荐MCP.md:477:如果未设置规则，在提示中添加 `use context7`：
+dev-playbooks/docs/推荐MCP.md:480:配置 Cloudflare Worker 脚本以缓存 JSON API 响应 5 分钟。use context7
+dev-playbooks/docs/推荐MCP.md:512:**查找更多**：访问 [context7.com](https://context7.com) 搜索可用库。
+dev-playbooks/docs/推荐MCP.md:554:curl -I https://api.context7.com
+dev-playbooks/docs/推荐MCP.md:560:# 访问 context7.com/dashboard
+dev-playbooks/docs/推荐MCP.md:567:2. 访问 [context7.com](https://context7.com) 搜索可用库
+dev-playbooks/docs/推荐MCP.md:742:- `context` - 用户和 GitHub 上下文信息
+dev-playbooks/docs/推荐MCP.md:752:| `context` | 🔰 当前用户和 GitHub 上下文（强烈推荐）|
+dev-playbooks/docs/推荐MCP.md:774:- `default` - 默认配置（context, repos, issues, pull_requests, users）
+dev-playbooks/docs/推荐MCP.md:1628:--shared-browser-context
+dev-playbooks/docs/推荐MCP.md:1682:    "context7": { ... },
+dev-playbooks/docs/推荐MCP.md:1811:请参考 [Context7 章节](#context7) 的故障排查部分。
+dev-playbooks/docs/推荐MCP.md:1894:- [官方网站](https://context7.com)
+dev-playbooks/docs/推荐MCP.md:1895:- [GitHub 仓库](https://github.com/upstash/context7)
+dev-playbooks/docs/推荐MCP.md:1896:- [npm 包](https://www.npmjs.com/package/@upstash/context7-mcp)
+dev-playbooks/docs/推荐MCP.md:1897:- [获取 API Key](https://context7.com/dashboard)
+dev-playbooks/docs/推荐MCP.md:1898:- [添加项目到 Context7](https://github.com/upstash/context7#-adding-projects)
+dev-playbooks/docs/推荐MCP.md:1915:- [MCP 协议规范](https://modelcontextprotocol.io/)
+dev-playbooks/specs/_meta/project-profile.md:42:│   ├── graph-rag.sh       # Graph-RAG
+dev-playbooks/specs/_meta/project-profile.md:45:│   └── augment-context-global.sh  # 全局上下文注入
+dev-playbooks/specs/_meta/verification-baseline.md:167:| npm 依赖数 | 1 prod + 2 dev | @modelcontextprotocol/sdk |
+dev-playbooks/specs/conversation-context/spec.md:8:# Spec: 对话历史信号累积（conversation-context）
+dev-playbooks/specs/conversation-context/spec.md:11:> **Capability**: conversation-context
+dev-playbooks/specs/conversation-context/spec.md:33:- 存储位置：`.devbooks/conversation-context.json`
+dev-playbooks/specs/conversation-context/spec.md:45:  "context_window": [
+dev-playbooks/specs/conversation-context/spec.md:121:- 创建 `.devbooks/conversation-context.json`
+dev-playbooks/specs/conversation-context/spec.md:164:- 清空 `context_window`
+dev-playbooks/specs/conversation-context/spec.md:185:- `context_window`: []
+dev-playbooks/specs/conversation-context/spec.md:219:intent-learner.sh context <command> [options]
+dev-playbooks/specs/conversation-context/spec.md:224:| `context save --query <q> --symbols <s1,s2>` | 保存对话上下文 |
+dev-playbooks/specs/conversation-context/spec.md:225:| `context load` | 加载当前对话上下文 |
+dev-playbooks/specs/conversation-context/spec.md:226:| `context apply-weight --results <json>` | 对结果应用对话连续性加权 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:145:| 修改文件 | `scripts/graph-rag.sh` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:235:| `scripts/graph-rag.sh` | 修改 | 功能增强（智能裁剪） |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:245:| `tests/graph-rag.bats` | 修改 | 测试更新 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:306:graph-rag.sh → intent-learner.sh（偏好加权）
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:320:| `tests/graph-rag.bats` | 修改（智能裁剪测试） | P1 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:349:| `scripts/graph-rag.sh` | 直接修改 | **高** | 新增智能裁剪逻辑，与 intent-learner.sh 集成；被 13 个测试引用 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:376:│  intent-learner.sh ◀───── graph-rag.sh (新增集成)               │
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:389:| R1: graph-rag.sh 回归 | 高 | 高 | 13 个测试依赖此脚本 | 增量修改，保持现有接口签名；运行完整回归测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:411:   - `scripts/graph-rag.sh`（智能裁剪 + intent 集成）
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:424:| OQ-IA03 | intent-learner.sh 与 graph-rag.sh 的调用时序？ | 性能 | 建议 intent 结果异步预加载 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:467:| AC-F04 | 子图智能裁剪：输出 Token 数 ≤ 预算 | `tests/graph-rag.bats` 预算测试 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:573:| OQ-IA03 | intent-learner.sh 与 graph-rag.sh 的调用时序？ | 性能 | 建议 intent 结果异步预加载 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/proposal.md:1857:├── graph-rag.sh 修改（智能裁剪）
+dev-playbooks/specs/llm-rerank/spec.md:67:2. Consider: semantic match, symbol references, call relationships, context fit
+dev-playbooks/specs/llm-rerank/spec.md:142:**When**: 执行 `graph-rag.sh --query "auth handler" --rerank`
+dev-playbooks/specs/llm-rerank/spec.md:154:**When**: 执行 `graph-rag.sh --query "auth handler" --rerank`
+dev-playbooks/specs/adr-parser/spec.md:71:| context | 否 | ## Context 章节内容 |
+dev-playbooks/specs/adr-parser/spec.md:104:- status、context、decision、consequences：同 MADR
+dev-playbooks/specs/adr-parser/spec.md:191:- 正确提取 status、context、decision、consequences
+dev-playbooks/specs/_meta/key-concepts.md:19:**相关组件**：`src/server.ts`，`@modelcontextprotocol/sdk`
+dev-playbooks/specs/_meta/key-concepts.md:45:**相关组件**：`scripts/graph-rag.sh`
+dev-playbooks/specs/_meta/key-concepts.md:88:**相关组件**：`hooks/augment-context-global.sh`
+dev-playbooks/specs/mcp-output-format/spec.md:251:graph-rag.sh --query "test" --format json | jq -e '.metadata | has("ckb_available")'
+dev-playbooks/specs/mcp-output-format/spec.md:265:CKB_UNAVAILABLE=1 graph-rag.sh --query "test" --format json | \
+dev-playbooks/specs/mcp-output-format/spec.md:279:graph-rag.sh --query "test" --format json | \
+dev-playbooks/specs/mcp-output-format/spec.md:294:CKB_MOCK_DELAY_MS=6000 graph-rag.sh --query "test" --format json | \
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:390:    subgraph scripts
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:467:| `scripts/graph-rag.sh` | 修改 | 新增 --budget 参数和裁剪逻辑 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:468:| `tests/graph-rag.bats` | 修改 | 新增预算测试用例 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:507:./scripts/graph-rag.sh search <query> --budget <tokens>
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1014:| AC-F04 | 子图智能裁剪：输出 Token 数 ≤ 预算值 | `tests/graph-rag.bats` 预算测试 | M4 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1100:- [修改] `scripts/graph-rag.sh`: 新增智能裁剪功能
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1111:| `graph-rag.sh` | `intent-learner.sh` | 新增 | 偏好加权 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1151:│  [MOD] scripts/graph-rag.sh ──▶ intent-learner.sh (偏好加权)            │
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1175:├── scripts/graph-rag.sh (修改：智能裁剪)
+dev-playbooks/changes/archive/achieve-augment-full-parity/design.md:1177:├── tests/graph-rag.bats (更新)
+dev-playbooks/specs/greedy-selection/spec.md:10:> **模块**: graph-rag.sh
+dev-playbooks/specs/cod-visualizer/spec.md:28:- 包含子图（subgraph）划分
+dev-playbooks/specs/cod-visualizer/spec.md:63:- 模块作为子图（subgraph）
+dev-playbooks/specs/architecture/c4.md:73:│  │  │  (MCP Thin      │    │  (augment-context-global.sh             │││
+dev-playbooks/specs/architecture/c4.md:74:│  │  │   Shell)        │    │   augment-context-with-embedding.sh     │││
+dev-playbooks/specs/architecture/c4.md:90:│  │  │ graph-rag   │  │  indexer    │  │ hotspot-    │  │ boundary-   │││
+dev-playbooks/specs/architecture/c4.md:103:│  │  │  │ cache-      │  │ dependency- │  │ context-    │          │  ││
+dev-playbooks/specs/architecture/c4.md:149:| Global Hook | `hooks/augment-context-global.sh` | Hook | 全局上下文注入，4 维意图分析 | Bash |
+dev-playbooks/specs/architecture/c4.md:155:| Graph-RAG | `scripts/graph-rag.sh` | Script | 子图检索，边界过滤 | Bash |
+dev-playbooks/specs/architecture/c4.md:163:| **Context Layer** | `scripts/context-layer.sh` | Script | **Commit 语义分类（fix/feat/refactor）、Bug 修复历史提取** | Bash |
+dev-playbooks/specs/architecture/c4.md:196:| `hooks/augment-context-global.sh` | 5 层结构化上下文输出、DevBooks 适配注入 |
+dev-playbooks/specs/architecture/c4.md:197:| `scripts/common.sh` | 新增 detect_devbooks()、load_devbooks_context() |
+dev-playbooks/specs/architecture/c4.md:206:| `scripts/graph-rag.sh` | 融合查询集成：--fusion-depth 参数，CKB 降级时本地 1-hop 遍历 |
+dev-playbooks/specs/architecture/c4.md:229:| `ci_graph_rag` | graph-rag.sh | 已有，**Full Parity 增强：--budget** |
+dev-playbooks/specs/architecture/c4.md:274:### scripts/context-layer.sh Components [NEW: Phase 2]
+dev-playbooks/specs/architecture/c4.md:282:| `generate_context_index()` | 生成上下文索引 | - |
+dev-playbooks/specs/architecture/c4.md:330:| **`get_bug_fix_ratio()`** | **获取 Bug 修复比例** [Phase 2] | **context-layer.sh** |
+dev-playbooks/specs/architecture/c4.md:338:### scripts/graph-rag.sh Components
+dev-playbooks/specs/architecture/c4.md:342:| `search()` | 主搜索函数 | embedding_search(), subgraph_traverse() |
+dev-playbooks/specs/architecture/c4.md:344:| `subgraph_traverse()` | 子图遍历（保留边关系） | CKB MCP |
+dev-playbooks/specs/architecture/c4.md:346:| **`cached_subgraph()`** | **缓存加速子图检索** [Phase 2] | **cache-manager.sh** |
+dev-playbooks/specs/architecture/c4.md:348:### hooks/augment-context-global.sh Components
+dev-playbooks/specs/architecture/c4.md:352:| `generate_context()` | 主函数：生成上下文 | analyze_intent_4d() |
+dev-playbooks/specs/architecture/c4.md:425:    ├──→ scripts/hotspot-analyzer.sh ──→ context-layer.sh [Phase 2 增强]
+dev-playbooks/specs/architecture/c4.md:435:    ├──→ scripts/graph-rag.sh ──→ boundary-detector.sh
+dev-playbooks/specs/architecture/c4.md:453:    └──→ hooks/augment-context-global.sh ──→ pattern-learner.sh
+dev-playbooks/specs/architecture/c4.md:464:✅ hotspot-analyzer.sh → context-layer.sh（功能脚本 → 工具脚本）
+dev-playbooks/specs/architecture/c4.md:466:✅ graph-rag.sh → cache-manager.sh（缓存加速）
+dev-playbooks/specs/architecture/c4.md:467:✅ graph-rag.sh → intent-learner.sh（偏好加权，Full Parity 新增）
+dev-playbooks/specs/architecture/c4.md:476:✅ intent-learner.sh → augment-context-global.sh（对话上下文注入，Final Gaps 新增）
+dev-playbooks/specs/architecture/c4.md:477:✅ augment-context-global.sh → common.sh::detect_devbooks()（DevBooks 检测，Final Gaps 新增）
+dev-playbooks/specs/architecture/c4.md:488:| @modelcontextprotocol/sdk | npm | 是 | MCP 协议实现 |
+dev-playbooks/specs/architecture/c4.md:505:| 2026-01-11 | enhance-code-intelligence | 初始创建；新增 hotspot-analyzer, boundary-detector, pattern-learner, ast-diff；增强 bug-locator, graph-rag, call-chain, augment-context-global |
+dev-playbooks/specs/architecture/c4.md:506:| 2026-01-13 | **augment-upgrade-phase2** | **Phase 2 升级**：新增 cache-manager（多级缓存 L1+L2，mtime+blob hash 失效，LRU 淘汰）、dependency-guard（循环依赖检测，架构规则校验）、context-layer（Commit 语义分类，Bug 修复历史）、federation-lite（跨仓库契约索引）；新增 pre-commit 钩子；新增 config/arch-rules.yaml、config/federation.yaml 配置；增强 hotspot-analyzer（--with-bug-history）、common.sh（缓存共享函数）；新增 MCP 工具 ci_arch_check、ci_federation |
+dev-playbooks/specs/architecture/c4.md:507:| 2026-01-15 | **augment-parity** | **Augment 能力对等**：新增 graph-store.sh（SQLite 图存储，4 种边类型 CRUD）、scip-to-graph.sh（SCIP 索引解析转换）、daemon.sh（常驻守护进程，Unix Socket 通信）；增强 graph-rag.sh（LLM 重排序）、dependency-guard.sh（孤儿模块检测）、pattern-learner.sh（自动模式发现）、common.sh（llm_call() 适配函数）；新增 MCP 工具 ci_graph_store；新增 config/features.yaml 功能开关配置 |
+dev-playbooks/specs/architecture/c4.md:508:| 2026-01-16 | ****achieve-augment-full-parity**** | ****全面达到 Augment 代码智能水平****：新增 ast-delta.sh + src/ast-delta.ts（tree-sitter 增量 AST 解析）、impact-analyzer.sh（传递性影响分析，BFS + 置信度衰减）、cod-visualizer.sh（Mermaid + D3.js 架构可视化）、intent-learner.sh（查询历史 + 偏好学习）、vuln-tracker.sh（npm audit 漏洞追踪）；增强 graph-rag.sh（--budget 智能裁剪）、federation-lite.sh（虚拟边生成）；新增 MCP 工具 ci_ast_delta、ci_impact、ci_cod、ci_intent、ci_vuln；新增 tree-sitter 依赖 |
+dev-playbooks/specs/architecture/c4.md:509:| 2026-01-17 | *****augment-parity-final-gaps***** | *****补齐 Augment 对等最后差距（100% 轻资产能力对等）*****：新增 adr-parser.sh（ADR 解析与关联）、.github/workflows/arch-check.yml（GitHub Action CI/CD）、.gitlab-ci.yml.template（GitLab CI 模板）；增强 scip-to-graph.sh（边类型扩展：IMPLEMENTS/EXTENDS/RETURNS_TYPE/ADR_RELATED）、graph-store.sh（find-path 路径查询 + migrate 迁移命令）、intent-learner.sh（对话上下文持久化 + 会话管理 + 连续性加权）、daemon.sh（预热机制 + 请求取消协议）、cache-manager.sh（子图 LRU 缓存，SQLite 持久化，跨进程共享）、bug-locator.sh（影响分析融合 --with-impact）、augment-context-global.sh（5 层结构化输出 + DevBooks 适配）、common.sh（detect_devbooks() + load_devbooks_context()） |
+dev-playbooks/specs/architecture/c4.md:510:| 2026-01-18 | ******upgrade-code-intelligence-capabilities****** | ******代码智能能力轻资产升级（70% → 85-90%）******：新增 CKBClientManager（src/server.ts 内，MCP Client SDK 集成，健康检查，降级状态管理）、fusion_search()（scripts/embedding.sh，图+向量融合查询）；增强 scip-to-graph.sh（IMPLEMENTS/EXTENDS/RETURNS_TYPE 边类型解析，正则降级）、graph-store.sh（Schema v3 迁移，自动备份与回滚，并发保护）、graph-rag.sh（--fusion-depth 参数，融合查询集成）、daemon.sh（自动预热，异步执行，30s 超时）；新增 4 个 CLI 规格（mcp-output-format, graph-store-cli, graph-rag-cli, daemon-cli） |
+dev-playbooks/specs/architecture/c4.md:512:| 2026-01-22 | ********20260118-2112-enhance-code-intelligence-capabilities******** | ********代码智能能力增强（9 大核心能力）********：新增 `scripts/context-compressor.sh`（上下文压缩，30-50% 压缩率）、`scripts/drift-detector.sh`（架构漂移检测，C4 合规校验）、`scripts/semantic-anomaly.sh`（语义异常检测，6 种异常类型）、`scripts/benchmark.sh`（评测基准，latency/accuracy/token metrics）、`src/context-signal-manager.ts`（上下文信号管理器，4 维信号采集）；增强 `scripts/call-chain.sh`（--data-flow 跨函数数据流追踪）、`scripts/graph-store.sh`（Schema v4 迁移：transitive_closure/path_index/user_signals 表）、`scripts/embedding.sh`（fusion_search() 混合检索，RRF 融合）、`scripts/reranker.sh`（默认重排序管线，LLM Provider 抽象）；新增 MCP 工具 ci_context_compress、ci_drift_detect、ci_semantic_anomaly、ci_benchmark；Schema v3 → v4 迁移 |
+dev-playbooks/specs/smart-pruning/spec.md:55:- graph-rag 搜索返回 20 个候选片段
+dev-playbooks/specs/smart-pruning/spec.md:59:- 调用 `graph-rag.sh search "handleToolCall" --budget 4000`
+dev-playbooks/specs/smart-pruning/spec.md:67:**验证**：`tests/graph-rag.bats::test_budget_pruning`
+dev-playbooks/specs/smart-pruning/spec.md:83:**验证**：`tests/graph-rag.bats::test_priority_calculation`
+dev-playbooks/specs/smart-pruning/spec.md:101:**验证**：`tests/graph-rag.bats::test_budget_boundary`
+dev-playbooks/specs/smart-pruning/spec.md:109:- 调用 `graph-rag.sh search "query"`
+dev-playbooks/specs/smart-pruning/spec.md:115:**验证**：`tests/graph-rag.bats::test_default_budget`
+dev-playbooks/specs/smart-pruning/spec.md:123:- 调用 `graph-rag.sh search "query" --budget 0`
+dev-playbooks/specs/smart-pruning/spec.md:129:**验证**：`tests/graph-rag.bats::test_zero_budget`
+dev-playbooks/specs/smart-pruning/spec.md:144:**验证**：`tests/graph-rag.bats::test_single_fragment_exceeds_budget`
+dev-playbooks/specs/smart-pruning/spec.md:153:- 调用 `graph-rag.sh search "query" --budget 5000`
+dev-playbooks/specs/smart-pruning/spec.md:159:**验证**：`tests/graph-rag.bats::test_intent_preference_integration`
+dev-playbooks/specs/smart-pruning/spec.md:173:**验证**：`tests/graph-rag.bats::test_token_estimation`
+dev-playbooks/specs/smart-pruning/spec.md:188:| SC-SP-001 | `tests/graph-rag.bats::test_budget_pruning` |
+dev-playbooks/specs/smart-pruning/spec.md:189:| SC-SP-002 | `tests/graph-rag.bats::test_priority_calculation` |
+dev-playbooks/specs/smart-pruning/spec.md:190:| SC-SP-003 | `tests/graph-rag.bats::test_budget_boundary` |
+dev-playbooks/specs/smart-pruning/spec.md:191:| SC-SP-004 | `tests/graph-rag.bats::test_default_budget` |
+dev-playbooks/specs/smart-pruning/spec.md:192:| SC-SP-005 | `tests/graph-rag.bats::test_zero_budget` |
+dev-playbooks/specs/smart-pruning/spec.md:193:| SC-SP-006 | `tests/graph-rag.bats::test_single_fragment_exceeds_budget` |
+dev-playbooks/specs/smart-pruning/spec.md:194:| SC-SP-007 | `tests/graph-rag.bats::test_intent_preference_integration` |
+dev-playbooks/specs/smart-pruning/spec.md:195:| SC-SP-008 | `tests/graph-rag.bats::test_token_estimation` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:71:| `tests/graph-rag.bats` | 8 | M4: 智能裁剪 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/verification.md:199:### M4: 子图智能裁剪（扩展 graph-rag.bats）
+dev-playbooks/specs/hybrid-retrieval/spec.md:1:# 规格：混合检索（RRF 融合）
+dev-playbooks/specs/hybrid-retrieval/spec.md:15:### REQ-HR-001：RRF 融合算法
+dev-playbooks/specs/hybrid-retrieval/spec.md:17:系统应实现 Reciprocal Rank Fusion (RRF) 算法融合多种检索结果：
+dev-playbooks/specs/hybrid-retrieval/spec.md:20:RRF_score(d) = Σ_r [ 1 / (k + rank_r(d)) ]
+dev-playbooks/specs/hybrid-retrieval/spec.md:29:score(d) = w_keyword × RRF_keyword(d) + w_vector × RRF_vector(d) + w_graph × RRF_graph(d)
+dev-playbooks/specs/hybrid-retrieval/spec.md:72:  rrf_k: 60
+dev-playbooks/specs/hybrid-retrieval/spec.md:133:- 使用 RRF 融合结果
+dev-playbooks/specs/hybrid-retrieval/spec.md:213:- `graph-rag.sh`：使用混合检索结果
+dev-playbooks/specs/hybrid-retrieval/spec.md:225:| RRF 融合计算 | 延迟 | < 50ms |
+dev-playbooks/specs/ci-cd-integration/spec.md:319:              issue_number: context.issue.number,
+dev-playbooks/specs/ci-cd-integration/spec.md:320:              owner: context.repo.owner,
+dev-playbooks/specs/ci-cd-integration/spec.md:321:              repo: context.repo.repo,
+dev-playbooks/specs/ci-cd-integration/spec.md:322:              body: '## Architecture Check Failed\n\nPlease review the architecture violations in the workflow logs.\n\n[View Details](' + context.serverUrl + '/' + context.repo.owner + '/' + context.repo.repo + '/actions/runs/' + context.runId + ')'
+dev-playbooks/specs/intent-analysis/spec.md:39:#### Scenario: Analyze intent with implicit context
+dev-playbooks/specs/intent-analysis/spec.md:50:#### Scenario: Analyze intent with historical context
+dev-playbooks/specs/intent-analysis/spec.md:59:#### Scenario: Analyze intent with code context
+dev-playbooks/specs/architecture/module-graph.md:40:│  │ complexity  │  │ graph-rag   │  │  indexer    │              │
+dev-playbooks/specs/architecture/module-graph.md:74:| MCP Server | `src/server.ts` | MCP 协议处理，工具调度 | @modelcontextprotocol/sdk |
+dev-playbooks/specs/architecture/module-graph.md:79:| Graph-RAG | `scripts/graph-rag.sh` | 图基上下文检索 | common.sh, CKB MCP |
+dev-playbooks/specs/architecture/module-graph.md:94:| Global Context | `hooks/augment-context-global.sh` | 全局上下文注入 |
+dev-playbooks/specs/architecture/module-graph.md:95:| Embedding Context | `hooks/augment-context-with-embedding.sh` | Embedding 增强上下文 |
+dev-playbooks/specs/architecture/module-graph.md:96:| Context | `hooks/augment-context.sh` | 基础上下文注入 |
+dev-playbooks/specs/architecture/module-graph.md:119:graph-rag.sh        │   ✓    │   ✓    │   ✓    │   -    │   -    │   -    │
+dev-playbooks/specs/architecture/module-graph.md:153:| @modelcontextprotocol/sdk | npm | package.json |
+dev-playbooks/specs/context-weighting/spec.md:98:- **Given**: `context_window` 为空
+dev-playbooks/specs/structured-context-output/spec.md:8:# Spec: 结构化上下文输出（structured-context-output）
+dev-playbooks/specs/structured-context-output/spec.md:11:> **Capability**: structured-context-output
+dev-playbooks/specs/structured-context-output/spec.md:34:| 3 | `task_context` | 任务上下文（意图分析/相关代码片段/调用链） |
+dev-playbooks/specs/structured-context-output/spec.md:87:### REQ-SCO-004：task_context 结构
+dev-playbooks/specs/structured-context-output/spec.md:93:  "task_context": {
+dev-playbooks/specs/structured-context-output/spec.md:188:**When**: 执行 `augment-context-global.sh --format json`
+dev-playbooks/specs/structured-context-output/spec.md:192:- 输出包含 `task_context` 字段
+dev-playbooks/specs/structured-context-output/spec.md:217:### SC-SCO-004：task_context 意图分析
+dev-playbooks/specs/structured-context-output/spec.md:221:**When**: 分析意图并构建 task_context
+dev-playbooks/specs/structured-context-output/spec.md:291:| CT-SCO-004 | behavior | REQ-SCO-004, SC-SCO-004 | task_context 意图分析 |
+dev-playbooks/specs/structured-context-output/spec.md:304:  "required": ["project_profile", "current_state", "task_context", "recommended_tools", "constraints"],
+dev-playbooks/specs/structured-context-output/spec.md:324:    "task_context": {
+dev-playbooks/specs/architecture/hotspots.md:31:| 2 | `scripts/graph-rag.sh` | 912 | 🟡 中高 | 核心功能，需充分测试 |
+dev-playbooks/specs/architecture/hotspots.md:63:├── 被依赖：graph-rag.sh, bug-locator.sh, hooks/*
+dev-playbooks/specs/architecture/hotspots.md:77:| CKB MCP | call-chain.sh, graph-rag.sh | 功能降级 |
+dev-playbooks/specs/architecture/hotspots.md:104:   - 覆盖：embedding, graph-rag, call-chain
+dev-playbooks/specs/architecture/hotspots.md:121:  │               ● graph-rag.sh (912)
+dev-playbooks/specs/long-term-memory/spec.md:50:  context TEXT,              -- 符号出现的上下文
+dev-playbooks/specs/long-term-memory/spec.md:106:  context_similarity * 0.3   # 上下文相似度
+dev-playbooks/specs/long-term-memory/spec.md:408:migrations/002_add_context_column.sql
+dev-playbooks/specs/keystroke-cancel/spec.md:110:**Given**: 正在执行 `graph-rag.sh` 查询
+dev-playbooks/specs/keystroke-cancel/spec.md:176:daemon_start_with_cancel "graph-rag.sh" "query args"
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:169:  - 语法：`graph TD`、`subgraph`、`-->`
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:191:**目的（Why）**：在 graph-rag 搜索中实现 Token 预算控制，通过优先级算法智能裁剪子图，确保输出不超过 LLM 上下文限制。
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:194:- `scripts/graph-rag.sh` 修改：新增 `--budget` 参数和裁剪逻辑
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:197:- 修改：`scripts/graph-rag.sh`
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:575:| graph-rag.sh | intent-learner.sh | CALLS | 偏好加权 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:927:2. **意图历史与 graph-rag 集成的调用时机**
+dev-playbooks/changes/archive/achieve-augment-full-parity/tasks.md:928:   - 假设：graph-rag.sh 启动时调用 intent-learner.sh get-preferences
+dev-playbooks/specs/graph-rag-cli/spec.md:7:# 规格：graph-rag.sh 查询接口扩展
+dev-playbooks/specs/graph-rag-cli/spec.md:24:**描述**：`graph-rag.sh` 必须支持 `--fusion-depth` 可选参数，控制图+向量融合查询的图扩展深度。
+dev-playbooks/specs/graph-rag-cli/spec.md:46:**描述**：`graph-rag.sh` 必须支持 `--include-virtual` 可选参数，控制是否包含虚拟边（跨仓库联邦边）。
+dev-playbooks/specs/graph-rag-cli/spec.md:135:- 执行 `graph-rag.sh --query "authentication handler" --format json`
+dev-playbooks/specs/graph-rag-cli/spec.md:165:- 执行 `graph-rag.sh --query "test" --fusion-depth 2 --format json`
+dev-playbooks/specs/graph-rag-cli/spec.md:188:- 执行 `CKB_UNAVAILABLE=1 graph-rag.sh --query "test" --fusion-depth 3 --format json`
+dev-playbooks/specs/graph-rag-cli/spec.md:213:- 执行 `graph-rag.sh --query "test" --fusion-depth 0 --format json`
+dev-playbooks/specs/graph-rag-cli/spec.md:238:- 执行 `graph-rag.sh --query "api call" --include-virtual --format json`
+dev-playbooks/specs/graph-rag-cli/spec.md:265:- 执行 `graph-rag.sh --query "test" --fusion-depth 10 --format json`
+dev-playbooks/specs/graph-rag-cli/spec.md:287:用法: graph-rag.sh --query <查询> [选项]
+dev-playbooks/specs/graph-rag-cli/spec.md:320:  "$id": "graph-rag-output.schema.json",
+dev-playbooks/specs/graph-rag-cli/spec.md:387:graph-rag.sh --query "test" --fusion-depth 2 --format json | \
+dev-playbooks/specs/graph-rag-cli/spec.md:401:graph-rag.sh --query "test" --format json | \
+dev-playbooks/specs/graph-rag-cli/spec.md:415:CKB_UNAVAILABLE=1 graph-rag.sh --query "test" --fusion-depth 3 --format json | \
+dev-playbooks/specs/graph-rag-cli/spec.md:429:graph-rag.sh --query "test" --include-virtual --format json | \
+dev-playbooks/specs/graph-rag-cli/spec.md:443:graph-rag.sh --query "test" --format json | \
+dev-playbooks/specs/graph-rag-cli/spec.md:458:vector_count=$(graph-rag.sh --query "test" --fusion-depth 0 --format json | jq '.metadata.total_candidates')
+dev-playbooks/specs/graph-rag-cli/spec.md:461:fusion_count=$(graph-rag.sh --query "test" --fusion-depth 1 --format json | jq '.metadata.total_candidates')
+dev-playbooks/specs/graph-rag-cli/spec.md:464:ckb_available=$(graph-rag.sh --query "test" --format json | jq '.metadata.ckb_available')
+dev-playbooks/specs/graph-rag-cli/spec.md:480:graph-rag.sh --query "test" --fusion-depth 0 --format json | \
+dev-playbooks/specs/benchmark/spec.md:239:- `context-compressor.sh`：压缩率评测
+dev-playbooks/specs/context-compressor/spec.md:3:> **Capability**: context-compressor
+dev-playbooks/specs/context-compressor/spec.md:31:context_compress --mode skeleton <files>
+dev-playbooks/specs/context-compressor/spec.md:79:context_compress --budget 5000 <files>
+dev-playbooks/specs/context-compressor/spec.md:143:**When**: 运行 `context-compress --mode skeleton src/service.ts`
+dev-playbooks/specs/context-compressor/spec.md:155:**When**: 运行 `context-compress --budget 5000 src/`
+dev-playbooks/specs/context-compressor/spec.md:198:**When**: 运行 `context-compress --budget 3000 file1.ts file2.ts ...`
+dev-playbooks/specs/context-compressor/spec.md:208:### context_compress
+dev-playbooks/specs/context-compressor/spec.md:212:context_compress [OPTIONS] <files...>
+dev-playbooks/specs/context-compressor/spec.md:228:  "compressed_context": "// file: src/service.ts\nexport function process...",
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:46:| Intent Analyzer | 增强 | `hooks/augment-context-global.sh` | 4 维信号聚合 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:47:| Subgraph Retrieval | 增强 | `scripts/graph-rag.sh` | 子图检索替代线性列表 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:77:1. `scripts/graph-rag.sh` - 子图检索逻辑
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:80:4. `hooks/augment-context-global.sh` - 4 维意图分析
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:133:  ├── scripts/graph-rag.sh      (ci_graph_rag)
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:140:scripts/graph-rag.sh
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:144:hooks/augment-context-global.sh
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:146:  └── tools/graph-rag-context.sh  (Graph-RAG)
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:154:  graph-rag.sh ────→ boundary-detector.sh (新增，边界过滤)
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:155:  augment-context-global.sh ──→ pattern-learner.sh (新增，模式匹配)
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:162:  ✅ graph-rag.sh → boundary-detector.sh：功能脚本 → 工具脚本，合规
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:163:  ✅ augment-context-global.sh → pattern-learner.sh：钩子 → 工具脚本，合规
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:181:#### 3.4.2 graph-rag.sh 修改点
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:201:#### 3.4.4 augment-context-global.sh 修改点
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:231:| `hooks/augment-context-with-embedding.sh` | 调用 embedding 相关函数 | 无影响 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:262:| `scripts/graph-rag.sh` | 🟡 中 | 输出格式变更 | 中 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:264:| `hooks/augment-context-global.sh` | 🟡 中 | 功能增强 | 中 |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:278:- `augment-context-global.sh` 增加意图分析
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:285:- `graph-rag.sh` 改为子图检索
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:293:| OQ2 | 子图检索的边关系输出格式如何定义？ | graph-rag.sh | Design Owner |
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:324:  subgraph_retrieval: true    # 子图检索
+dev-playbooks/changes/archive/enhance-code-intelligence/proposal.md:341:| V3 | 子图检索保留边关系 | 检查输出包含 `--calls-->` 等关系 | `evidence/subgraph-output.log` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:46:| Context Layer | 新增 | `scripts/context-layer.sh` | Commit 语义分类 + Bug 修复历史 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:65:3. `scripts/context-layer.sh` - 上下文层增强
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:76:1. `.devbooks/context-index.json` - 上下文索引（运行时生成）
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:107:| 上下文索引 | 新增 `.devbooks/context-index.json` | 运行时生成 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:114:  hotspot-analyzer.sh ──→ context-layer.sh (Bug 修复历史)
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:116:  graph-rag.sh ──────────→ cache-manager.sh (缓存加速)
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:122:  ✅ hotspot-analyzer.sh → context-layer.sh：功能脚本 → 工具脚本，合规
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:173:- 新增 `context-layer.sh`
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:208:| 数据层 | 删除 `.devbooks/context-index.json`、`.devbooks/federation-index.json`、`.ci-cache/l2/` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:217:  context_layer: true         # 上下文层增强
+dev-playbooks/changes/archive/augment-upgrade-phase2/proposal.md:310:| U2 | Commit 语义分类规则是否需要国际化 | 用户提交信息语言 | context-layer.sh |
+dev-playbooks/changes/archive/augment-parity/proposal.md:87:| 修改文件 | `scripts/graph-rag.sh` |
+dev-playbooks/changes/archive/augment-parity/proposal.md:106:2. Consider: semantic match, symbol references, call relationships, context fit
+dev-playbooks/changes/archive/augment-parity/proposal.md:153:| `scripts/graph-rag.sh` | 修改 | 功能增强 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:235:graph-rag.sh → graph-store.sh（图查询）
+dev-playbooks/changes/archive/augment-parity/proposal.md:236:graph-rag.sh → daemon.sh（守护进程通信）
+dev-playbooks/changes/archive/augment-parity/proposal.md:248:| `tests/graph-rag.bats` | 需更新（重排序测试） | P1 |
+dev-playbooks/changes/archive/augment-parity/proposal.md:267:| 直接调用外部 API | ⚠️ 风险 | `graph-rag.sh` 直接调用 Claude/Ollama API |
+dev-playbooks/changes/archive/augment-parity/proposal.md:282:  - graph-rag.sh → graph-store.sh（图查询）
+dev-playbooks/changes/archive/augment-parity/proposal.md:287:  - graph-rag.sh → cache-manager.sh
+dev-playbooks/changes/archive/augment-parity/proposal.md:947:CKB_ENABLED=false ./scripts/graph-rag.sh --query "test" --format json | \
+dev-playbooks/changes/archive/augment-parity/proposal.md:1271:├── graph-rag.sh 修改（LLM 重排序）
+dev-playbooks/specs/context-layer/spec.md:4:> **Capability**: context-layer
+dev-playbooks/specs/context-layer/spec.md:75:系统应生成上下文索引 `.devbooks/context-index.json`：
+dev-playbooks/specs/context-layer/spec.md:135:**When**: 执行 `context-layer.sh --file src/auth.ts`
+dev-playbooks/specs/context-layer/spec.md:170:**When**: 执行 `context-layer.sh --index`
+dev-playbooks/specs/context-layer/spec.md:172:- 生成 `.devbooks/context-index.json`
+dev-playbooks/specs/context-layer/spec.md:206:### context-layer.sh
+dev-playbooks/specs/context-layer/spec.md:210:context-layer.sh --classify <sha>
+dev-playbooks/specs/context-layer/spec.md:213:context-layer.sh --classify-batch --since "90 days ago"
+dev-playbooks/specs/context-layer/spec.md:216:context-layer.sh --bug-history --file <path>
+dev-playbooks/specs/context-layer/spec.md:219:context-layer.sh --index [--days 90]
+dev-playbooks/specs/context-layer/spec.md:251:| `CONTEXT_INDEX_PATH` | `.devbooks/context-index.json` | 索引路径 |
+dev-playbooks/specs/subgraph-lru-cache/spec.md:8:# Spec Delta: 子图 LRU 缓存（subgraph-lru-cache）
+dev-playbooks/specs/subgraph-lru-cache/spec.md:11:> **Capability**: subgraph-lru-cache
+dev-playbooks/specs/subgraph-lru-cache/spec.md:33:- 数据库文件：`.devbooks/subgraph-cache.db`
+dev-playbooks/specs/subgraph-lru-cache/spec.md:42:CREATE TABLE IF NOT EXISTS subgraph_cache (
+dev-playbooks/specs/subgraph-lru-cache/spec.md:48:CREATE INDEX IF NOT EXISTS idx_access_time ON subgraph_cache(access_time);
+dev-playbooks/specs/subgraph-lru-cache/spec.md:84:UPDATE subgraph_cache SET access_time = $now WHERE cache_key = '$key';
+dev-playbooks/specs/subgraph-lru-cache/spec.md:85:SELECT cache_value FROM subgraph_cache WHERE cache_key = '$key';
+dev-playbooks/specs/subgraph-lru-cache/spec.md:99:DELETE FROM subgraph_cache
+dev-playbooks/specs/subgraph-lru-cache/spec.md:101:    SELECT cache_key FROM subgraph_cache
+dev-playbooks/specs/subgraph-lru-cache/spec.md:103:    LIMIT MAX(0, (SELECT COUNT(*) FROM subgraph_cache) - $MAX_SIZE + 1)
+dev-playbooks/specs/subgraph-lru-cache/spec.md:106:INSERT OR REPLACE INTO subgraph_cache (cache_key, cache_value, access_time, created_time)
+dev-playbooks/specs/subgraph-lru-cache/spec.md:108:    (SELECT created_time FROM subgraph_cache WHERE cache_key = '$key'), $now
+dev-playbooks/specs/subgraph-lru-cache/spec.md:167:- 条目写入 `subgraph_cache` 表
+dev-playbooks/specs/subgraph-lru-cache/spec.md:229:- 创建 `.devbooks/subgraph-cache.db`
+dev-playbooks/specs/subgraph-lru-cache/spec.md:230:- 创建 `subgraph_cache` 表
+dev-playbooks/specs/subgraph-lru-cache/spec.md:314:| `SUBGRAPH_CACHE_DB` | `.devbooks/subgraph-cache.db` | 缓存数据库路径 |
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/proposal.md:99:- `scripts/embedding.sh` 的存储形态迁移（例如 SQLite/`sqlite-vec`）、混合检索 RRF
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/proposal.md:114:- `scripts/graph-rag.sh`（读 `graph.db`，需关注并发/锁等待）
+dev-playbooks/changes/archive/optimize-indexing-pipeline-20260117/proposal.md:155:  - `graph-rag.sh`/`impact-analyzer.sh` 等读路径与 indexer 写路径并发时，需确认 WAL 与锁等待策略是否可接受（目标是“退化但不失败”）
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:55:- graph-rag 搜索返回 20 个候选片段
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:59:- 调用 `graph-rag.sh search "handleToolCall" --budget 4000`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:67:**验证**：`tests/graph-rag.bats::test_budget_pruning`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:83:**验证**：`tests/graph-rag.bats::test_priority_calculation`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:101:**验证**：`tests/graph-rag.bats::test_budget_boundary`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:109:- 调用 `graph-rag.sh search "query"`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:115:**验证**：`tests/graph-rag.bats::test_default_budget`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:123:- 调用 `graph-rag.sh search "query" --budget 0`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:129:**验证**：`tests/graph-rag.bats::test_zero_budget`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:144:**验证**：`tests/graph-rag.bats::test_single_fragment_exceeds_budget`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:153:- 调用 `graph-rag.sh search "query" --budget 5000`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:159:**验证**：`tests/graph-rag.bats::test_intent_preference_integration`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:173:**验证**：`tests/graph-rag.bats::test_token_estimation`
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:188:| SC-SP-001 | `tests/graph-rag.bats::test_budget_pruning` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:189:| SC-SP-002 | `tests/graph-rag.bats::test_priority_calculation` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:190:| SC-SP-003 | `tests/graph-rag.bats::test_budget_boundary` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:191:| SC-SP-004 | `tests/graph-rag.bats::test_default_budget` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:192:| SC-SP-005 | `tests/graph-rag.bats::test_zero_budget` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:193:| SC-SP-006 | `tests/graph-rag.bats::test_single_fragment_exceeds_budget` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:194:| SC-SP-007 | `tests/graph-rag.bats::test_intent_preference_integration` |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/smart-pruning/spec.md:195:| SC-SP-008 | `tests/graph-rag.bats::test_token_estimation` |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:133:    ├──→ scripts/graph-rag.sh ──→ boundary-detector.sh
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:135:    └──→ hooks/augment-context-global.sh ──→ pattern-learner.sh
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:158:| 修改 | `scripts/graph-rag.sh` | 子图检索 + 边界过滤 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:160:| 修改 | `hooks/augment-context-global.sh` | 4 维意图分析 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:172:| 修改 | `embedding_search()` | graph-rag.sh | 增加子图连通性分析 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:174:| 新增 | `analyze_intent_4d()` | augment-context-global.sh | 4 维意图分析 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:181:| graph-rag.sh → boundary-detector.sh | 功能脚本 → 工具脚本 | ✅ |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:182:| augment-context-global.sh → pattern-learner.sh | 钩子 → 工具脚本 | ✅ |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:257:| `graph-rag.sh:search()` | 2 | 集成边界/子图 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:258:| `augment-context-global.sh:generate_context()` | 4 | 集成 4 维意图信号 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:278:| PatternMatch | @ValueObject | pattern_id, confidence, context | 模式匹配结果 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:303:| EC-005 | 符号不存在 | 查询未索引符号 | 返回空子图 `{nodes: [], edges: []}` | graph-rag.sh |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:304:| EC-006 | 孤立符号 | 符号存在但无调用/引用边 | 返回单节点子图 `{nodes: [symbol], edges: []}` | graph-rag.sh |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:350:  subgraph_retrieval: true
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:461:- `augment-context-global.sh` 增加 4 维意图分析
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:471:- `graph-rag.sh` 改为子图检索
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:540:| 子图检索输出 | `evidence/subgraph-output.log` | AC-003 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:553:| OQ-2 | 4 维意图信号的权重分配比例？ | augment-context-global.sh | Test Owner（实验确定） | 待定 |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:620:| `graph-rag.sh` | `--depth` | number | 3 | 子图深度（1-5） |
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:664:  subgraph_retrieval: true
+dev-playbooks/changes/archive/enhance-code-intelligence/design.md:723:| AC-003 | subgraph-retrieval | - |
+dev-playbooks/specs/subgraph-retrieval/spec.md:1:# Spec: subgraph-retrieval
+dev-playbooks/specs/subgraph-retrieval/spec.md:25:#### Scenario: Retrieve subgraph with call edges
+dev-playbooks/specs/subgraph-retrieval/spec.md:36:#### Scenario: Retrieve subgraph with reference edges
+dev-playbooks/changes/archive/augment-parity/design.md:125:  │       └─ 最小方案: graph-rag.sh 集成 llm_rerank()
+dev-playbooks/changes/archive/augment-parity/design.md:144:| Graph-RAG | `scripts/graph-rag.sh` | 可用，待集成 LLM 重排序 |
+dev-playbooks/changes/archive/augment-parity/design.md:194:│  │  graph-rag (LLM rerank) | dependency-guard        │         │
+dev-playbooks/changes/archive/augment-parity/design.md:217:             graph-rag.sh ──→ llm_call() ──→ LLM APIs
+dev-playbooks/changes/archive/augment-parity/design.md:240:| 修改 | scripts/graph-rag.sh | 集成 LLM 重排序 |
+dev-playbooks/changes/archive/augment-parity/design.md:427:2. Consider: semantic match, symbol references, call relationships, context fit
+dev-playbooks/changes/archive/augment-parity/design.md:648:- [ ] graph-rag.sh 集成 LLM 重排序
+dev-playbooks/changes/archive/augment-parity/design.md:857:- [修改] `scripts/graph-rag.sh`: 集成 LLM 重排序
+dev-playbooks/changes/archive/augment-parity/design.md:866:| `graph-rag.sh` | `graph-store.sh` | 新增 | 图查询依赖 |
+dev-playbooks/changes/archive/augment-parity/design.md:867:| `graph-rag.sh` | `daemon.sh` | 新增 | 守护进程通信 |
+dev-playbooks/changes/archive/augment-parity/design.md:868:| `graph-rag.sh` | `common.sh:llm_call()` | 新增 | LLM 重排序 |
+dev-playbooks/specs/devbooks-adapter/spec.md:151:| 当前变更 | `task_context` 或单独字段 |
+dev-playbooks/specs/devbooks-adapter/spec.md:312:load_devbooks_context() {
+dev-playbooks/specs/devbooks-adapter/spec.md:318:新增到 `augment-context-global.sh`：
+dev-playbooks/specs/devbooks-adapter/spec.md:322:build_enhanced_context() {
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:54:| AC-003 | 子图检索保留边关系 | tests/subgraph-retrieval.bats | SR-* | 21 | RED |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:100:| IA-002 | 隐式信号提取 | file: src/auth.ts, line: 42 | 包含 implicit 标签 | Scenario: Analyze intent with implicit context |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:101:| IA-003 | 历史信号提取 | 最近 5 次编辑 | 包含 historical 标签 | Scenario: Analyze intent with historical context |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:102:| IA-004 | 代码信号提取 | function: validateToken | 包含 code 标签 | Scenario: Analyze intent with code context |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:106:**测试文件**: `tests/subgraph-retrieval.bats`
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:110:| SR-001 | 子图包含调用边 | symbol: handleToolCall | 包含 --calls--> | Scenario: Retrieve subgraph with call edges |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:111:| SR-002 | 子图包含引用边 | symbol: TOOLS | 包含 --refs--> | Scenario: Retrieve subgraph with reference edges |
+dev-playbooks/changes/archive/enhance-code-intelligence/verification.md:199:| subgraph-retrieval.bats | 子图逻辑未实现 | AC-003 |
+dev-playbooks/changes/archive/augment-final-10-percent/proposal.md:123:- `scripts/context-compressor.sh`
+dev-playbooks/changes/archive/augment-final-10-percent/proposal.md:216:├── context-compressor.sh     # 上下文压缩
+dev-playbooks/changes/archive/augment-final-10-percent/proposal.md:443:| M5 | `context_compressor.enabled` | false | Alpha | 上下文压缩 |
+dev-playbooks/changes/archive/augment-final-10-percent/proposal.md:487:| 对话上下文 | `conversation-context.json` | SQLite `conversation.db` | ~1K 条目 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:125:  │       └─ 最小方案: context-layer.sh + hotspot-analyzer.sh 集成
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:191:│  │  hotspot-analyzer | bug-locator | graph-rag | ... │         │
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:211:             context-layer.sh
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:221:| Commit 分类规则 | context-layer.sh | 内置 + 自定义正则 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:232:| 新增 | context-layer.sh | 上下文层容器 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:252:| context-layer.sh | `GIT_LOG_CMD` 环境变量 | 测试时 Mock git log |
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:715:- [ ] 集成缓存到 bug-locator.sh、graph-rag.sh
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:726:- [ ] 新增 context-layer.sh
+dev-playbooks/changes/archive/augment-upgrade-phase2/design.md:956:| 上下文索引 | `.devbooks/context-index.json` | 1.0.0 |
+dev-playbooks/changes/archive/augment-parity/archive-summary.md:36:| `scripts/graph-rag.sh` | LLM 重排序 | ✅ 已实现 |
+dev-playbooks/specs/priority-sorting/spec.md:10:> **模块**: graph-rag.sh
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:155:#### MP2.2 四维意图分析 (augment-context-global.sh)
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:160:- 修改 `hooks/augment-context-global.sh`：新增 `analyze_intent_4d()` 函数
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:163:- 修改：`hooks/augment-context-global.sh`
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:208:#### MP3.2 子图检索 (graph-rag.sh)
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:213:- 修改 `scripts/graph-rag.sh`：新增子图连通性分析、边界过滤
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:216:- 修改：`scripts/graph-rag.sh`
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:338:| graph-rag.sh | 子图检索 + 边界过滤 |
+dev-playbooks/changes/archive/enhance-code-intelligence/tasks.md:340:| augment-context-global.sh | 4 维意图分析 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:17:| Context Layer | `scripts/context-layer.sh` | ✅ 已完成 | Commit 语义分类 + Bug 修复历史 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:31:| `scripts/context-layer.sh` | 上下文层增强脚本 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:43:| `scripts/graph-rag.sh` | 集成多级缓存 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:53:| `tests/context-layer.bats` | 16 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/archive-summary.md:98:| Context Layer | `specs/context-layer/spec.md` | ✅ Approved |
+dev-playbooks/changes/archive/enhance-code-intelligence/evidence/red-baseline/summary.md:14:| subgraph-retrieval.bats | 14 | 3 | 0 | 11 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:46:| AC-009 | Commit 语义分类 | CT-CTX-001, CT-CTX-002, CT-CTX-003, CT-CTX-008 | context-layer.bats |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:47:| AC-010 | Bug 修复历史权重 | CT-CTX-004, CT-CTX-005 | context-layer.bats |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:51:| AC-014 | hotspot-analyzer.sh 基线 | CT-CTX-006 | context-layer.bats |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:110:| CT-CTX-007 | 索引生成 | SC-CTX-007 | 生成 context-index.json |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:162:| `tests/context-layer.bats` | 16 | Context Layer |
+dev-playbooks/changes/archive/augment-upgrade-phase2/verification.md:251:- context-layer.bats: 1 失败（--with-bug-history 未完全实现）
+dev-playbooks/changes/archive/augment-final-10-percent/design.md:228:│                   context-compressor.sh                          │
+dev-playbooks/changes/archive/augment-final-10-percent/design.md:258:│    "compressed_context": "...",                                  │
+dev-playbooks/changes/archive/augment-final-10-percent/design.md:335:│ Query   │────▶│ graph-rag   │────▶│ llm-provider│────▶│ Ranked  │
+dev-playbooks/changes/archive/augment-final-10-percent/design.md:410:**When**: 运行 `context-compressor.sh --budget 5000`
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:39:ok 38 SC-LR-001: graph-rag skips rerank when disabled # skip graph-rag.sh rerank disabled not yet implemented
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:40:ok 39 SC-LR-002: graph-rag reranks when enabled with mock # skip graph-rag.sh rerank enabled not yet implemented
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:41:ok 40 SC-LR-003: graph-rag falls back on timeout # skip graph-rag.sh timeout not yet implemented
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:42:ok 41 SC-LR-004: graph-rag falls back when API key missing # skip graph-rag.sh api key not yet implemented
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:43:ok 42 SC-LR-005: graph-rag uses OpenAI provider # skip graph-rag.sh openai not yet implemented
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:44:ok 43 SC-LR-006: graph-rag uses Ollama provider # skip Ollama test requires local Ollama service
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:45:ok 44 SC-LR-007: graph-rag falls back on invalid JSON response # skip graph-rag.sh invalid json not yet implemented
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:46:ok 45 SC-LR-008: graph-rag truncates long candidates # skip Truncation test requires specific candidate setup
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:47:ok 46 SC-LR-009: graph-rag retries on transient failure # skip Retry test requires mock server with failure simulation
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:48:ok 47 SC-LR-010: graph-rag falls back after max retries # skip Max retry test requires mock server
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:49:ok 48 SC-LR-011: graph-rag skips rerank for empty candidates # skip graph-rag.sh empty not yet implemented
+dev-playbooks/changes/archive/augment-parity/evidence/red-baseline/core-tests.txt:50:ok 49 CT-LR-003: rerank result contains required fields # skip graph-rag.sh format not yet implemented
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:407:- `scripts/context-layer.sh`：上下文层脚本
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:413:| `scripts/context-layer.sh` | 新增 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:475:generate_context_index(days) -> void
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:476:# 输出: .devbooks/context-index.json
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:733:- `scripts/graph-rag.sh` 修改：集成缓存
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:756:#### MP5.2: 集成缓存到 graph-rag.sh
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:758:**交付物**：`scripts/graph-rag.sh` 修改
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:904:| Context Layer | `scripts/context-layer.sh` | 上下文增强 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:918:             context-layer.sh
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:928:| Git 命令 Mock | context-layer.sh | `GIT_LOG_CMD` |
+dev-playbooks/changes/archive/augment-upgrade-phase2/tasks.md:1003:- context-layer.sh 功能完整
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:298:| 修改文件 | `scripts/intent-learner.sh`、`hooks/augment-context-global.sh` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:300:| 存储位置 | `.devbooks/conversation-context.json` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:307:  "context_window": [
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:335:    ./scripts/graph-rag.sh search "main" --budget 1000 >/dev/null
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:424:| 存储后端 | SQLite 表（`.devbooks/subgraph-cache.db`） |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:430:CACHE_DB=".devbooks/subgraph-cache.db"
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:436:CREATE TABLE IF NOT EXISTS subgraph_cache (
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:442:CREATE INDEX IF NOT EXISTS idx_access_time ON subgraph_cache(access_time);
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:447:cache_subgraph() {
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:456:DELETE FROM subgraph_cache
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:458:    SELECT cache_key FROM subgraph_cache
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:460:    LIMIT MAX(0, (SELECT COUNT(*) FROM subgraph_cache) - $CACHE_MAX_SIZE + 1)
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:463:INSERT OR REPLACE INTO subgraph_cache (cache_key, cache_value, access_time, created_time)
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:464:VALUES ('$key', '$value', $now, COALESCE((SELECT created_time FROM subgraph_cache WHERE cache_key = '$key'), $now));
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:470:get_cached_subgraph() {
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:477:UPDATE subgraph_cache SET access_time = $now WHERE cache_key = '$key';
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:478:SELECT cache_value FROM subgraph_cache WHERE cache_key = '$key';
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:493:    'total_entries', (SELECT COUNT(*) FROM subgraph_cache),
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:494:    'oldest_access', (SELECT MIN(access_time) FROM subgraph_cache),
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:495:    'newest_access', (SELECT MAX(access_time) FROM subgraph_cache)
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:604:              issue_number: context.issue.number,
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:605:              owner: context.repo.owner,
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:606:              repo: context.repo.repo,
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:643:| 修改文件 | `hooks/augment-context-global.sh` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:676:# 新增函数：build_structured_context()
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:677:build_structured_context() {
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:687:    local task_ctx=$(build_task_context "$intent_analysis")
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:705:            task_context: $task,
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:716:| 修改文件 | `hooks/augment-context-global.sh`、`scripts/common.sh` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:760:load_devbooks_context() {
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:762:    local context=""
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:767:        context+=$(extract_section "$profile" "## 第一层" "## 第二层")
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:773:        context+=$(extract_section "$c4" "### Layering Constraints" "### Environment")
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:779:        context+="当前变更包：$active_change"
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:782:    echo "$context"
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:806:| `hooks/augment-context-global.sh` | 修改 | 对话信号注入 + 结构化输出 + DevBooks 适配 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:816:| `tests/augment-context.bats` | 新增 | 结构化输出 + DevBooks 适配测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:857:| `.devbooks/conversation-context.json` | 新增对话上下文文件（预估 < 100KB） |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:869:intent-learner.sh → augment-context-global.sh（对话上下文注入）
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:870:augment-context-global.sh → common.sh（DevBooks 检测函数）
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:880:| `scripts/cache-manager.sh` | bug-locator, graph-rag, daemon | 缓存依赖脚本 | 中 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:882:| `scripts/intent-learner.sh` | server.ts (ci_intent), graph-rag | 偏好加权 | 低 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:883:| `hooks/augment-context-global.sh` | Claude Code Hook | 上下文注入 | 中 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:891:- hotspot-analyzer, pattern-learner, call-chain, context-layer
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:892:- graph-rag, federation-lite, bug-locator, ast-diff, entropy-viz
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:932:3. **数据回滚**：删除 `.devbooks/conversation-context.json`、`.devbooks/adr-index.json`
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:947:| AC-G04 | 对话上下文 | **存储 5 轮后可正确读取全部上下文**：写入 5 条对话记录，读取时返回完整 5 条 | `tests/intent-learner.bats::test_conversation_context` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:954:| AC-G11 | 结构化输出 | **输出 JSON 包含 5 个必需字段**：`project_profile`、`current_state`、`task_context`、`recommended_tools`、`constraints` | `tests/augment-context.bats::test_structured_output` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:955:| AC-G12 | DevBooks 适配 | **正向测试**：有 `.devbooks/config.yaml` 时注入画像；**负向测试**：无配置时不报错 | `tests/augment-context.bats::test_devbooks_detection` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:991:  "required": ["project_profile", "current_state", "task_context", "recommended_tools", "constraints"],
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1010:    "task_context": {
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1068:rm -f .devbooks/subgraph-cache.db
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1069:cold_start=$(time (./scripts/graph-rag.sh search "main" --budget 1000 >/dev/null) 2>&1 | grep real | awk '{print $2}')
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1074:warm_start=$(time (./scripts/graph-rag.sh search "main" --budget 1000 >/dev/null) 2>&1 | grep real | awk '{print $2}')
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1263:  - 修改模块 7 技术实现，使用 `.devbooks/subgraph-cache.db`
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1335:├── hooks/augment-context-global.sh
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1353:├── hooks/augment-context-global.sh（结构化输出 + DevBooks 检测）
+dev-playbooks/changes/archive/augment-parity-final-gaps/proposal.md:1355:└── tests/augment-context.bats
+dev-playbooks/changes/archive/20260118-0057-upgrade-code-intelligence-capabilities/proposal.md:41:- `scripts/graph-rag.sh` - CKB 集成 + Fusion
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:25:| AC-006 | 上下文压缩率 >=50%，语义保留度 >=90% | tests/context-compressor.bats | SC-CC-001, SC-CC-002, SC-CC-003, SC-CC-004 | P1 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:26:| AC-006a | TypeScript 必须支持，Python/Go 可选 | tests/context-compressor.bats | SC-CC-005, SC-CC-006 | P1 | [ ] |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:133:#### M5: 上下文智能压缩（tests/context-compressor.bats）
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:208:| tests/context-compressor.bats | `context-compressor.sh` 脚本不存在 | P1 |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:355:| proposal.md 5.5 | AC-006, AC-006a | tests/context-compressor.bats | evidence/red-baseline/context-compressor-*.log |
+dev-playbooks/changes/archive/augment-final-10-percent/verification.md:417:| tests/context-compressor.bats | 待创建 | P1 |
+dev-playbooks/changes/archive/enhance-code-intelligence/specs/intent-analysis/spec.md:31:#### Scenario: Analyze intent with implicit context
+dev-playbooks/changes/archive/enhance-code-intelligence/specs/intent-analysis/spec.md:42:#### Scenario: Analyze intent with historical context
+dev-playbooks/changes/archive/enhance-code-intelligence/specs/intent-analysis/spec.md:51:#### Scenario: Analyze intent with code context
+dev-playbooks/changes/archive/augment-parity/tasks.md:151:- [x] 修改：`scripts/graph-rag.sh`（集成守护进程通信）
+dev-playbooks/changes/archive/augment-parity/tasks.md:218:- [x] 增强：`scripts/graph-rag.sh`（LLM 重排序）
+dev-playbooks/changes/archive/augment-parity/tasks.md:224:- [x] 修改：`scripts/graph-rag.sh`
+dev-playbooks/changes/archive/augment-parity/tasks.md:281:#### MP3.2: 增强 graph-rag.sh 支持 LLM 重排序 ✅
+dev-playbooks/changes/archive/augment-parity/tasks.md:289:# options: {--rerank, --top-k, --context-window}
+dev-playbooks/changes/archive/augment-parity/tasks.md:302:- `scripts/graph-rag.sh` 中已实现 `--rerank` 参数和 `llm_rerank_candidates()` 函数
+dev-playbooks/changes/archive/augment-parity/tasks.md:511:| `scripts/graph-rag.sh` | 集成 LLM 重排序 | ✅ 完成 |
+dev-playbooks/changes/archive/augment-parity/tasks.md:527:             graph-rag.sh ──→ llm_call() ──→ LLM APIs
+dev-playbooks/changes/archive/augment-parity/tasks.md:605:- **交付物**：增强 graph-rag.sh, dependency-guard.sh, pattern-learner.sh, common.sh
+dev-playbooks/changes/archive/augment-parity/tasks.md:627:| PR-5 | MP3.2 graph-rag.sh 增强 | 否 | PR-1, PR-4 | ✅ 完成 |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:204:- [ ] T5.1: 创建 `scripts/context-compressor.sh` 基础结构
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:234:  - 添加 `context_compressor.enabled` 开关
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:427:| AA-005 | T5.1-T5.7 | `bats tests/context-compressor.bats` | 压缩率 >=50%，TypeScript 支持 |
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:454:    subgraph Phase1[Phase 1: P0 核心能力]
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:460:    subgraph Phase2[Phase 2: P1 性能优化]
+dev-playbooks/changes/archive/augment-final-10-percent/tasks.md:466:    subgraph Phase3[Phase 3: P2 企业增强]
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:183:| 写入 5 条对话记录后可正确读取全部 5 条 | tests/intent-learner.bats::test_conversation_context_write_read |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:184:| 上下文包含 turn、query、focus_symbols 字段 | tests/intent-learner.bats::test_conversation_context_schema |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:185:| 超过 10 轮后 FIFO 淘汰最旧记录 | tests/intent-learner.bats::test_conversation_context_fifo |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:186:| 搜索结果排序加入对话连续性加权 | tests/intent-learner.bats::test_conversation_context_weighting |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:188:**测试脚本**：`tests/intent-learner.bats::test_conversation_context`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:194:| 输出 JSON 包含 `project_profile` 字段 | tests/augment-context.bats::test_structured_output_profile |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:195:| 输出 JSON 包含 `current_state` 字段 | tests/augment-context.bats::test_structured_output_state |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:196:| 输出 JSON 包含 `task_context` 字段 | tests/augment-context.bats::test_structured_output_task |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:197:| 输出 JSON 包含 `recommended_tools` 字段 | tests/augment-context.bats::test_structured_output_tools |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:198:| 输出 JSON 包含 `constraints` 字段 | tests/augment-context.bats::test_structured_output_constraints |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:199:| 输出符合定义的 JSON Schema | tests/augment-context.bats::test_structured_output_schema |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:206:  "task_context": { "intent_analysis": {}, "relevant_snippets": [], "call_chains": [] },
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:212:**测试脚本**：`tests/augment-context.bats::test_structured_output`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:218:| **正向测试**：有 `.devbooks/config.yaml` 时检测到 DevBooks 配置 | tests/augment-context.bats::test_devbooks_detection_positive |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:219:| **正向测试**：注入项目画像（技术栈 + 架构模式） | tests/augment-context.bats::test_devbooks_profile_inject |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:220:| **正向测试**：注入架构约束（分层规则） | tests/augment-context.bats::test_devbooks_constraints_inject |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:221:| **负向测试**：无 `.devbooks/config.yaml` 时不报错 | tests/augment-context.bats::test_devbooks_detection_negative |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:222:| **负向测试**：非 DevBooks 项目正常输出上下文 | tests/augment-context.bats::test_devbooks_fallback |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:224:**测试脚本**：`tests/augment-context.bats::test_devbooks_*`
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:255:| 缓存使用 SQLite 持久化（`.devbooks/subgraph-cache.db`） | tests/cache-manager.bats::test_lru_persistence |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:375:| **新增** | `tests/augment-context.bats` | 上下文输出测试 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:383:| 修改 | `hooks/augment-context-global.sh` | 结构化输出 + DevBooks 适配 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:396:| `intent-learner.sh` | `save_conversation_context()` | 对话上下文保存 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:397:| `intent-learner.sh` | `load_conversation_context()` | 对话上下文加载 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:403:| `cache-manager.sh` | `cache_subgraph()` | 写入缓存（带 LRU 淘汰） |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:404:| `cache-manager.sh` | `get_cached_subgraph()` | 读取缓存（更新访问时间） |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:407:| `augment-context-global.sh` | `build_structured_context()` | 构建结构化上下文 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:408:| `augment-context-global.sh` | `build_project_profile()` | 构建项目画像 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:409:| `augment-context-global.sh` | `build_current_state()` | 构建当前状态 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:410:| `augment-context-global.sh` | `build_task_context()` | 构建任务上下文 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:411:| `augment-context-global.sh` | `recommend_tools()` | 工具推荐 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:412:| `augment-context-global.sh` | `get_active_constraints()` | 获取约束 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:414:| `common.sh` | `load_devbooks_context()` | 加载 DevBooks 上下文 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:424:| `intent-learner.sh` | `augment-context-global.sh` | 新增 | 对话上下文注入 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:425:| `augment-context-global.sh` | `common.sh` | 新增 | DevBooks 检测 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:434:- `augment-context-global.sh`：integration 层，依赖 `common.sh`（shared） ✅
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:461:[MODIFIED] hooks/augment-context-global.sh
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:477:| `.devbooks/conversation-context.json` | 对话上下文存储 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:479:| `.devbooks/subgraph-cache.db` | LRU 子图缓存（SQLite） |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:502:- hotspot-analyzer, pattern-learner, call-chain, context-layer
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:503:- graph-rag, federation-lite, bug-locator, ast-diff, entropy-viz
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:506:1. 新增函数（detect_devbooks, load_devbooks_context）为独立函数，不修改现有函数
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:562:| AC-G04 | AC-G04 | tests/intent-learner.bats::test_conversation_context |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:569:| AC-G11 | AC-G11 | tests/augment-context.bats::test_structured_output |
+dev-playbooks/changes/archive/augment-parity-final-gaps/design.md:570:| AC-G12 | AC-G12 | tests/augment-context.bats::test_devbooks_* |
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:28:- 包含子图（subgraph）划分
+dev-playbooks/changes/archive/achieve-augment-full-parity/specs/cod-visualizer/spec.md:63:- 模块作为子图（subgraph）
+dev-playbooks/changes/archive/enhance-code-intelligence/specs/subgraph-retrieval/spec.md:1:# Spec Delta: subgraph-retrieval
+dev-playbooks/changes/archive/enhance-code-intelligence/specs/subgraph-retrieval/spec.md:4:> **Capability**: subgraph-retrieval
+dev-playbooks/changes/archive/enhance-code-intelligence/specs/subgraph-retrieval/spec.md:17:#### Scenario: Retrieve subgraph with call edges
+dev-playbooks/changes/archive/enhance-code-intelligence/specs/subgraph-retrieval/spec.md:28:#### Scenario: Retrieve subgraph with reference edges
+dev-playbooks/changes/archive/augment-parity/specs/llm-rerank/spec.md:64:2. Consider: semantic match, symbol references, call relationships, context fit
+dev-playbooks/changes/archive/augment-parity/specs/llm-rerank/spec.md:139:**When**: 执行 `graph-rag.sh --query "auth handler" --rerank`
+dev-playbooks/changes/archive/augment-parity/specs/llm-rerank/spec.md:151:**When**: 执行 `graph-rag.sh --query "auth handler" --rerank`
+dev-playbooks/changes/archive/20260118-0057-upgrade-code-intelligence-capabilities/tasks.md:47:| scripts/graph-rag.sh | 修改 | CKB 集成 + Fusion 查询 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/red-baseline/summary.md:24:| Context Layer | 16 | 14 | 2 | `context-layer.sh` 未实现 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/red-baseline/summary.md:41:3. **context-layer.sh** - 上下文层
+dev-playbooks/changes/archive/augment-final-10-percent/specs/keystroke-cancel/spec.md:108:**Given**: 正在执行 `graph-rag.sh` 查询
+dev-playbooks/changes/archive/augment-final-10-percent/specs/keystroke-cancel/spec.md:174:daemon_start_with_cancel "graph-rag.sh" "query args"
+dev-playbooks/changes/archive/augment-final-10-percent/specs/long-term-memory/spec.md:48:  context TEXT,              -- 符号出现的上下文
+dev-playbooks/changes/archive/augment-final-10-percent/specs/long-term-memory/spec.md:104:  context_similarity * 0.3   # 上下文相似度
+dev-playbooks/changes/archive/augment-final-10-percent/specs/long-term-memory/spec.md:406:migrations/002_add_context_column.sql
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:26:| `tests/graph-rag.bats` | 14 | 2 | 12 | 0 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:63:| `scripts/graph-rag.sh` | 零预算返回空结果 | T-SP-005 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:64:| `scripts/graph-rag.sh` | 意图偏好集成 | T-SP-007 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/red-baseline/summary.md:76:- `graph-rag-20260116-013818.log` - Graph RAG 测试输出
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:4:> **Capability**: context-layer
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:72:系统应生成上下文索引 `.devbooks/context-index.json`：
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:132:**When**: 执行 `context-layer.sh --file src/auth.ts`
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:167:**When**: 执行 `context-layer.sh --index`
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:169:- 生成 `.devbooks/context-index.json`
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:203:### context-layer.sh
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:207:context-layer.sh --classify <sha>
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:210:context-layer.sh --classify-batch --since "90 days ago"
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:213:context-layer.sh --bug-history --file <path>
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:216:context-layer.sh --index [--days 90]
+dev-playbooks/changes/archive/augment-upgrade-phase2/specs/context-layer/spec.md:248:| `CONTEXT_INDEX_PATH` | `.devbooks/context-index.json` | 索引路径 |
+dev-playbooks/changes/archive/achieve-augment-full-parity/evidence/performance-report.md:20:| M4 智能裁剪 | graph-rag.sh | ci_graph_rag | AC-F04 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:153:- Contract: 结构化输出 JSON Schema 与字段完整性（augment-context）。
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:338:- tests/augment-context.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:356:- `bats tests/augment-context.bats`
+dev-playbooks/changes/archive/augment-parity-final-gaps/verification.md:481:- 改进建议：为 bug-locator 统一 CLI 契约；为 augment-context 提供稳定的 JSON Schema 输出入口。
+dev-playbooks/changes/archive/augment-final-10-percent/evidence/red-baseline/summary.md:20:| context-compressor.bats | 10 | 10 | 0 | `context-compressor.sh` 不存在 |
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/baseline-hotspot.golden:5:    {"rank": 2, "file": "hooks/augment-context-global.sh", "score": 125, "frequency": 1, "complexity": 125},
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/baseline-hotspot.golden:6:    {"rank": 3, "file": "scripts/graph-rag.sh", "score": 122, "frequency": 1, "complexity": 122},
+dev-playbooks/changes/archive/augment-final-10-percent/specs/context-compressor/spec.md:4:> **Capability**: context-compressor
+dev-playbooks/changes/archive/augment-final-10-percent/specs/context-compressor/spec.md:29:context_compress --mode skeleton <files>
+dev-playbooks/changes/archive/augment-final-10-percent/specs/context-compressor/spec.md:77:context_compress --budget 5000 <files>
+dev-playbooks/changes/archive/augment-final-10-percent/specs/context-compressor/spec.md:141:**When**: 运行 `context-compress --mode skeleton src/service.ts`
+dev-playbooks/changes/archive/augment-final-10-percent/specs/context-compressor/spec.md:153:**When**: 运行 `context-compress --budget 5000 src/`
+dev-playbooks/changes/archive/augment-final-10-percent/specs/context-compressor/spec.md:196:**When**: 运行 `context-compress --budget 3000 file1.ts file2.ts ...`
+dev-playbooks/changes/archive/augment-final-10-percent/specs/context-compressor/spec.md:206:### context_compress
+dev-playbooks/changes/archive/augment-final-10-percent/specs/context-compressor/spec.md:210:context_compress [OPTIONS] <files...>
+dev-playbooks/changes/archive/augment-final-10-percent/specs/context-compressor/spec.md:226:  "compressed_context": "// file: src/service.ts\nexport function process...",
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/verification-summary.md:29:### MP3: context-layer.sh ✅
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/verification-summary.md:49:- graph-rag.sh 缓存集成：完成
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/verification-summary.md:80:2. **MP5 (缓存集成)**: bug-locator.sh 和 graph-rag.sh 已集成 cache-manager.sh
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:32:### context-layer.bats (1 失败)
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:52:- tests/context-layer.bats
+dev-playbooks/changes/archive/augment-upgrade-phase2/evidence/green-final/test-summary-20260114.md:63:- tests/subgraph-retrieval.bats
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:13:>   - `dev-playbooks/changes/augment-parity-final-gaps/specs/conversation-context/spec.md`
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:14:>   - `dev-playbooks/changes/augment-parity-final-gaps/specs/structured-context-output/spec.md`
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:16:>   - `dev-playbooks/changes/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md`
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:56:**Deliverables**：对话上下文文件 `.devbooks/conversation-context.json`、会话管理命令、对话连续性加权信号输出。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:82:**Deliverables**：`.devbooks/subgraph-cache.db`（WAL）、LRU 淘汰、cache key 规范、统计（命中率等）、跨进程可用。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:83:**影响范围（Files/Modules）**：`scripts/cache-manager.sh`、`.devbooks/subgraph-cache.db`、（可能）子图生产/消费脚本的调用点。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:109:**影响范围（Files/Modules）**：`hooks/augment-context-global.sh`、`scripts/hotspot-analyzer.sh`、`scripts/intent-learner.sh`、（可能）Git 调用。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:111:**依赖（Dependencies）**：Test Owner 创建 `tests/augment-context.bats`（设计引用）；MP8 DevBooks 适配会注入部分字段。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:114:- [x] MP7.1 在 `augment-context-global.sh` 输出 5 层结构化 JSON（project_profile/current_state/task_context/recommended_tools/constraints）（AC-G11；锚点：`npm test`）
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:122:**影响范围（Files/Modules）**：`scripts/common.sh`（新增函数）、`hooks/augment-context-global.sh`、（可能）搜索/意图模块的 query 扩展点。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:124:**依赖（Dependencies）**：高风险：`common.sh` 被 18 个脚本直接调用（见“风险与边界”）；Test Owner 创建 `tests/augment-context.bats`（设计引用）。  
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:127:- [x] MP8.1 在 `common.sh` 新增 `detect_devbooks()`（按优先级探测，缓存 60s）与 `load_devbooks_context()`（只新增、不修改既有函数）（AC-G12；锚点：`npm test`）
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:190:- 修改：`scripts/scip-to-graph.sh`、`scripts/graph-store.sh`、`scripts/intent-learner.sh`、`scripts/daemon.sh`、`scripts/cache-manager.sh`、`scripts/bug-locator.sh`、`hooks/augment-context-global.sh`、`scripts/common.sh`。
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:202:- `.devbooks/conversation-context.json`：对话上下文（Spec REQ-CC-001/002）。
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:204:- `.devbooks/subgraph-cache.db`：子图 LRU 缓存（Spec REQ-SLC-001/002）。
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:207:- 5 层字段与限制：`project_profile/current_state/task_context/recommended_tools/constraints`（Spec REQ-SCO-001~007；设计 AC-G11）。
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:226:- PR-G：MP7+MP8（augment-context 结构化输出 + DevBooks 适配；注意 `common.sh` 风险，建议先小步合入 MP8.1）
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:253:- `common.sh` 高风险：被 18 个脚本直接调用（设计 7.2 列表：scip-to-graph、graph-store、daemon、intent-learner、vuln-tracker、impact-analyzer、ast-delta、cod-visualizer、boundary-detector、hotspot-analyzer、pattern-learner、call-chain、context-layer、graph-rag、federation-lite、bug-locator、ast-diff、entropy-viz）。策略：只新增函数、不改既有函数签名/行为；先合入最小变更并跑全量测试。
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:265:  - LRU 缓存：删除 `.devbooks/subgraph-cache.db` 应可安全重建。
+dev-playbooks/changes/archive/augment-parity-final-gaps/tasks.md:266:  - 对话上下文：删除 `.devbooks/conversation-context.json` 应可安全重建。
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:79:| 修改文件 | `scripts/graph-rag.sh` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:236:| 修改文件 | `scripts/graph-rag.sh` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:301:| 手动触发 | `graph-rag.sh build-corpus` | 全量重建语料库统计 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:306:# graph-rag.sh 中的自动触发逻辑
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:348:    ./scripts/graph-rag.sh build-corpus --incremental &
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:358:| 修改文件 | `scripts/graph-rag.sh` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:393:| 修改文件 | `scripts/graph-rag.sh` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:617:    local context="${3:-different_session}"
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:631:    local context_multiplier
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:632:    case "$context" in
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:633:        same_session)      context_multiplier=$CONTEXT_SAME_SESSION ;;
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:634:        related_file)      context_multiplier=$CONTEXT_RELATED_FILE ;;
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:635:        different_session) context_multiplier=$CONTEXT_DIFFERENT_SESSION ;;
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:636:        *)                 context_multiplier=1.0 ;;
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:644:    local raw_score=$(echo "scale=4; $frequency * $action_weight * $recency_weight * $context_multiplier" | bc)
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:656:| 5 次 IGNORE（-0.3 × 5 = -1.5） | -1.5 × recency × context | **0**（下限保护生效） |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:687:# 替换 apply_context_boost() 函数
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:688:apply_context_boost_multiplicative() {
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:695:    # context_multiplier = (1 + acc) * (1 + recent) * sqrt(1 + same_file)
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:698:    local context_multiplier=$(echo "scale=4;
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:703:    local final_score=$(echo "scale=4; $original_score * $context_multiplier" | bc)
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:779:| 修改文件 | `config/features.yaml`、`scripts/graph-rag.sh` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:797:# scripts/graph-rag.sh 修改
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:856:| `scripts/graph-rag.sh` | 修改 | 背包算法、TF-IDF、去重融合、距离度量、LLM 重排序 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:861:| `tests/graph-rag.bats` | 修改 | 背包算法、TF-IDF、去重测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:915:graph-rag.sh → common.sh（智能 Token 估算）
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:956:| AC-A01 | 背包算法 | **预算 1000 tokens 时，利用率 > 90%**（vs 贪心 60-80%） | `tests/graph-rag.bats::test_knapsack_utilization` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:957:| AC-A02 | TF-IDF | **驼峰分解正确**：`handleAuth` → `[handle, auth]` | `tests/graph-rag.bats::test_tfidf_camel_case` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:958:| AC-A03 | 候选去重 | **同符号多来源时合并为单条，score 有加成** | `tests/graph-rag.bats::test_candidate_fusion` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:959:| AC-A04 | 多维距离 | **多路径节点距离 < 单路径节点**（同深度） | `tests/graph-rag.bats::test_multidim_distance` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:966:| AC-A11 | LLM 重排序可配置 | **默认关闭，设置 enabled=true 后尝试调用** | `tests/graph-rag.bats::test_llm_rerank_config` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1097:├── scripts/graph-rag.sh（背包、TF-IDF、去重、距离）
+dev-playbooks/changes/archive/algorithm-optimization-parity/proposal.md:1098:├── tests/graph-rag.bats
+dev-playbooks/changes/archive/algorithm-optimization-parity/tasks.md:9:### 里程碑 1: Graph-RAG 核心算法 (graph-rag.sh)
+dev-playbooks/changes/archive/algorithm-optimization-parity/tasks.md:194:graph-rag.sh (MP1)
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:30:| AC-A02 | TF-IDF 驼峰分解 | - | (graph-rag 内部) | - | ⚠️ 无显式 Design AC |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:60:- 测试文件 `tests/graph-rag.bats::test_tfidf_camel_case` 已存在
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:63:- 功能已在 graph-rag.sh 中作为 ALG-001/002 的实现细节
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:76:| AC-A01 | `tests/graph-rag.bats::test_knapsack_utilization` | tests/graph-rag.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:77:| AC-A02 | `tests/graph-rag.bats::test_tfidf_camel_case` | tests/graph-rag.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:78:| AC-A03 | `tests/graph-rag.bats::test_candidate_fusion` | tests/graph-rag.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:79:| AC-A04 | `tests/graph-rag.bats::test_multidim_distance` | tests/graph-rag.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:85:| AC-A10 | `tests/common.bats::test_smart_token_estimate` | tests/graph-rag.bats (CT-GS-005) | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:86:| AC-A11 | `tests/graph-rag.bats::test_llm_rerank_config` | tests/graph-rag.bats | ✅ |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:253:| ALG-001 + ALG-002 | tests/graph-rag.bats | evidence/red-baseline/graph-rag-*.log | 2026-01-17 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:270:| CT-PS-* | tests/graph-rag.bats | 4 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/verification.md:271:| CT-GS-* | tests/graph-rag.bats | 5 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:183:| 命令 | `intent-learner.sh context/session` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:190:| `context save --query <q> --symbols <s>` | 保存对话上下文 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:191:| `context load` | 加载对话上下文 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:192:| `context apply-weight --results <json>` | 应用对话连续性加权 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:200:### 1.7 augment-context-global.sh 输出变更
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:213:  "task_context": { "intent_analysis", "relevant_snippets", "call_chains" },
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:252:| `.devbooks/conversation-context.json` | 对话上下文 | 见 REQ-CC-002 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:254:| `.devbooks/subgraph-cache.db` | 子图 LRU 缓存 | 见 REQ-SLC-002 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:270:| intent-learner.sh context/session | ✅ 兼容 | 新增命令 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:271:| augment-context-global.sh 输出 | ⚠️ 需注意 | 输出格式变化 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:297:**augment-context-global.sh 输出迁移**：
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:302:./hooks/augment-context-global.sh --format text
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:317:| CT-API-007 | API | intent-learner context/session |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:319:| CT-SCHEMA-002 | Schema | conversation-context.json |
+dev-playbooks/changes/archive/augment-parity-final-gaps/contract-plan.md:321:| CT-SCHEMA-004 | Schema | subgraph-cache.db |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:42:| `scripts/graph-rag.sh` | 2 | low | 高 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:44:| `scripts/context-compressor.sh` | - | - | 高（核心功能） |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:52:### 一、类型安全与坏味道（src/server.ts, src/context-signal-manager.ts）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:115:**[M-001] `src/context-signal-manager.ts:196` - 类型守卫可以更严格**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:178:**[m-001] `src/context-signal-manager.ts:100-105` - SQL 字符串拼接**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:183:**[m-002] `src/context-signal-manager.ts:225-241` - Feature Envy**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:188:**[m-003] `src/context-signal-manager.ts:55-58` - 缺少资源清理**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:226:**[M-004] `tests/context-compressor.bats:481-522` - 并发测试缺少资源隔离验证**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:254:**[m-004] `tests/context-compressor.bats` - 测试命名不一致**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:270:**[C-005] `scripts/context-compressor.sh:16-19` - 临时文件清理存在竞态条件风险**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:305:**[M-008] `scripts/context-compressor.sh:410-543` - `compress_file` 函数复杂度过高（约 130 行）**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:344:**[M-013] `scripts/context-compressor.sh:792-819` - `_main_build_output_json` 函数参数过多（9 个）**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:356:**[m-006] `scripts/context-compressor.sh:244-276` - `is_signature_start` 函数正则过于复杂**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:371:**[m-009] `scripts/context-compressor.sh:127-133` - `count_non_empty_lines` 和 `count_compressed_tokens` 功能重复**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:426:1. **临时文件清理**（`context-compressor.sh:12-25`）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:440:1. **缓存锁文件**（`context-compressor.sh:21-23`）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:544:- **文件**: src/server.ts, src/context-signal-manager.ts
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:549:- **文件**: tests/hybrid-retrieval.bats, tests/context-compressor.bats, tests/llm-rerank.bats, tests/graph-store.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:554:- **文件**: scripts/context-compressor.sh, scripts/call-chain.sh, scripts/graph-store.sh
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:581:| TypeScript 源文件 | src/server.ts, src/context-signal-manager.ts, src/tool-handlers.ts | a8a24c7 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:582:| 核心脚本 | scripts/context-compressor.sh, scripts/call-chain.sh, scripts/graph-store.sh | ac50c24 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:583:| 测试文件 | tests/context-compressor.bats, tests/hybrid-retrieval.bats, tests/llm-rerank.bats, tests/graph-store.bats | a95741d |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/code-review-report.md:658:| M-NEW-002 | src/context-signal-manager.ts:100-105 | SQL 参数绑定存在注入风险 | 使用真正的参数化查询 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/design.md:16:| ALG-001 | graph-rag.sh | 优先级排序算法 | MP4.2 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/design.md:17:| ALG-002 | graph-rag.sh | 贪婪选择策略 | MP4.4 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/design.md:323:| graph-rag.sh | 优先级计算、贪婪选择 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/design.md:483:| BC-001 | graph-rag.sh | 优先级公式：`P = r×0.4 + h×0.3 + (1/d)×0.3` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/design.md:484:| BC-002 | graph-rag.sh | 贪婪选择不超过 Token 预算 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/design.md:519:| context-weighting | 6 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/design.md:537:| ALG-005 连续性加权 | `specs/context-weighting/spec.md` |
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:1:# Spec: 对话历史信号累积（conversation-context）
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:4:> **Capability**: conversation-context
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:26:- 存储位置：`.devbooks/conversation-context.json`
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:38:  "context_window": [
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:114:- 创建 `.devbooks/conversation-context.json`
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:157:- 清空 `context_window`
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:178:- `context_window`: []
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:212:intent-learner.sh context <command> [options]
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:217:| `context save --query <q> --symbols <s1,s2>` | 保存对话上下文 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:218:| `context load` | 加载当前对话上下文 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/conversation-context/spec.md:219:| `context apply-weight --results <json>` | 对结果应用对话连续性加权 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/evidence/scripts/benchmark.sh:46:    rm -f "$DEVBOOKS_DIR/subgraph-cache.db" 2>/dev/null || true
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/test-review-report.md:34:| AC-001 | context-compressor.bats | 19 | ✅ 已覆盖 | T-CC-001~013, T-CC-ERROR-001~005, T-PERF-CC-001 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/test-review-report.md:64:**C-001** `context-compressor.bats:414-457` **T-CC-005 缓存性能测试稳定性不足**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/test-review-report.md:120:**M-001** `context-compressor.bats:587-596` **T-CC-ERROR-001 空文件错误消息匹配过宽**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/test-review-report.md:189:- **建议**: 增加断言验证非焦点符号的 `context_boost == 0`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/test-review-report.md:332:| #1 核心功能 | context-compressor, drift-detector, data-flow-tracing, graph-store | Critical: 4, Major: 5 | 性能测试稳定性不足、迁移测试覆盖不完整 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:1:# Spec Delta: 子图 LRU 缓存（subgraph-lru-cache）
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:4:> **Capability**: subgraph-lru-cache
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:26:- 数据库文件：`.devbooks/subgraph-cache.db`
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:35:CREATE TABLE IF NOT EXISTS subgraph_cache (
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:41:CREATE INDEX IF NOT EXISTS idx_access_time ON subgraph_cache(access_time);
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:77:UPDATE subgraph_cache SET access_time = $now WHERE cache_key = '$key';
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:78:SELECT cache_value FROM subgraph_cache WHERE cache_key = '$key';
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:92:DELETE FROM subgraph_cache
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:94:    SELECT cache_key FROM subgraph_cache
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:96:    LIMIT MAX(0, (SELECT COUNT(*) FROM subgraph_cache) - $MAX_SIZE + 1)
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:99:INSERT OR REPLACE INTO subgraph_cache (cache_key, cache_value, access_time, created_time)
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:101:    (SELECT created_time FROM subgraph_cache WHERE cache_key = '$key'), $now
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:160:- 条目写入 `subgraph_cache` 表
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:222:- 创建 `.devbooks/subgraph-cache.db`
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:223:- 创建 `subgraph_cache` 表
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/subgraph-lru-cache/spec.md:307:| `SUBGRAPH_CACHE_DB` | `.devbooks/subgraph-cache.db` | 缓存数据库路径 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:51:- 新增 `scripts/context-compressor.sh`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:56:- 新增测试：`tests/context-compressor.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:83:- 实现关键词 + 向量 + 图距离的 RRF（Reciprocal Rank Fusion）融合
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:88:- 修改 `scripts/graph-rag.sh`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:96:- 修改 `scripts/context-layer.sh`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:100:- 修改 `scripts/graph-rag.sh`，将上述信号纳入 priority score 计算
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:135:3. **上下文压缩**（context-compressor.sh）- 依赖图查询加速
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:139:   - 验证：tests/context-compressor.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:154:6. **重排序管线**（graph-rag.sh）- 依赖混合检索
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:158:   - 验证：tests/graph-rag.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:160:7. **上下文层信号**（context-layer.sh, graph-rag.sh）- 依赖重排序管线
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:161:   - 原因：需要集成到 graph-rag.sh 的权重计算
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:162:   - 依赖：graph-rag.sh（阶段 3）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:164:   - 验证：tests/graph-rag.bats
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:182:    A[图查询加速<br/>graph-store.sh] --> C[上下文压缩<br/>context-compressor.sh]
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:188:    E --> F[重排序管线<br/>graph-rag.sh]
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:189:    F --> G[上下文层信号<br/>context-layer.sh]
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:240:| 新增文件 | 4 个脚本 + 4 个测试 | context-compressor.sh, drift-detector.sh, benchmark.sh + 对应测试 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:241:| 修改文件 | 7 个脚本 | call-chain.sh, graph-store.sh, embedding.sh, graph-rag.sh, context-layer.sh, semantic-anomaly.sh, pattern-learner.sh, bug-locator.sh |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:253:- 新增 4 个脚本：`context-compressor.sh`, `drift-detector.sh`, `benchmark.sh` + 对应测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:254:- 修改 7 个脚本：`call-chain.sh`, `graph-store.sh`, `embedding.sh`, `graph-rag.sh`, `context-layer.sh`, `semantic-anomaly.sh`, `pattern-learner.sh`, `bug-locator.sh`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:255:- 新增 4 个测试文件：`tests/context-compressor.bats`, `tests/drift-detector.bats`, `tests/data-flow-tracing.bats`（增强）, `tests/benchmark.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:256:- 修改 3 个测试文件：`tests/graph-store.bats`, `tests/embedding.bats`, `tests/graph-rag.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:269:根据 GoF 《设计模式》归纳的"8 类导致重设计的原因"，本次变更属于以下类 [x] **算法依赖**：混合检索权重配置（RRF 融合算法）、压缩算法选择（AST 骨架抽取 vs 正则过滤 vs LLM 摘要）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:270:  - **影响范围**：`embedding.sh`（混合检索）、`context-compressor.sh`（压缩算法）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:310:- ✅ `graph-rag.sh` 已有重排序集成点（RERANK_ENABLED 变量存在，第 90 行）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:312:- ⚠️ `reranker.sh` 已存在但未被 `graph-rag.sh` 调用（需在本次变更中集成）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:318:| `context-compressor.sh` | `--budget`, `--mode` | 5000, skeleton | 新脚本 | 🆕 待实现 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:322:| `graph-rag.sh` | `--rerank` | true | 向后兼容 | ✅ 变量已预留 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:497:     context_compression: true
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:503:     context_signals: true
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:584:context-compressor.sh → hotspot-analyzer.sh（待实现）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:587:graph-rag.sh → reranker.sh（待集成，变量已预留）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:588:graph-rag.sh → context-layer.sh（已存在，需增强信号提取）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:600:- ✅ `graph-rag.sh` 已集成 `cache-manager.sh`（CACHE_MANAGER 变量，第 73 行）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:601:- ✅ `graph-rag.sh` 已集成 `boundary-detector.sh`（BOUNDARY_DETECTOR 变量，第 70 行）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:602:- ⚠️ `graph-rag.sh` 的 `reranker.sh` 集成点已预留但未实现（RERANK_ENABLED 变量，第 90 行）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:614:| context-compressor.sh → hotspot-analyzer.sh | 新增 | 低 | hotspot-analyzer.sh 已存在且稳定 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:617:| graph-rag.sh → reranker.sh | 新增 | 低 | reranker.sh 已存在，通过配置开关控制 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:618:| graph-rag.sh → context-layer.sh | 增强 | 低 | context-layer.sh 已存在，仅新增信号提取 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:629:- ✅ `tests/context-compressor.bats` - 已存在（待增强）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:643:1. `tests/context-compressor.bats` - 上下文压缩功能测试（✅ 已存在）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:673:   - 测试 RRF 融合算法
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:678:3. `tests/graph-rag.bats` - 增加重排序和上下文信号测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:685:- **单元测试**：每个新增/修改脚本的核心功能（如压缩算法、漂移评分、RRF 融合）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:701:- ✅ 外部系统/API 变更已被 ACL 隔离（Ollama/OpenAI 通过 `embedding.sh` 隔离，CKB MCP 通过 `graph-rag.sh` 隔离）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:719:3. **[NEW]** `dev-playbooks/specs/context-compressor/spec.md`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:734:6. **[EXTEND]** `dev-playbooks/specs/subgraph-retrieval/spec.md`（graph-rag.sh）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:756:| @modelcontextprotocol/sdk | ^1.0.0 | 完全兼容 | 无风险（无变更） |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:765:| context-compressor.sh → hotspot-analyzer.sh | 新增 | 低 | hotspot-analyzer.sh 已存在且稳定 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:768:| graph-rag.sh → reranker.sh | 新增 | 低 | reranker.sh 已存在，通过配置开关控制 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:769:| graph-rag.sh → context-layer.sh | 增强 | 低 | context-layer.sh 已存在，仅新增信号提取 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:817:  context_compression: true
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:823:  context_signals: true
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:841:   - **收口点**：RRF 融合算法实现
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:848:3. **重排序管线（graph-rag.sh）**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:873:     - `graph-rag.sh` → `graph-store.sh::query_graph()`（子图检索）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:879:     - `context-compressor.sh` → `hotspot-analyzer.sh::calculate_score()`（热点优先压缩）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:887:     - `graph-rag.sh` → `embedding.sh::hybrid_search()`（Graph-RAG 检索）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:892:- 在 PP-1 写 1 个测试 → 覆盖 drift-detector/embedding/graph-rag 三条路径
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:893:- 在 PP-2 写 1 个测试 → 覆盖 context-compressor/bug-locator 两条路径
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:894:- 在 PP-3 写 1 个测试 → 覆盖 bug-locator/graph-rag 两条路径
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:974:  context_compression: true
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:980:  context_signals: true
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1078:| AC-007 | 上下文层信号正确纳入检索权重 | 运行 graph-rag.sh，检查 priority score 计算 | `evidence/context-signals.log` |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1088:1. `tests/context-compressor.bats` - 上下文压缩功能测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1096:3. `tests/graph-rag.bats` - 增加重排序和上下文信号测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1104:| 上下文压缩 | hotspot-analyzer.sh | 压缩 + 热点优先策略 | context-compressor.bats |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1109:| 重排序管线 | graph-rag.sh, reranker.sh | Graph-RAG + 重排序 | graph-rag.bats |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1110:| 上下文层信号 | context-layer.sh, graph-rag.sh | 信号提取 + 权重计算 | graph-rag.bats |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1115:- **单元测试**：每个新增/修改脚本的核心功能（如压缩算法、漂移评分、RRF 融合）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1123:| 上下文压缩 | 空文件输入 | 运行 context-compressor.sh 处理空文件 | 返回空结果，不崩溃 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1225:| `evidence/context-signals.log` | AC-007 | 功能测试通过后 | 日志 | Coder |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1631:- ✅ `graph-rag.sh` 已预留重排序集成点（RERANK_ENABLED，第 90 行）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1646:- **新建脚本**: 3 个（context-compressor.sh, drift-detector.sh, benchmark.sh）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1670:- ✅ 4/5 个测试文件已存在（context-compressor, drift-detector, data-flow-tracing, semantic-anomaly）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1725:   - `graph-rag.sh` 的重排序集成（RERANK_ENABLED）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1731:   - `context-compressor.sh`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1776:# context-compressor.sh
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1777:compress_context() {
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1797:### 混合检索 RRF 公式
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1800:RRF_score(d) = Σ_r [ 1 / (k + rank_r(d)) ]
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/proposal.md:1809:score(d) = w_keyword × RRF_keyword(d) + w_vector × RRF_vector(d) + w_graph × RRF_graph(d)
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/adr-parser/spec.md:64:| context | 否 | ## Context 章节内容 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/adr-parser/spec.md:97:- status、context、decision、consequences：同 MADR
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/adr-parser/spec.md:184:- 正确提取 status、context、decision、consequences
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:1:# Spec: 结构化上下文输出（structured-context-output）
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:4:> **Capability**: structured-context-output
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:27:| 3 | `task_context` | 任务上下文（意图分析/相关代码片段/调用链） |
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:80:### REQ-SCO-004：task_context 结构
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:86:  "task_context": {
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:181:**When**: 执行 `augment-context-global.sh --format json`
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:185:- 输出包含 `task_context` 字段
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:210:### SC-SCO-004：task_context 意图分析
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:214:**When**: 分析意图并构建 task_context
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:284:| CT-SCO-004 | behavior | REQ-SCO-004, SC-SCO-004 | task_context 意图分析 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:297:  "required": ["project_profile", "current_state", "task_context", "recommended_tools", "constraints"],
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/structured-context-output/spec.md:317:    "task_context": {
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/ci-cd-integration/spec.md:312:              issue_number: context.issue.number,
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/ci-cd-integration/spec.md:313:              owner: context.repo.owner,
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/ci-cd-integration/spec.md:314:              repo: context.repo.repo,
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/ci-cd-integration/spec.md:315:              body: '## Architecture Check Failed\n\nPlease review the architecture violations in the workflow logs.\n\n[View Details](' + context.serverUrl + '/' + context.repo.owner + '/' + context.repo.repo + '/actions/runs/' + context.runId + ')'
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/devbooks-adapter/spec.md:144:| 当前变更 | `task_context` 或单独字段 |
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/devbooks-adapter/spec.md:305:load_devbooks_context() {
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/devbooks-adapter/spec.md:311:新增到 `augment-context-global.sh`：
+dev-playbooks/changes/archive/augment-parity-final-gaps/specs/devbooks-adapter/spec.md:315:build_enhanced_context() {
+dev-playbooks/changes/archive/algorithm-optimization-parity/specs/greedy-selection/spec.md:4:> **模块**: graph-rag.sh
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:19:| `context-compressor.sh` | `--compress <level>` | medium | 新脚本 | CT-CLI-003 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:20:| `context-compressor.sh` | `--budget <tokens>` | 无限制 | 新脚本 | CT-CLI-004 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:28:| `graph-rag.sh` | `--no-rerank` | false | 向后兼容 | CT-CLI-012 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:29:| `graph-rag.sh` | `--rerank-strategy <s>` | auto | 向后兼容 | CT-CLI-013 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:53:  context_compression: true
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:59:  context_signals: true
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:70:  rrf_k: 60
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:79:context_signals:
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:230:  "compressed_context": "...",
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:281:    "rrf_k": 60,  // 新增
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:307:| CT-CLI-003 | `context-compressor.sh --compress` 参数解析 | 压缩级别正确应用 | P0 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:432:| AC-001 | CLI: context-compressor.sh | CT-CLI-003, CT-CLI-004 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/contract-plan.md:444:| AC-006 | CLI: graph-rag.sh | CT-CLI-012, CT-CLI-013 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:72:- `evidence/context-compression-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:73:- `tests/context-compressor.bats` 通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:128:- 实现关键词 + 向量 + 图距离的 RRF 融合
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:162:- 提供 `--enable-context-signals` 开关
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:168:- 本变更的 AC-007 专注于用户交互信号的权重计算（使用 `context` 和 `session` API）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:172:- `evidence/context-signals-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/design.md:255:| Hybrid Retrieval | Function | 混合检索，RRF 融合 | Bash |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:35:  - Candidate Anchors：`bats tests/context-compressor.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:120:- 上次进度：已生成 context-compressor、hybrid-retrieval、llm-rerank、data-flow-tracing、semantic-anomaly、graph-store（含 SC-GS-008b）、feature-toggle、benchmark、long-term-memory、drift-detector 的 Red 基线日志
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:165:- `tests/fixtures/context-compressor/order-service.base.ts`：压缩器基础样本
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:195:| AC-001 | REQ-CC-001~006 | T-CC-001, T-CC-002, T-CC-003, T-CC-004, T-CC-005, T-CC-006, T-CC-007, T-CC-008, T-CC-009, T-CC-010, T-CC-011, T-CC-012, T-CC-013, T-CC-ERROR-001, T-CC-ERROR-002, T-CC-ERROR-003, T-CC-ERROR-004, T-CC-ERROR-005, T-PERF-CC-001 | `dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/context-compressor-20260119-092722.log` | [ ] | [ ] |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:232:- unit：`bats tests/context-compressor.bats`, `bats tests/drift-detector.bats`, `bats tests/long-term-memory.bats`, `bats tests/semantic-anomaly.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:251:  - 步骤 2：运行 `context-compressor.sh --mode skeleton`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:309:- M-001 `tests/context-compressor.bats` `T-CC-005`：缓存性能测试不稳定；建议预热次数 1→10，并使用 P95 代替单次测量
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:337:| m-001 | long-term-memory.bats:139 | 仅验证焦点符号被提升，未验证非焦点符号 | 增加负向断言确保非焦点符号 context_boost=0 | ✅ 已修复 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:339:| m-003 | context-compressor.bats:481 | 并发测试未隔离 DEVBOOKS_DIR/缓存 | 为每个进程设置独立 DEVBOOKS_DIR | ✅ 已修复 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:382:| context-compressor.bats | 13 | 7 | ⚠️ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:447:| 单独运行 context-layer.bats | ⚠️ 运行缓慢 (>60秒未完成) |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:463:1. **context-compressor.bats**: 多个测试涉及大文件压缩 (>10MB)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:497:| 批次 3 | long-term-memory, context-compressor | 21/29 | 72% |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:546:5. **压缩比例调整** - context-compressor.bats T-CC-009
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:565:| context-compressor.bats | 16/20 | ✅ Coder 修复有效 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:636:| scripts/context-compressor.sh | `brace_delta()` 使用 `[!{]` 模式在 macOS/zsh 不兼容 | 改用 `tr -cd '{' \| wc -c` 计数 | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:637:| scripts/context-compressor.sh | `is_signature_start()` 不支持多修饰符（如 `private async`） | 扩展正则支持 `(modifier)*` | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:638:| scripts/context-compressor.sh | `is_structural_line()` 处理 class 时收集整个 body | 仅对 interface/type/enum 收集 body，class 只输出声明 | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:639:| scripts/context-compressor.sh | 不支持 Python 语法 | 添加 `def`/`async def` 检测和缩进跟踪 | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:640:| scripts/context-compressor.sh | 不支持 Python 装饰器 | 添加 `@decorator` 行检测 | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:662:| smoke-context-compressor.txt | 4/4 通过 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:664:| critical-context-compressor.txt | 3/3 通过 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:698:| 类型安全与坏味道 | src/server.ts, src/context-signal-manager.ts | a053441 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:699:| 测试文件质量 | tests/hybrid-retrieval.bats, tests/context-compressor.bats, tests/llm-rerank.bats, tests/graph-store.bats | ad2529e |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:700:| 核心脚本可读性与依赖 | scripts/context-compressor.sh, scripts/call-chain.sh, scripts/graph-store.sh | a460700 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:730:| C-005 | scripts/context-compressor.sh:16-19 | 临时文件清理竞态条件 | 临时文件泄漏 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:738:| M-001 | src/context-signal-manager.ts:196 | 类型守卫过于宽松 | 定义更严格的类型守卫 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:740:| M-008 | scripts/context-compressor.sh:410-543 | `compress_file` 函数过长（130 行） | 拆分为子函数 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/verification.md:819:| C-005 | scripts/context-compressor.sh:16-19 | 临时文件清理竞态 | 使用数组 `declare -a _TEMP_FILES=()` | ✅ | 已存在 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:7:| 2026-01-19 04:51 | CONSTRAINT_CHANGE | 上下文压缩实现使用基于规则的签名抽取，未接入 tree-sitter AST（与"基于 AST"约束不一致） | scripts/context-compressor.sh | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:8:| 2026-01-19 04:51 | CONSTRAINT_CHANGE | 单文件快速模式可能导致压缩率超出 50% 上限 | scripts/context-compressor.sh | ✅ (IMPL_ONLY) |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:13:| 2026-01-19 05:38 | IMPLEMENTATION_GAP | config/features.yaml 缺少新能力开关（context_compressor, drift_detector, hybrid_retrieval, context_signals, benchmark, performance_regression） | config/features.yaml | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:14:| 2026-01-19 05:38 | SPEC_DRIFT | truth spec 的 long-term-memory（memory_* API）与本变更 AC-007（context signals）不一致 | dev-playbooks/specs/long-term-memory/spec.md, dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/design.md | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:16:| 2026-01-19 05:38 | IMPLEMENTATION_GAP | 缺少 --enable-all-features 一键启用入口 | scripts/graph-rag.sh, dev-playbooks/changes/20260118-2112-enhance-code-intelligence-capabilities/design.md | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:17:| 2026-01-19 06:20 | DESIGN_GAP | 上下文压缩未定义不支持语言的错误反馈（新增 T-CC-ERROR-004 期望友好提示） | dev-playbooks/specs/context-compressor/spec.md, tests/context-compressor.bats | ✅ (IMPL_ONLY) |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:20:| 2026-01-20 19:30 | TEST_QUALITY | 修复 M-004：tests/context-compressor.bats:481-522 并发测试添加缓存隔离验证（验证缓存目录创建和交叉污染检测） | tests/context-compressor.bats | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:23:| 2026-01-20 19:10 | REFACTOR | 修复 M-008：重构 compress_file 函数，拆分为 _cf_process_signature_line 等子函数，降低复杂度（130行→70行） - **已回滚**，重构引入重复输出 bug | scripts/context-compressor.sh | ✅ (IMPL_ONLY) |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:24:| 2026-01-20 19:10 | REFACTOR | 修复 M-013：重构 _main_build_output_json 函数，使用全局变量减少参数数量（9→0） | scripts/context-compressor.sh | ✅ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:25:| 2026-01-21 00:30 | BUG_FIX | 回滚 M-008 重构：恢复原始 compress_file 函数，修复重复输出 bug（constructor 和签名被重复输出，导致压缩率 >1） | scripts/context-compressor.sh | ✅ (IMPL_ONLY) |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:34:| 2026-01-19 05:38 | IMPLEMENTATION_GAP | LLM Mock 机制未实现 | graph-rag.sh 已调用 common.sh 的 llm_call，支持 LLM_MOCK_* 环境变量 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:39:| 2026-01-19 | IMPLEMENTATION_GAP | config/features.yaml 缺少新能力开关 | 已补全所有新能力开关（context_compressor, drift_detector, hybrid_retrieval, context_signals, benchmark, performance_regression 等），默认值设为 false |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/deviation-log.md:59:**建议**：在 design.md 中明确采用 context signals 或补齐 long-term-memory 实现。
+dev-playbooks/changes/archive/algorithm-optimization-parity/specs/boundary-detection/spec.md:4:> **模块**: boundary-detector.sh / graph-rag.sh
+dev-playbooks/changes/archive/algorithm-optimization-parity/specs/priority-sorting/spec.md:4:> **模块**: graph-rag.sh
+dev-playbooks/changes/archive/algorithm-optimization-parity/specs/context-weighting/spec.md:92:- **Given**: `context_window` 为空
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:24:- `scripts/context-compressor.sh`（上下文压缩脚本）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:25:- `tests/context-compressor.bats`（功能测试）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:26:- `evidence/context-compression-test.log`（证据文件）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:29:- 新增文件：`scripts/context-compressor.sh`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:30:- 新增测试：`tests/context-compressor.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:37:- `tests/context-compressor.bats` 全部通过
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:44:- [x] MP1.1 创建 `scripts/context-compressor.sh` 脚本骨架，定义接口签名（输入：文件路径，输出：压缩后内容）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:48:- [x] MP1.5 编写 `tests/context-compressor.bats`，覆盖 3 种压缩级别和边界条件
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:49:- [x] MP1.6 运行测试并生成证据文件 `evidence/context-compression-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:164:**目的**: 实现关键词 + 向量 + 图距离的 RRF 融合，MRR@10 > 0.65。
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:177:- 实现 RRF 融合算法
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:189:- [x] MP5.1 在 `scripts/embedding.sh` 中实现 RRF 融合算法（Reciprocal Rank Fusion）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:193:- [x] MP5.5 编写 `tests/hybrid-retrieval.bats`，覆盖 RRF 融合、权重配置、A/B 测试
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:236:- `src/context-signal-manager.ts`（信号管理组件）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:239:- `evidence/context-signals-test.log`（证据文件）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:242:- 新增文件：`src/context-signal-manager.ts`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:250:- 提供 `--enable-context-signals` 开关
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:259:- [x] MP7.2 实现 `src/context-signal-manager.ts`（信号记录、查询、衰减逻辑）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:262:- [x] MP7.5 添加 `--enable-context-signals` 开关支持
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:264:- [x] MP7.7 运行测试并生成证据文件 `evidence/context-signals-test.log`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:408:- `scripts/context-compressor.sh`（上下文压缩）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:411:- `src/context-signal-manager.ts`（上下文层信号管理）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:422:scripts/context-compressor.sh → tree-sitter
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:426:src/context-signal-manager.ts → SQLite
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:672:#### 1. RRF 融合算法（MP5）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:685:FUNCTION rrf_fusion(keyword_results, vector_results, graph_results, weights):
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:686:  k = 60  // RRF 常数
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/tasks.md:772:FUNCTION compress_context(file_path, compress_level):
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/context-layer/spec.md:4:> **Capability**: context-layer
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/context-layer/spec.md:105:context_signals:
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/context-layer/spec.md:183:**Given**: 配置 `context_signals.enabled = false`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/context-layer/spec.md:209:- `graph-rag.sh`：集成信号到检索权重
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/context-layer/spec.md:214:- `graph-rag.sh`：使用上下文信号
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/hybrid-retrieval/spec.md:1:# 规格 Delta：混合检索（RRF 融合）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/hybrid-retrieval/spec.md:13:### REQ-HR-001：RRF 融合算法
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/hybrid-retrieval/spec.md:15:系统应实现 Reciprocal Rank Fusion (RRF) 算法融合多种检索结果：
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/hybrid-retrieval/spec.md:18:RRF_score(d) = Σ_r [ 1 / (k + rank_r(d)) ]
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/hybrid-retrieval/spec.md:27:score(d) = w_keyword × RRF_keyword(d) + w_vector × RRF_vector(d) + w_graph × RRF_graph(d)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/hybrid-retrieval/spec.md:70:  rrf_k: 60
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/hybrid-retrieval/spec.md:131:- 使用 RRF 融合结果
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/hybrid-retrieval/spec.md:211:- `graph-rag.sh`：使用混合检索结果
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/hybrid-retrieval/spec.md:223:| RRF 融合计算 | 延迟 | < 50ms |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/context-compressor/spec.md:4:> **Capability**: context-compressor
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/context-compressor/spec.md:34:context_compress --compress <low|medium|high> <files>
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/context-compressor/spec.md:73:**When**: 运行 `context_compress --compress low src/service.ts`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/context-compressor/spec.md:90:**When**: 运行 `context_compress --budget 3000 --hotspot src/`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/context-compressor/spec.md:124:**扩展自**：`dev-playbooks/specs/context-compressor/spec.md` v1.0.0
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/llm-rerank/spec.md:17:**新要求**：重排序作为 `graph-rag.sh` 的默认管线
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/llm-rerank/spec.md:21:graph-rag.sh <query>  # 自动调用 reranker.sh
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/llm-rerank/spec.md:24:graph-rag.sh <query> --no-rerank
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/llm-rerank/spec.md:50:graph-rag.sh <query> --rerank-strategy <llm|heuristic>
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/llm-rerank/spec.md:108:**When**: 运行 `graph-rag.sh "graph query optimization"`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/llm-rerank/spec.md:121:**When**: 运行 `graph-rag.sh <query> --rerank-strategy llm`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/llm-rerank/spec.md:134:**When**: 运行 `graph-rag.sh <query> --rerank-strategy heuristic`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/llm-rerank/spec.md:161:**When**: 运行 `graph-rag.sh <query> --no-rerank`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/llm-rerank/spec.md:190:4. 集成到 graph-rag.sh 管线
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/specs/benchmark/spec.md:237:- `context-compressor.sh`：压缩率评测
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/major-issues-fix-plan.md:5:### M-001: context-compressor 缓存性能测试不稳定
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/major-issues-fix-plan.md:6:- **位置**: tests/context-compressor.bats:T-CC-005
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:31:| `scripts/graph-rag.sh` | 修改 | 背包算法、TF-IDF、去重融合、距离度量、LLM 重排序 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:36:| `tests/graph-rag.bats` | 修改 | 背包算法、TF-IDF、去重测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:45:| `src/server.ts` | 调用 graph-rag.sh、impact-analyzer.sh、intent-learner.sh（通过 runScript） |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:48:| `hooks/augment-context-global.sh` | 引用 llm_rerank 配置和 reranker 工具 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:56:| `scripts/graph-rag.sh` | 直接修改 | 🔴 高 | 核心检索逻辑，5 个算法模块变更 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:67:server.ts ──调用──> graph-rag.sh ──加载──> common.sh
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:82:                         └──> apply_context_boost_multiplicative()
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:87:#### graph-rag.sh 被引用位置
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:91:| `src/server.ts` | 426 | `runScript("graph-rag.sh", [...])` |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:92:| `tests/graph-rag.bats` | 全文件 | 测试脚本 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:94:| `tests/subgraph-retrieval.bats` | 多处 | 集成测试 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:132:| graph-rag.sh | `select_within_budget()` | `knapsack_select()` | 替换 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:133:| graph-rag.sh | `extract_keywords()` | `extract_keywords_tfidf()` | 替换 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:134:| graph-rag.sh | `merge_candidates()` | `merge_candidates_with_fusion()` | 替换 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:135:| graph-rag.sh | `calculate_distance()` | `calculate_multidim_distance()` | 替换 |
+dev-playbooks/changes/archive/algorithm-optimization-parity/impact-analysis.md:140:| intent-learner.sh | `apply_context_boost()` | `apply_context_boost_multiplicative()` | 替换 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/COLLABORATION-SUMMARY.md:48:- **核心测试**: T-HR-001（RRF 融合算法）、T-HR-004（MRR@10 质量）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/COLLABORATION-SUMMARY.md:143:1. 实现 `scripts/context-compressor.sh`（使 11 个测试通过）
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/full-test-20260120.summary.md:9:| context-compressor.bats | 16/20 | 80% |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/fix-report-m008-rollback.md:5:**涉及文件**: `scripts/context-compressor.sh`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/fix-report-m008-rollback.md:120:scripts/context-compressor.sh --enable-all-features --mode skeleton --compress high /tmp/test.ts
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/fix-report-m008-rollback.md:135:运行完整的 context-compressor 测试套件：
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/fix-report-m008-rollback.md:225:完整测试日志: `/tmp/context-compressor-test-results.txt`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/fix-report-m008-rollback.md:229:- 修复前: `scripts/context-compressor.sh` (M-008 重构版本)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/fix-report-m008-rollback.md:230:- 修复后: `scripts/context-compressor.sh` (原始版本)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/P0-FIXES-SUMMARY.md:91:### AC-001: 上下文压缩 (context-compressor.bats)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/P0-FIXES-SUMMARY.md:167:- **T-CC-001, T-CC-009, T-CC-ERROR-001~004, T-PERF-CC-001**: context-compressor 脚本实现问题
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/P0-FIXES-SUMMARY.md:212:- [ ] **功能开关**: 读取 `features.context_signals.enabled`，禁用时不记录信号
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/P0-FIXES-SUMMARY.md:216:文件: scripts/graph-rag.sh
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/P0-FIXES-SUMMARY.md:232:文件: scripts/graph-rag.sh 或 config/features.yaml
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/retest-20260120-summary.md:20:| context-compressor.bats | 13 | 7 | 0 | ⚠️ |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/retest-20260120-summary.md:36:- `context-compressor.bats`: 多个性能测试超阈值
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/green-final/retest-20260120-summary.md:44:- `context-compressor.bats`: compression ratio 边界 (T-CC-009)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:30:**测试文件**: `tests/context-compressor.bats`
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:37:# (in test file tests/context-compressor.bats, line 116)
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:41:**根本原因**: `scripts/context-compressor.sh` 脚本不存在
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:56:**预期行为**: 所有测试应在 `context-compressor.sh` 实现后变为 Green
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:196:| `context-compressor-20260119-031846.log` | 1.7 KB | 上下文压缩测试失败日志 |
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:209:1. **实现 `context-compressor.sh`**
+dev-playbooks/changes/archive/20260118-2112-enhance-code-intelligence-capabilities/evidence/red-baseline/RED-BASELINE-SUMMARY.md:278:1. 实现 `scripts/context-compressor.sh`（使测试 T-CC-001~011 通过）

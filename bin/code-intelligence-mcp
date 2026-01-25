@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+/**
+ * Code Intelligence MCP Server Entry Point
+ */
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const thisFile = fileURLToPath(import.meta.url);
+const realThisFile = fs.realpathSync(thisFile);
+const realBinDir = path.dirname(realThisFile);
+
+await import(path.join(realBinDir, "..", "dist", "server.js"));

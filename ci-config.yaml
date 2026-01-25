@@ -1,0 +1,35 @@
+version: 1.0
+
+global:
+  index_dir: .ci-index
+  respect_gitignore: false
+
+default_workspace:
+  name: main
+  root: .
+  include:
+    - "demo/zod/**"
+    - "demo/TypeScript/**"
+  exclude:
+    - "**/node_modules/**"
+
+workspaces:
+  - name: demo-zod
+    root: demo/zod
+    include:
+      - "**/*.ts"
+      - "**/*.js"
+    exclude:
+      - "**/node_modules/**"
+
+  - name: demo-typescript
+    root: demo/TypeScript
+    include:
+      - "**/*.ts"
+    exclude:
+      - "**/node_modules/**"
+
+imports:
+  boundaries: config/boundaries.yaml
+  features: config/features.yaml
+  llm_providers: config/llm-providers.yaml

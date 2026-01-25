@@ -1,0 +1,4 @@
+run_id=abtest-1
+scanned_at=2026-01-23T11:11:35Z
+ok:/tmp/ci-drift-snapshot.json not found
+ok:/tmp/ci-demo-abtest-1-* not found

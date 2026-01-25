@@ -1,0 +1,338 @@
+Command failed: 2026-01-21T22:29:09.802017Z ERROR code_core::codex::streaming: MCP client for `ckb` failed to start: failed to spawn MCP server `ckb` using command `/usr/local/bin/ckb` with args ["mcp"]: MCP server reported protocol version 2024-11-05, but this client expects 2025-06-18. Update either side so both speak the same schema.
+[2026-01-21T22:29:09] OpenAI Codex v0.0.0 (research preview)
+[2026-01-21T22:29:09] binary: /Users/ozbombor/.cli-versions/codex/just-every/node_modules/@just-every/code-darwin-arm64/bin/code-aarch64-apple-darwin
+--------
+workdir: /Users/ozbombor/Projects/code-intelligence-mcp
+model: gpt-5.2
+provider: crs
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: auto
+--------
+[2026-01-21T22:29:09] User instructions:
+Context: 只读分析，不修改任何文件。输出中文。
+
+Agent: 阅读 docs/Augment.md，提炼 Augment 目标能力/功能点清单（去掉重资产：自研大模型/大数据/大型分布式），按“能力→简述→是否轻资产”输出要点清单，最后给出可用于对比的检查表。
+
+Desired output: Augment 轻资产能力清单 + 对比检查表
+
+Files to consider: docs/Augment.md
+
+[Running in read-only mode - no modifications allowed]
+[2026-01-21T22:29:09] ERROR: MCP client for `ckb` failed to start: failed to spawn MCP server `ckb` using command `/usr/local/bin/ckb` with args ["mcp"]: MCP server reported protocol version 2024-11-05, but this client expects 2025-06-18. Update either side so both speak the same schema.
+[2026-01-21T22:29:24] exec sh -lc "ls -la docs && sed -n '1,240p' docs/Augment.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-21T22:29:25] sh -lc "ls -la docs && sed -n '1,240p' docs/Augment.md" succeeded in 25ms:
+total 88
+drwxr-xr-x   4 ozbombor  staff    128 Jan 22 06:22 .
+drwxr-xr-x@ 39 ozbombor  staff   1248 Jan 22 03:50 ..
+-rw-r--r--@  1 ozbombor  staff   6148 Jan 22 06:25 .DS_Store
+-rw-r--r--   1 ozbombor  staff  35007 Jan 16 22:12 Augment.md
+# 系统智能架构：深度解析 Augment Code 的通用代码图谱与上下文引擎技术
+
+## 1. 执行摘要：从自动补全到架构感知的范式转移
+
+在人工智能辅助软件开发的演进历程中，当前正处于一个根本性的分水岭。一边是以 Cursor 为代表的“编辑器原生”（Editor-Native）范式，其核心逻辑是通过先进的自动补全和基于本地会话的上下文增强，来加速个体开发者的代码编写速度；另一边则是以 Augment Code 为代表的“仓库原生”（Repository-Native）范式，其旨在解决一个截然不同的问题类别：即对大规模、复杂企业级系统的认知负荷与架构理解。用户的核心诉求揭示了一个关键的行业现象：尽管底层使用的大语言模型（LLM）高度相似——通常是 Claude 3.5 Sonnet 或 GPT-4o 的变体——但 Augment Code 在定位深层 Bug 和进行项目级重构时展现出了压倒性的优势。本报告旨在从技术底层深入剖析这一现象，论证这种性能差异并非源于生成模型本身，而是源于 Augment Code 围绕模型构建的专有基础设施——特别是**通用代码图谱（Universal Code Graph, UCG）**、**上下文引擎（Context Engine）**以及**代码库概览与依赖（COD）模型**。
+
+在企业级开发环境中，代码库规模往往超过 40 万个文件 1。传统的“长上下文窗口”策略，即使是达到 20 万甚至 100 万 token 的规模，在面对如此体量时也会陷入“上下文窗口错觉”（Context Window Illusion）2。这种策略只能提供系统的“管中窥豹”视图，无法感知微服务变更对远端前端组件的蝴蝶效应。Augment Code 的技术突破在于，它不再试图将整个代码库“塞入”模型的有限窗口中，而是通过工程化的手段，构建了一个确定性的、基于图论的代码库拓扑理解系统。这个“通用代码图谱”精确映射了代码中的语义关系——导入、函数调用、类继承、API 契约等——从而使系统能够将代码库视为一个连通的图（Graph），而非一堆离散的文本文件 3。
+
+本报告将对实现这一能力的技术机制进行详尽的解构。我们将深入分析 Augment 上下文引擎的三层架构（语法层、语义层、上下文层），剖析 COD 模型的数学与结构基础，并探讨其低延迟推理基础设施如何在执行复杂图遍历的同时实现“思维速度”的响应。此外，我们将通过严格的对比分析，阐明为何 Augment 的图检索策略在结构化工程任务中优于 Cursor 等竞品的向量检索策略，最终揭示 Augment 如何做到“轻易定位真正的 Bug”。
+
+---
+
+## 2. 上下文鸿沟：为何通用模型在规模化工程中失效
+
+要理解 Augment Code 的技术解决方案，首先必须严格定义它所解决的问题本质。标准的大语言模型是在公共代码库上训练的，它们习得的是通用的编程模式和语法规则 4。然而，当这些模型被应用于特定的企业级代码库时，它们会遭遇“通用模式病”（Generic Pattern Disease）——即倾向于建议教科书式的解决方案，而忽略了企业内部独特的架构约定、工具库使用规范或历史遗留的特殊逻辑 4。
+[2026-01-21T22:29:25] tokens used: 15,040
+
+[2026-01-21T22:29:36] thinking
+
+**Exploring inference stack options**
+
+I’m considering various aspects like custom inference stacks and low-latency GPU infrastructure, which can be quite heavy. Cross-repo indexing at an enterprise scale with 400,000 files could also be on the heavier side, but local indexing might work. I need a comprehensive checklist for comparison, covering categories such as index structure, retrieval methods, and more. I’ll scan the document thoroughly to ensure I capture all the features listed. Let's open the whole file for a complete overview!
+[2026-01-21T22:29:38] exec sh -lc "sed -n '240,520p' docs/Augment.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-21T22:29:38] sh -lc "sed -n '240,520p' docs/Augment.md" succeeded in 22ms:
+
+Cursor 的一大创新是**影子工作区（Shadow Workspace）** 15。
+
+- _Cursor 的逻辑：_ 它生成一个隐藏的本地窗口（影子实例），AI 在里面写代码、运行 Linter，看是否报错，如果没错再显示给用户。这是一种**“暴力验证”**（Brute Force）的方法。它检查的是语法正确性，但不一定理解深层的架构含义。
+    
+- _Augment 的逻辑：_ **上下文引擎**利用预计算的图谱在生成代码之前进行**“推理”**。它不仅仅是运行 Linter，而是检查依赖逻辑。
+    
+    - _对比：_ Cursor 检查“这段代码符合语法吗？” Augment 检查“这段代码符合架构逻辑吗？”
+        
+
+### 7.3 向量检索的失败模式 vs 图检索的成功模式
+
+在 Bug 定位场景中：
+
+- **场景：** 用户报告 `OrderService` 处理订单时偶尔抛出空指针异常。
+    
+- **Cursor (向量)：** 搜索 `OrderService` 和 `NullPointer`。它可能会找到该文件，或者找到其他处理空指针的代码片段。如果 Bug 的根源在于上游的 `InventoryService` 返回了一个未预期的 `null`，而 `InventoryService` 的代码文本中没有提到 `OrderService`，向量搜索很难建立两者的联系。
+    
+- **Augment (图)：**
+    
+[2026-01-21T22:29:38] tokens used: 18,579
+[2026-01-21T22:29:51] exec sh -lc "sed -n '520,980p' docs/Augment.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-21T22:29:51] sh -lc "sed -n '520,980p' docs/Augment.md" succeeded in 24ms:
+[2026-01-21T22:29:52] tokens used: 22,997
+
+[2026-01-21T22:30:02] thinking
+
+**Inspecting file sections**
+
+I've read much of the file, but it seems to be truncated in earlier parts—specifically, sections 3, 4, and 5, which are missing around line 240. I’ll need to inspect those missing sections carefully. One approach might be using `rg` to search for headings and identify where I need to focus. After that, I could utilize `sed` to help me navigate and analyze the content more effectively. Let's see what we can find!
+[2026-01-21T22:30:03] exec sh -lc "python3 - <<'PY'
+import re
+p='docs/Augment.md'
+text=open(p,'r',encoding='utf-8').read().splitlines()
+for i,l in enumerate(text,1):
+    if re.match(r'"'^## '"',l):
+        print(f'{i:4d} {l}')
+PY" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-21T22:30:03] sh -lc "python3 - <<'PY'
+import re
+p='docs/Augment.md'
+text=open(p,'r',encoding='utf-8').read().splitlines()
+for i,l in enumerate(text,1):
+    if re.match(r'"'^## '"',l):
+        print(f'{i:4d} {l}')
+PY" exited 1 in 19ms:
+ERROR
+sh: cannot create temp file for here document: Operation not permitted
+[2026-01-21T22:30:03] tokens used: 24,317
+[2026-01-21T22:30:17] exec sh -lc "python3 -c 'import re;import io;import sys;import pathlib;text=pathlib.Path(\"docs/Augment.md\").read_text(encoding=\"utf-8\").splitlines();
+for i,l in enumerate(text,1):
+  if re.match(r\""'^## ",l):
+    print(f"{i:4d} {l}")'"'" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-21T22:30:17] sh -lc "python3 -c 'import re;import io;import sys;import pathlib;text=pathlib.Path(\"docs/Augment.md\").read_text(encoding=\"utf-8\").splitlines();
+for i,l in enumerate(text,1):
+  if re.match(r\""'^## ",l):
+    print(f"{i:4d} {l}")'"'" succeeded in 69ms:
+   3 ## 1. 执行摘要：从自动补全到架构感知的范式转移
+  13 ## 2. 上下文鸿沟：为何通用模型在规模化工程中失效
+  45 ## 3. 通用代码图谱（Universal Code Graph）：系统智能的“大脑”
+ 104 ## 4. 代码库概览与依赖（COD）模型：从考古学到工程学
+ 147 ## 5. Augment 的上下文引擎：检索策略与“大海捞针”
+ 199 ## 6. 延迟工程学：在规模化下实现“思维速度”
+ 223 ## 7. 深度对比分析：Augment Code vs. Cursor
+ 275 ## 8. 深度剖析：Bug 定位技术的实现细节
+ 294 ## 9. 企业级治理与安全集成
+ 313 ## 10. 结论与未来展望：人工智能工程智能的崛起
+ 332 ## 11. 附录：组件技术细节深度分析
+ 362 ## 12. 实现状态：Code Intelligence MCP 对等能力清单
+[2026-01-21T22:30:17] tokens used: 24,812
+
+[2026-01-21T22:30:33] thinking
+
+**Analyzing capabilities**
+
+I want to list different capabilities such as code graph build/update, graph queries, impact analysis, and vulnerability mapping. I should avoid including items like "custom inference stack," which seems to require significant processing time, and instead focus on lighter options that might work well with existing APIs.
+
+If I categorize these capabilities as heavy or light, the context engine, graph store, and caching options appear to be lighter assets. Meanwhile, "custom inference stack" and GPU-related tasks definitely seem more intensive.
+**Refining asset list**
+
+The user asked to remove heavy assets like self-developed models, big data solutions, and large distributed systems. So, I need to focus on light assets in my final list, though I can still mention some heavier ones as long as I mark them accordingly.
+
+The requirement is to clarify whether each item is light. I'll ensure to drop the heavy ones, like building a custom inference stack, but may keep borderline items, noting their status. This way, I can respect the user's request while providing a useful overview.
+**Listing capabilities**
+
+I'm outlining various capabilities, marking each one as light or heavy. For example, I can build repository indices offline, which is light, and implement a universal code graph using existing tools, so it's a yes. 
+
+While creating a unified schema might be somewhat heavy, I can still denote it as medium. Other capabilities, like context engines and call tracking, are light. I’ll also include the ability to cancel requests at the client level, which seems useful but won't require heavy infrastructure. I'll make sure to exclude the heavy custom inference stack from the final list.
+**Creating capability comparison**
+
+The document mentions the ability to cancel GPU tasks, but at the API level, I can simply cancel client calls. I plan to include a comparison checklist for each capability, ideally in table format with categories like Indexing, Graph, Context, Guardrails, Governance, Latency & UX, and Security. 
+
+Each item will have checkboxes for yes/no answers and supporting evidence. I’ll produce the "Augment light asset capability list and comparison checklist" while ensuring it meets the criteria for light assets. This includes using off-the-shelf components without needing custom setups or massive data pipelines. I’ll mention any assumptions along the way!
+**Creating comparison checklist**
+
+I need to draft a checklist for comparing alternative implementations, including questions like "Does it have explicit dependency graphs (nodes/edges)?" and "Can it support callers/callees?" I'll set this up with checkboxes and columns for "Candidate System" and "Evidence."
+
+I should ensure I read the full document, particularly sections 1-12, as some earlier parts may have been truncated. It's important to extract details about the Universal Code Graph (UCG) and context engine from sections 3-5. I need to check those specific lines to capture all relevant capabilities.
+
+
+
+
+[2026-01-21T22:30:54] exec sh -lc "sed -n '45,223p' docs/Augment.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-21T22:30:54] sh -lc "sed -n '45,223p' docs/Augment.md" succeeded in 11ms:
+## 3. 通用代码图谱（Universal Code Graph）：系统智能的“大脑”
+
+Augment Code 之所以能“轻易定位到真正的 Bug”，其核心技术依托在于**通用代码图谱（Universal Code Graph, UCG）**。这是一个专有的数据结构，与传统的基于文本相似度的向量数据库有着本质的区别。UCG 将代码存储为结构化、确定性的图数据库（极有可能是基于 Neo4j 等图数据库技术的定制实现）3。
+
+### 3.1 图基检索（Graph-Based）与向量基检索（Vector-Based）的本质对立
+
+要理解 Augment 的技术壁垒，必须深刻理解图检索与向量检索在代码工程领域的根本差异。目前大多数 AI 编程助手（包括 Cursor）采用的是基于向量嵌入（Vector Embeddings）的**检索增强生成（RAG）**流程 5。
+
+- 向量方法的局限性（Cursor 模式）：
+    
+    在 Cursor 的架构中，代码被切分为文本块（Chunks）。嵌入模型（Embedding Model）将这些文本块转换为高维向量。当用户查询“修复用户认证 Bug”时，系统将查询转换为向量，并计算余弦相似度（Cosine Similarity）来寻找“距离最近”的代码块。
+    
+    - _技术缺陷：_ 这种方法本质上是**概率性**的。它依赖于语义的模糊匹配。如果 Bug 的根源在于一个名为 `UtilityProcessor` 的类中，而这个类名与“认证”（Auth）在语义向量空间中距离较远，向量检索就极有可能遗漏这个关键文件。向量搜索擅长回答“这看起来像什么？”，但不擅长回答“这连接到什么？”。
+        
+- 图方法的确定性（Augment 模式）：
+    
+    UCG 将代码映射为刚性的结构化关系。它使用图数据库存储节点（函数、类、文件）和边（调用、导入、继承、实例化）3。
+    
+    - _技术优势：_ 这种方法是**确定性**的。如果 `AuthService` 调用了 `UtilityProcessor`，那么图谱中就存在一条明确的边 `CALLS`。无论这两个文件的文本内容看起来多么不相关，系统都可以通过图遍历（Graph Traversal）沿着这条边找到依赖关系。这对于 Bug 定位至关重要，因为 Bug 往往就是沿着调用链传播的“坏数据”。
+        
+[2026-01-21T22:30:55] tokens used: 27,031
+
+[2026-01-21T22:31:15] thinking
+
+**Evaluating technical implementation**
+
+I'm considering how to produce either a table or a bullet list summarizing various abilities. The universal code graph sounds like a feasible concept, possibly implemented with existing graph databases or SQLite. Multi-repo federation might be more complex due to integration, but it's doable with indexing. For the context engine, I'd look at intent analysis and signal aggregation, possibly using a remote LLM for reranking, making it light. Static checks for dependencies seem light, while execution path tracing and semantic anomaly detection might be medium complexity. Policy as code and CI integration would be light as well.
+**Analyzing security mapping**
+
+I'm exploring security mapping for vulnerability usage, which involves dependency scanning and graph mapping. That seems manageable. I should consider removing the custom inference stack as it's heavy and not necessary—things like GPU prefill optimization might add to the complexity. However, request cancellation in IDE integration remains light since it only involves aborting tasks. Caching and incremental indexing for graph synchronization sound feasible. I'll also check earlier parts about the COD model and open section 4 to continue.
+
+[2026-01-21T22:31:36] ERROR: stream error: stream disconnected before completion: stream closed before response.completed; retrying in 184ms…
+[2026-01-21T22:31:44] exec sh -lc "sed -n '104,199p' docs/Augment.md" in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-21T22:31:44] sh -lc "sed -n '104,199p' docs/Augment.md" succeeded in 14ms:
+## 4. 代码库概览与依赖（COD）模型：从考古学到工程学
+
+如果说 UCG 提供了底层的数据结构，那么**代码库概览与依赖（COD）模型**就是运行在其上的高级分析框架。COD 模型将代码库的“考古学”转化为可操作的工程数据，是 Augment 理解项目宏观架构的关键 8。
+
+### 4.1 依赖映射与力导向图可视化
+
+COD 模型将代码库可视化为一个**力导向图（Force-Directed Graph）** 8。这种可视化不仅仅是眼花缭乱的图表，而是系统理解代码拓扑的数学表达。
+
+- 在此模型中，**节点**代表文件或模块，**边**代表真实的依赖关系（导入和调用）。
+    
+- **元数据集成：** 每个节点都富含关键元数据，包括所有权映射（通过 Git Blame 确定谁对该模块负责）、提交历史（最后一次修改时间）、以及复杂性度量（圈复杂度）8。
+    
+
+这种映射允许 Augment 识别“架构漂移”（Architectural Drift）——即系统随着时间推移，原本清晰的服务边界逐渐模糊，变成了“大泥球”（Big Ball of Mud）架构。通过对比 COD 模型的历史快照（例如 `graph.json` 的 Diff），团队和 AI 都可以直观地看到某个服务何时从一个轻量级组件突变为一个拥有数百个依赖的“怪兽”8。
+
+### 4.2 热点计算算法（The Hotspot Calculation Algorithm）
+
+用户提到 Augment 能“定位修改点”，这在很大程度上归功于 COD 模型的**技术债热点（Technical Debt Hotspots）**识别能力。Augment 使用特定的算法公式来量化风险区域 8：
+
+$$\text{Hotspot Score} = \text{Change Frequency} \times \text{Cyclomatic Complexity}$$
+[2026-01-21T22:31:44] tokens used: 27,951
+
+[2026-01-21T22:32:02] thinking
+
+**Considering item categorization**
+
+I’m thinking about how to handle borderline items. I could list abilities while excluding those that require heavy assets but still mark them as light assets. To meet the requirement “能力→简述→是否轻资产,” I think marking everything as “是” could work. Maybe I should also add an "排除项" section to clarify exclusions for heavy items like custom inference stacks and multi-repo federation, but cross-repo indexing might be manageable with some effort. It really depends on the scale.
+**Exploring capabilities documentation**
+
+I’m diving into the document to focus on conceptual components like the UCG graph data structure, hybrid graph and vector systems, and the multi-repo federation. I’ll also look at the indexing pipeline involving parsing, symbol extraction, and dependency mapping. Important elements include the context engine for intent analysis and the bug location processes like execution path tracing. It seems that caching and incremental indexing can help with latency. Plus, I want to stick to a read-only approach, ensuring no modifications are made.
+**Creating a lightweight asset capability list**
+
+I’m planning to generate two sections, starting with "轻资产能力清单（按 能力→简述→是否轻资产）" in bullet points. It's important to clarify the criteria for what qualifies as "轻资产." It should be achievable with existing local tools and open-source solutions, without needing complex models or extensive infrastructure. 
+
+For instance, I can include the UCG-like code structure analysis utilizing existing parsers, and support for graph queries and hybrid retrieval methods. Each should be marked as "yes" or "mostly yes" based on meeting those criteria.
+**Finalizing capability assessments**
+
+I need to mark certain capabilities as "yes" or "部分" (partially applicable).
+
+First, I have incremental indexing with AST diffs and update graphs marked as "yes." Retrieving connected subgraphs gets a "yes" too. Intent recognition for query classification is also marked "yes." Multi-signal aggregation and dependency guards are confirmed as "yes." For reranking, I’m considering it as "yes/部分" since it might require API calls. The visualization methods and boundary detection get a "yes," but for execution path tracing, it's mostly promising but complex to implement, so maybe "部分" makes sense there.
+**Assessing capabilities and features**
+
+I’m marking some capabilities as "部分." For instance, I need to evaluate semantic anomaly detection as "部分" because it might require advanced data. However, I can confirm the security mapping and automated upgrade support as "yes." 
+
+I’ll also include items like LRU caching and context compression for relevant subgraphs, both marked "yes." It’s crucial to focus on Augment features while aligning content. I’ll ensure to exclude unrelated project elements, like the three-layer architecture, and locate those mentions using a search tool.
+
+
+
+
+[2026-01-21T22:32:22] exec sh -lc 'rg -n "三层|语法层|语义层|上下文层|Indexing Pipeline|索引流水线|UCG|Context Engine|依赖卫士|Hotspot|Hotspot Score|影子工作区" docs/Augment.md | head -n 80' in /Users/ozbombor/Projects/code-intelligence-mcp
+[2026-01-21T22:32:22] sh -lc 'rg -n "三层|语法层|语义层|上下文层|Indexing Pipeline|索引流水线|UCG|Context Engine|依赖卫士|Hotspot|Hotspot Score|影子工作区" docs/Augment.md | head -n 80' succeeded in 43ms:
+5:在人工智能辅助软件开发的演进历程中，当前正处于一个根本性的分水岭。一边是以 Cursor 为代表的“编辑器原生”（Editor-Native）范式，其核心逻辑是通过先进的自动补全和基于本地会话的上下文增强，来加速个体开发者的代码编写速度；另一边则是以 Augment Code 为代表的“仓库原生”（Repository-Native）范式，其旨在解决一个截然不同的问题类别：即对大规模、复杂企业级系统的认知负荷与架构理解。用户的核心诉求揭示了一个关键的行业现象：尽管底层使用的大语言模型（LLM）高度相似——通常是 Claude 3.5 Sonnet 或 GPT-4o 的变体——但 Augment Code 在定位深层 Bug 和进行项目级重构时展现出了压倒性的优势。本报告旨在从技术底层深入剖析这一现象，论证这种性能差异并非源于生成模型本身，而是源于 Augment Code 围绕模型构建的专有基础设施——特别是**通用代码图谱（Universal Code Graph, UCG）**、**上下文引擎（Context Engine）**以及**代码库概览与依赖（COD）模型**。
+9:本报告将对实现这一能力的技术机制进行详尽的解构。我们将深入分析 Augment 上下文引擎的三层架构（语法层、语义层、上下文层），剖析 COD 模型的数学与结构基础，并探讨其低延迟推理基础设施如何在执行复杂图遍历的同时实现“思维速度”的响应。此外，我们将通过严格的对比分析，阐明为何 Augment 的图检索策略在结构化工程任务中优于 Cursor 等竞品的向量检索策略，最终揭示 Augment 如何做到“轻易定位真正的 Bug”。
+28:Augment Code 的技术哲学是“上下文即一切”（Context is Everything）1。它不依赖模型自身的原始窗口来“记忆”代码库，而是引入了一个外部的**上下文引擎（Context Engine）**作为编排层。这个引擎的作用类似于操作系统的虚拟内存管理单元（MMU），它能够以极高的精度确定在当前毫秒级的时间片内，哪一组特定的文件切片（从 40 万个文件中筛选）与当前用户的击键意图相关，并动态地将这些切片换入有限的上下文窗口中。这实际上是模拟了一个无限的上下文窗口，同时规避了长窗口带来的注意力分散和延迟问题 2。
+34:1. **语法层（Syntax Layer）：** 这是最基础的文本处理层面。引擎会对代码库中的每一个文件进行 Token 化（Tokenization），并构建**抽象语法树（Abstract Syntax Tree, AST）**。在这一层，系统能够精确区分代码的结构组件，例如区分一个 `try...catch` 块和一个装饰器（Decorator），或者区分变量声明与函数调用。这是所有高级分析的基础。
+36:2. **语义层（Semantics Layer）：** 这一层涉及代码的逻辑行为和相互关系。Augment 在此层构建**依赖图（Dependency Graphs）**，连接导入语句、类型提示（Type Hints）、构建脚本以及 API 边界。同时，它利用 AI 技术将每一个符号（Symbol）嵌入到向量空间中，从而支持概念层面的查询（例如“查找所有实现了速率限制器接口的类”），而不仅限于字符串匹配。
+38:3. **上下文层（Context Layer）：** 这是 Augment 最具差异化的层面。它将运行时追踪数据（Runtime Traces）、持续集成（CI）的构建产物、以及**架构决策记录（Architectural Decision Records, ADRs）**集成到长期记忆中 2。通过这一层，系统能够理解特定的系统行为，例如“认证流程是如何在微服务 A 和微服务 B 之间流转的”，或者“为什么三年前团队决定废弃这个数据库字段”。
+41:大多数竞品（如早期的 Copilot 或基础版的 Cursor）往往停留在语法层（提供基于概率的补全）或浅层的语义层（基于向量相似度的检索）。Augment 的核心优势在于其通过**通用代码图谱（UCG）**对语义层进行了深度图结构化，并通过上下文引擎实现了对上下文层的动态调取。
+47:Augment Code 之所以能“轻易定位到真正的 Bug”，其核心技术依托在于**通用代码图谱（Universal Code Graph, UCG）**。这是一个专有的数据结构，与传统的基于文本相似度的向量数据库有着本质的区别。UCG 将代码存储为结构化、确定性的图数据库（极有可能是基于 Neo4j 等图数据库技术的定制实现）3。
+61:    UCG 将代码映射为刚性的结构化关系。它使用图数据库存储节点（函数、类、文件）和边（调用、导入、继承、实例化）3。
+66:### 3.2 UCG 的混合架构设计
+68:Augment 的 UCG 并非单一的调用图，而是一个结合了图数据与向量嵌入的混合架构。这种设计旨在融合结构化查询的精确性与语义查询的灵活性。
+72:    这是 UCG 的核心，存储代码的“硬”关系。
+86:    现代微服务架构的特点是代码分散在数十甚至数百个仓库中。UCG 被设计为能够跨越物理仓库的边界 3。例如，API 的 Protobuf 定义在一个仓库，服务端 Golang 实现在另一个仓库，前端 TypeScript 调用在第三个仓库。UCG 索引器会扫描所有这些仓库，识别跨仓库的 API 契约，并在图谱中建立连接它们的“虚拟边”。这使得 Augment 能够追踪跨服务的调用链，这是单体仓库工具无法企及的。
+89:### 3.3 深度索引流水线（The Indexing Pipeline）
+91:构建 UCG 需要一个极其复杂的索引流水线，远超简单的文本切片 2：
+106:如果说 UCG 提供了底层的数据结构，那么**代码库概览与依赖（COD）模型**就是运行在其上的高级分析框架。COD 模型将代码库的“考古学”转化为可操作的工程数据，是 Augment 理解项目宏观架构的关键 8。
+119:### 4.2 热点计算算法（The Hotspot Calculation Algorithm）
+121:用户提到 Augment 能“定位修改点”，这在很大程度上归功于 COD 模型的**技术债热点（Technical Debt Hotspots）**识别能力。Augment 使用特定的算法公式来量化风险区域 8：
+123:$$\text{Hotspot Score} = \text{Change Frequency} \times \text{Cyclomatic Complexity}$$
+149:用户查询的核心在于“如何做到”。这正是**上下文引擎（Context Engine）**的职能。它充当了 IDE、UCG 和 LLM 之间的智能编排器 2。
+[2026-01-21T22:32:22] tokens used: 31,974
+
+[2026-01-21T22:32:39] thinking
+
+**Identifying capability domains**
+
+I’m focusing on key capability domains. One is the repository-native paradigm, which needs to scale to large repositories without being too heavy. The context engine would serve as an orchestrator with dynamic selections. I also see a need for a three-layer architecture to handle syntax, semantics, and contextual integration. Additionally, there's talk of a universal code graph for retrieval. I'll include aspects like hybrid architecture, indexing pipelines, and a COD model to visualize dependencies and manage architectural drift. Lastly, I'll explore a retrieval strategy that ensures relevance.
+**Exploring reranking and dependencies**
+
+I’m considering reranking methods using existing models, which can be lightweight. Next is the idea of a Dependency Guard for static analysis that covers cycle detection, orphan modules, compliance, and integrates into CI/CD systems. We might explore execution path tracing with call and dataflow graphs. For semantic anomaly detection, I can look into learning patterns from the codebase and using heuristics for analysis. Latency engineering could optimize the inference stack, and I’ll also consider security measures for vulnerability mapping.
+**Identifying light-asset capabilities**
+
+The user is interested in light-asset capabilities like code graphs, context retrieval, dependency checks, static analysis, incremental updates, and caching. I should exclude heavy elements like building custom LLMs or GPU request cancellations, even though the cancellation concept can be handled client-side. For vector storage, I can suggest local options like SQLite or pgvector as lighter alternatives to Pinecone. Integrating runtime traces may also be complex, so limited logging will work. I'll also prepare a checklist to compare other tools against Augment’s capabilities, including key features in both English and Chinese.
+**Outlining light-asset capabilities**
+
+I need to rely on the documentation in Augment.md and provide clear information. I think I'll create two sections, starting with a "轻资产能力清单" (light asset capabilities list) that includes a bullet list outlining each ability, a description, and whether it qualifies as a light asset (yes, no, or partial). Since the user asked to remove heavy assets, I'll focus only on those considered light or partial, providing definitions. Light assets typically don't require training an LLM or using large proprietary data; for example, graph storage in SQLite/Postgres, AST parsing, embeddings via API, and static analysis are all good fits.
+**Finalizing capabilities list**
+
+I want to ensure that the capabilities list includes key aspects like repository-native context management, a three-layer architecture, hybrid graphs, and Graph-RAG retrieval. It should also cover multi-repo federation, indexing pipelines, and COD features, such as overview and drift detection. Other important aspects include hotspot scoring, boundary detection, and context engine functionalities like intent analysis and subgraph retrieval. Additionally, I need to consider governance and security measures, alongside latency optimizations. However, I faced a technical issue with Python heredoc creating temp files in a read-only environment, so I’ll avoid commands that attempt that.
+
+
+
+
+[2026-01-21T22:33:24] codex
+
+**Augment 轻资产能力清单（来自 `docs/Augment.md`，已剔除/弱化“自研大模型、超大数据、超大规模分布式推理/索引”等重资产前提）**
+
+- 仓库原生（Repository-Native）上下文管理 → 不靠把全仓库塞进长上下文，而是用“上下文引擎”按任务动态挑选相关切片/子图 → 是否轻资产：是  
+- 上下文引擎三层架构（语法/语义/上下文） → 语法层AST/Token化；语义层依赖图+符号嵌入；上下文层融合ADR、CI产物、运行时追踪等长期记忆 → 是否轻资产：部分（ADR/CI易做；运行时追踪取决于接入面与数据量）  
+- 通用代码图谱 UCG（显式结构关系）→ 把“文件/类/函数/变量/API端点/Schema”等作为节点，把“CALLS/IMPORTS/EXTENDS/IMPLEMENTS/RETURNS_TYPE/… ”作为边，支持确定性图遍历 → 是否轻资产：是（用SQLite/Neo4j/开源图方案均可，小规模也成立）  
+- 混合 Graph-RAG（向量锚点 + 图多跳遍历）→ 先用语义检索找到锚点符号，再沿依赖边做多跳扩展，拿到连通的上下文 → 是否轻资产：是（不需要自研大模型；可用现成embedding与本地向量库/轻量服务）  
+- 多仓库联邦（跨仓库“虚拟边”）→ 识别跨仓库API契约，把前后端/多服务通过契约边连起来做端到端追踪 → 是否轻资产：部分（小范围跨仓库可轻量；做到“大规模组织级联邦”会迅速变重）  
+- 深度索引流水线（Parsing→AST→关系抽取）→ 解析代码生成AST，再抽取调用/导入/类型关系等图结构；文中附录提到 CPG/CFG/PDG 思路与 LSP 摄取标准化 → 是否轻资产：部分（做“可用的关系抽取”轻；做“全语言、全精度”会变重）  
+- 增量索引（Delta AST 更新）→ 不全量重建，只计算变更差异并更新受影响节点/边，保持近实时同步 → 是否轻资产：是  
+- COD（Codebase Overview & Dependency）宏观画像 → 力导向依赖可视化 + 元数据（git blame所有权、提交历史、圈复杂度） → 是否轻资产：是  
+- 架构漂移检测（Architectural Drift）→ 对比 COD/UCG 历史快照（例如图谱diff）观察边界模糊、“大泥球”趋势 → 是否轻资产：是（快照+diff）  
+- 热点识别（Hotspot Score）→ `变更频率 × 圈复杂度`，用于优先检索/定位最可能出问题的区域 → 是否轻资产：是（git + 静态复杂度即可）  
+- 边界识别（用户代码 vs 第三方库）→ 显式标记可改/不可改区域，减少“去改 node_modules/私有API”类幻觉建议 → 是否轻资产：是  
+- 意图解析（Intent Analysis）→ 区分调试/重构/新功能，切换不同检索策略 → 是否轻资产：是（规则+小模型/LLM分类即可）  
+- 多维信号聚合 → 把 Prompt + 当前打开文件/光标位置 + 最近编辑片段 + 会话历史一起作为检索信号 → 是否轻资产：是（主要是IDE/编辑器事件接入与拼装）  
+- 子图检索与遍历（上游/下游/类型定义）→ 以“连通子图”代替“离散文本块”，能复现执行路径语义 → 是否轻资产：是  
+- 重排序（Re-ranking / LLM-as-a-judge）→ 初筛候选后，用重排把同名异义、弱相关内容剔除，只保留高信噪比上下文 → 是否轻资产：部分（可用现成重排器/LLM；追求极致低延迟与大吞吐会变重）  
+- 依赖卫士（Dependency Guard）→ 生成前/后做确定性校验：循环依赖、孤儿模块/死代码风险、分层/架构策略合规 → 是否轻资产：是  
+- Policy as Code（架构规则文件）→ 通过策略文件（如文中示例 `cod-policy.yml`）把架构约束固化为可执行门禁 → 是否轻资产：是  
+- CI/CD 集成的自动化架构审查 → 在合并前拦截循环依赖、禁用包、分层违规等（侧重架构/逻辑层） → 是否轻资产：是  
+- Bug 定位的“追踪式推理”（Trace-Based Reasoning）→ 基于调用图+数据流图追踪坏数据传播链，定位源头而非只定位报错行 → 是否轻资产：部分（调用链轻；跨函数数据流/PDG精度越高成本越大）  
+- 语义异常检测（Static Analysis 2.0）→ 从项目统计规律学习“隐式规范”，发现“语法正确但违反项目惯例”的代码 → 是否轻资产：部分（可从简单模式挖掘做起；全量学习与低误报会更重）  
+- 安全与合规影响定位 → 漏洞发生时把“库→导入点→传播路径”映射到具体文件/语句；并辅助生成升级代码以匹配既有模式 → 是否轻资产：部分（影响定位偏轻；自动化升级改写与大规模传播追踪会更重）  
+- 缓存与预热（子图/热点符号）→ 高频子图常驻/多级缓存，减少重复检索成本 → 是否轻资产：是  
+- 请求取消（Request Cancellation）→ 输入变化就取消过期请求，避免资源浪费（不必绑定GPU实现，逻辑层也能做） → 是否轻资产：是  
+
+（已不纳入清单的典型重资产项：自研/深度定制推理堆栈以追求 200–300ms 级端到端体验、为“每次击键”做大规模高吞吐推理的GPU基础设施、面向40万+文件/组织级多仓库的超大规模分布式索引与服务化运维。）
+
+**对比检查表（用来评估某工具/方案是否具备上述“轻资产Augment风格”能力）**
+
+- [ ] 仓库原生：能以“全仓库/系统拓扑”组织上下文，而非只围绕当前文件/文本块  
+- [ ] AST 解析：至少支持主要语言的 AST/符号表抽取  
+- [ ] 显式代码图：有可查询的依赖图/调用图（至少支持“找调用方/被谁调用”）  
+- [ ] 图遍历能力：支持多跳遍历、A→B 路径/最短路径、按边类型过滤  
+- [ ] Graph-RAG：语义检索仅做“锚点”，核心上下文靠图扩展成“连通子图”  
+- [ ] 意图解析：能区分 debug/refactor/feature 并切换检索策略  
+- [ ] 多信号聚合：Prompt + 光标/打开文件 + 最近编辑 + 历史对话（至少其中3类）  
+- [ ] 重排序：有 rerank/judge 机制抑制同名异义与弱相关噪声  
+- [ ] 增量索引：基于变更delta更新图谱，而非频繁全量重建  
+- [ ] 热点/风险：有类似 `变更频率×复杂度` 的热点定位与优先级机制  
+- [ ] 边界识别：能区分用户代码/第三方/生成代码，并在检索与生成中利用  
+- [ ] 依赖卫士：至少覆盖循环依赖检测 + 分层/架构规则校验（生成前后均可）  
+- [ ] Policy as Code：架构规则能配置化并进入门禁流程  
+- [ ] CI/CD 集成：能在PR/流水线阶段自动做架构审查并给出可解释结果  
+- [ ] 执行路径追踪：能用调用链（最好含部分数据流）解释“坏数据从哪来”  
+- [ ] 语义异常：能基于项目惯例发现“语法对但语义/惯例不对”的可疑点  
+- [ ] 安全影响定位：能把漏洞库的使用点精确定位到导入/调用路径（最好可给升级建议）  
+- [ ] 缓存/预热：有子图/热点符号缓存策略（用于降低交互成本）  
+- [ ] 多仓库联邦（可选）：能跨仓库建立契约/调用链连接（小范围也算通过）
+[2026-01-21T22:33:55] tokens used: 40,568

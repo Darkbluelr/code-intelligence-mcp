@@ -1,0 +1,75 @@
+# DevBooks managed - DO NOT EDIT
+# DevBooks 开发文档（运行时不需要）
+dev-playbooks/
+.devbooks/
+
+# AI 工具配置目录
+.claude/
+.cursor/
+.windsurf/
+.gemini/
+.agent/
+.opencode/
+.continue/
+.qoder/
+.code/
+.codex/
+.github/instructions/
+.github/copilot-instructions.md
+
+# DevBooks 指令文件
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+# End DevBooks managed
+
+# Development files (not needed in npm package)
+demo/
+tests/
+*.bats
+
+# Development tools (not for npm)
+bin/codex-auto
+change-check.sh
+config/auto-tools.yaml
+
+# Source files (only ship compiled dist/)
+src/
+tsconfig.json
+
+# Build and development tools
+.ci-index/
+.ci-cache/
+.npm-cache/
+*.scip
+.migrate.lock
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Git files
+.git/
+.gitignore
+.github/
+
+# CI/CD
+.gitlab-ci.yml*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Development scripts (not needed in runtime)
+parse-scip.js
+
+# NPM publish check report
+npm-publish-check.md
