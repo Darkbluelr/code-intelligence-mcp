@@ -24,10 +24,29 @@ workspaces:
 
   - name: demo-typescript
     root: demo/TypeScript
+    respect_gitignore: true
     include:
-      - "**/*.ts"
+      - "src/compiler/**/*.ts"
+      - "src/services/**/*.ts"
+      - "src/server/**/*.ts"
+      - "src/harness/**/*.ts"
     exclude:
+      - "**/*.d.ts"
       - "**/node_modules/**"
+      - "**/tests/**"
+      - "**/testRunner/**"
+      - "**/lib/**"
+      - "**/built/**"
+      - "**/dist/**"
+    index:
+      embedding:
+        enabled: true
+        model: nomic-embed-text
+        dimension: 768
+      graph:
+        enabled: true
+      scip:
+        enabled: true
 
 imports:
   boundaries: config/boundaries.yaml

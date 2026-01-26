@@ -194,6 +194,18 @@ log_debug() {
   return 0
 }
 
+_is_local_endpoint() {
+  local endpoint="$1"
+  case "$endpoint" in
+    http://localhost*|http://127.0.0.1*|http://0.0.0.0*|https://localhost*|https://127.0.0.1*|https://0.0.0.0*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 # ==================== 构建统计与恢复 ====================
 
 RESUME_BUILD="false"
@@ -384,7 +396,12 @@ _detect_ollama() {
 
   # 检查 ollama 服务是否响应
   local endpoint="${OLLAMA_ENDPOINT:-$OLLAMA_DEFAULT_ENDPOINT}"
-  if curl -s --max-time 2 "${endpoint}/api/version" &>/dev/null; then
+  local curl_args=(-s --max-time 2)
+  if _is_local_endpoint "$endpoint"; then
+    # 避免 ALL_PROXY 之类的全局代理变量劫持 localhost 请求
+    curl_args+=(--noproxy '*')
+  fi
+  if curl "${curl_args[@]}" "${endpoint}/api/version" &>/dev/null; then
     log_debug "Ollama 服务可用: $endpoint"
     return 0
   fi
@@ -493,7 +510,12 @@ _embed_with_ollama() {
   # 发送请求
   local response
   local http_code
-  response=$(curl -s -w "\n%{http_code}" -X POST "${endpoint}/api/embeddings" \
+  local curl_args=(-s -w "\n%{http_code}")
+  if _is_local_endpoint "$endpoint"; then
+    # 避免 ALL_PROXY 之类的全局代理变量劫持 localhost 请求
+    curl_args+=(--noproxy '*')
+  fi
+  response=$(curl "${curl_args[@]}" -X POST "${endpoint}/api/embeddings" \
     -H "Content-Type: application/json" \
     --max-time "$timeout" \
     -d "$request_body" 2>/dev/null)
@@ -554,14 +576,12 @@ _append_index_entry() {
   local index_file="$1"
   local file_path="$2"
   local hash="$3"
-  local line
-  line=$(printf '%s\t%s\n' "$file_path" "$hash")
 
   if command -v flock &>/dev/null; then
     local lock_file="${index_file}.lock"
     (
       flock -x 200
-      printf '%s' "$line" >> "$index_file"
+      printf '%s\t%s\n' "$file_path" "$hash" >> "$index_file"
     ) 200>"$lock_file"
   else
     local tmp_file
@@ -569,7 +589,7 @@ _append_index_entry() {
     if [ -f "$index_file" ]; then
       cat "$index_file" > "$tmp_file"
     fi
-    printf '%s' "$line" >> "$tmp_file"
+    printf '%s\t%s\n' "$file_path" "$hash" >> "$tmp_file"
     mv "$tmp_file" "$index_file"
   fi
 }
@@ -1344,6 +1364,7 @@ _batch_embed_openai() {
 validate_text_length() {
   local text="$1"
   local max_chars=3000
+  local max_file_size=5000000
   # 估算 token 数量（粗略估计：1 token ≈ 4 chars）
   local estimated_tokens=$((${#text} / 4))
   if [ $estimated_tokens -gt 2000 ]; then
@@ -1372,15 +1393,54 @@ _matches_any_pattern() {
 
   for pattern in "$@"; do
     [[ -z "$pattern" ]] && continue
-    if [[ "$file" == $pattern ]]; then
-      return 0
-    fi
-    if [[ "$pattern" == \*\*/?* ]]; then
-      local trimmed="${pattern:3}"
-      if [[ "$file" == $trimmed ]]; then
+    # 兼容 bash 3：没有 globstar（**/ 不能匹配 0 层目录），这里手动生成等价变体。
+    # 例：src/compiler/**/*.ts 需要同时匹配 src/compiler/foo.ts 与 src/compiler/a/b.ts
+    local candidates=("$pattern")
+    local idx=0
+
+    while (( idx < ${#candidates[@]} )); do
+      local candidate="${candidates[$idx]}"
+
+      if [[ "$file" == $candidate ]]; then
         return 0
       fi
-    fi
+
+      # 历史兼容：以 **/ 开头的模式，也尝试去掉前缀（**/foo -> foo）
+      if [[ "$candidate" == \*\*/?* ]]; then
+        local trimmed="${candidate:3}"
+        if [[ "$file" == $trimmed ]]; then
+          return 0
+        fi
+      fi
+
+      # 为候选模式的每个 "**/" 生成一个“去掉该段”的变体（允许匹配 0 层目录）
+      local tmp="$candidate"
+      local prefix=""
+      while [[ "$tmp" == *"**/"* ]]; do
+        local before="${tmp%%\\*\\*/*}"
+        local after="${tmp#*\\*\\*/}"
+        local removed="${prefix}${before}${after}"
+
+        if [[ -n "$removed" && "$removed" != "$candidate" ]]; then
+          local exists=false
+          local existing
+          for existing in "${candidates[@]}"; do
+            if [[ "$existing" == "$removed" ]]; then
+              exists=true
+              break
+            fi
+          done
+          if [[ "$exists" != "true" ]]; then
+            candidates+=("$removed")
+          fi
+        fi
+
+        prefix="${prefix}${before}**/"
+        tmp="$after"
+      done
+
+      ((idx++))
+    done
   done
   return 1
 }
@@ -1388,8 +1448,6 @@ _matches_any_pattern() {
 _list_candidate_files() {
   local ignore_flag=""
   if [[ "$WORKSPACE_RESPECT_GITIGNORE" != "true" ]]; then
-    ignore_flag="--no-ignore"
-  elif [[ ${#WORKSPACE_INCLUDE_PATTERNS[@]} -gt 0 ]]; then
     ignore_flag="--no-ignore"
   fi
 
@@ -1410,6 +1468,40 @@ collect_code_file_list() {
   local output_file="$1"
 
   > "$output_file"
+
+  # 优先用 rg 的 glob 过滤（gitignore 语义，支持 **/ 匹配 0+ 层目录），避免 bash 逐行匹配导致的高 CPU。
+  if command -v rg &>/dev/null; then
+    local ignore_flag=""
+    if [[ "$WORKSPACE_RESPECT_GITIGNORE" != "true" ]]; then
+      ignore_flag="--no-ignore"
+    fi
+
+    local rg_args=(--files)
+    [[ -n "$ignore_flag" ]] && rg_args+=("$ignore_flag")
+
+    local glob
+    if [[ ${#WORKSPACE_INCLUDE_PATTERNS[@]} -gt 0 ]]; then
+      for glob in "${WORKSPACE_INCLUDE_PATTERNS[@]}"; do
+        [[ -z "$glob" ]] && continue
+        rg_args+=(-g "$glob")
+      done
+    fi
+
+    for glob in "${GLOBAL_EXCLUDE_PATTERNS[@]}" "${WORKSPACE_EXCLUDE_PATTERNS[@]}"; do
+      [[ -z "$glob" ]] && continue
+      rg_args+=(-g "!$glob")
+    done
+
+    while IFS= read -r file; do
+      [[ -z "$file" ]] && continue
+      if ! _is_supported_extension "$file"; then
+        continue
+      fi
+      echo "$file" >> "$output_file"
+    done < <(cd "$PROJECT_ROOT" && rg "${rg_args[@]}" 2>/dev/null || true)
+
+    return 0
+  fi
 
   while IFS= read -r file; do
     [[ -z "$file" ]] && continue
@@ -1437,7 +1529,7 @@ _extract_plain_text() {
   local file="$1"
   local max_chars="$2"
 
-  LC_ALL=C cat "$file" | LC_ALL=C tr '\n' ' ' | head -c "$max_chars"
+  LC_ALL=C head -c "$max_chars" "$file" | LC_ALL=C tr '\n' ' '
 }
 
 # 提取 JS/TS 关键内容
@@ -1491,13 +1583,16 @@ _extract_js_ts_content() {
     return 1
   fi
 
-  printf '%s' "$extracted" | LC_ALL=C tr '\n' ' ' | LC_ALL=C tr -s ' ' | head -c "$max_chars"
+  local normalized=""
+  normalized=$(printf '%s' "$extracted" | LC_ALL=C tr '\n' ' ' | LC_ALL=C tr -s ' ')
+  printf '%s' "${normalized:0:$max_chars}"
 }
 
 # 提取代码文件
 extract_code_files() {
   local output_file="$1"
   local max_chars=3000
+  local max_file_size=5000000
 
   log_info "提取代码文件..."
 
@@ -1515,7 +1610,7 @@ extract_code_files() {
     if [ -f "$file" ]; then
       local file_size
       file_size=$(wc -c < "$file" 2>/dev/null || echo 0)
-      if [ "$file_size" -ge 1000000 ]; then
+      if [ "$file_size" -ge "$max_file_size" ]; then
         record_embed_failure "too_large"
         continue
       fi
@@ -1542,7 +1637,7 @@ extract_code_files() {
         continue
       fi
 
-      echo -e "$rel_path\t$content" >> "$output_file"
+      printf '%s\t%s\n' "$rel_path" "$content" >> "$output_file"
     fi
   done < "$file_list"
 
